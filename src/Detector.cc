@@ -1,13 +1,15 @@
 #include "Detector.h"
+#include "CMSPatternLayer.h"
 
 Detector::Detector(){
   dump=NULL;
 }
 
-void Detector::addLayer(int lNum, int nbLad, int nbMod, int segmentSize, int sstripSize){
+void Detector::addLayer(int lNum, int nbLad, int nbMod, int nbSeg, int segmentSize, int sstripSize){
+  cout<<"creating layer "<<lNum<<" with "<<nbSeg<<" Z positions and "<<segmentSize<<" phi positions (size of superstrips is "<<sstripSize<<")"<<endl;
   if(dump==NULL)
       dump = new SuperStrip(sstripSize);
-  Layer* l = new Layer(nbLad, nbMod, segmentSize, sstripSize);
+  Layer* l = new Layer(nbLad, nbMod, nbSeg, segmentSize, sstripSize);
   layerNumber.push_back(lNum);
   layers.push_back(l);
 }

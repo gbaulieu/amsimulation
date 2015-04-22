@@ -288,15 +288,13 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
       short module = -1;
       short ladder = -1;
       short strip = -1;
-      short stripLD = -1;
       short seg = -1;
 
       if(stub_number==-2){//creation of a fake superstrip
 	module=0;
 	strip=0;
-	stripLD=0;
 	seg=0;
-	ladder=15;//should never happen so this superstrip will never be activated
+	ladder=1;//should never happen so this superstrip will never be activated
       }
       else{
 	int value = m_stub_modid[stub_number];
@@ -310,30 +308,30 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
 
 	seg = CMSPatternLayer::getSegmentCode(tracker_layers[j], CMSPatternLayer::getLadderCode(tracker_layers[j],ladder), seg);	
 	//convertion to sector relative positions
-	module = sector->getModuleCode(tracker_layers[j], CMSPatternLayer::getLadderCode(tracker_layers[j],ladder), CMSPatternLayer::getModuleCode(tracker_layers[j],module));
-	ladder=sector->getLadderCode(tracker_layers[j],CMSPatternLayer::getLadderCode(tracker_layers[j],ladder));
+	//module = sector->getModuleCode(tracker_layers[j], CMSPatternLayer::getLadderCode(tracker_layers[j],ladder), CMSPatternLayer::getModuleCode(tracker_layers[j],module));
+	//ladder=sector->getLadderCode(tracker_layers[j],CMSPatternLayer::getLadderCode(tracker_layers[j],ladder));
 	
-	strip = m_stub_strip[stub_number]/sectors->getSuperStripSize(tracker_layers[j]);
-	if(variableRes){
-	  stripLD = strip/ld_fd_factor;
-	}
+	strip = m_stub_strip[stub_number];
+	//if(variableRes){
+	//  stripLD = strip/ld_fd_factor;
+	//}
       }
-      /*
-      cout<<"Event "<<*evtIndex<<endl;
-      cout<<"    Layer "<<m_stub_layer[stub_number]<<" segment "<<seg<<" module "<<CMSPatternLayer::getModuleCode(m_stub_layer[stub_number],m_stub_module[stub_number])<<" ladder "<<m_stub_ladder[stub_number]<<" strip "<<strip<<endl;
-      cout<<"    Layer "<<j<<" segment "<<seg<<" module "<<module<<" ladder "<<ladder<<" strip "<<strip<<endl;
-      cout<<endl;
-      */
+      
+      
+      //cout<<"Event "<<*evtIndex<<endl;
+      //cout<<"    Layer "<<tracker_layers[j]<<" segment "<<seg<<" module "<<module<<" ladder "<<ladder<<" strip "<<strip<<endl;
+      //cout<<endl;
+      
 
       if(stub_number!=-2)//this is not a fake stub
 	last_pt = m_stub_ptGEN[stub_number];
       CMSPatternLayer pat;
       CMSPatternLayer lowDef_layer;
-      pat.setValues(module, ladder, strip, seg);
+      pat.computeSuperstrip(tracker_layers[j], module, ladder, strip, seg, sectors->getSuperStripSize(tracker_layers[j]));
       p->setLayerStrip(j, &pat);
 
       if(variableRes){
-	lowDef_layer.setValues(module, ladder, stripLD, seg);
+	lowDef_layer.computeSuperstrip(tracker_layers[j], module, ladder, strip, seg, sectors->getSuperStripSize(tracker_layers[j])*ld_fd_factor);
 	lowDef_p->setLayerStrip(j, &lowDef_layer);
       }
 

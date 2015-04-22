@@ -3,6 +3,9 @@
 
 #include <iostream>
 #include <sstream>
+#include <fstream>
+#include <algorithm>
+#include <iomanip>
 #include <bitset>
 #include "PatternLayer.h"
 
@@ -90,6 +93,9 @@ class CMSPatternLayer : public PatternLayer{
      \param seg The segment in the module (0 or 1)
   **/
   void setValues(short m, short phi, short strip, short seg);
+
+  void computeSuperstrip(short layerID, short module, short phi, short strip, short seg, int sstripSize);
+
   /**
      \brief Returns a string representation of the PatternLayer
      \return A string describing the PatternLayer
@@ -204,6 +210,12 @@ class CMSPatternLayer : public PatternLayer{
      \return For each layerID, gives the minimum and maximum ETA values
   **/
   static map<int, pair<float,float> > getLayerDefInEta();
+
+  static map< string, int > loadPhiLUT(string name);
+  static map< string, int > loadZLUT(string name);
+
+  static map<string, int> phi_lut;
+  static map<string, int> z_lut;
 
 };
 BOOST_CLASS_VERSION(CMSPatternLayer, 1)

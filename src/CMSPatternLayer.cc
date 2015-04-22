@@ -1,15 +1,18 @@
 #include "CMSPatternLayer.h"
 
-short CMSPatternLayer::MOD_START_BIT = 12;
-short CMSPatternLayer::PHI_START_BIT = 8;
-short CMSPatternLayer::STRIP_START_BIT = 1;
+short CMSPatternLayer::MOD_START_BIT = 10;
+short CMSPatternLayer::PHI_START_BIT = 15;
+short CMSPatternLayer::STRIP_START_BIT = 0;
 short CMSPatternLayer::SEG_START_BIT = 0;
-short CMSPatternLayer::MOD_MASK = 0xF;
-short CMSPatternLayer::PHI_MASK = 0xF;
-short CMSPatternLayer::STRIP_MASK = 0x7F;
-short CMSPatternLayer::SEG_MASK = 0x1;
+short CMSPatternLayer::MOD_MASK = 0x1F;
+short CMSPatternLayer::PHI_MASK = 0x1;
+short CMSPatternLayer::STRIP_MASK = 0x3FF;
+short CMSPatternLayer::SEG_MASK = 0x0;
 short CMSPatternLayer::OUTER_LAYER_SEG_DIVIDE = 1;
 short CMSPatternLayer::INNER_LAYER_SEG_DIVIDE = 2;
+
+map<string, int> CMSPatternLayer::phi_lut = loadPhiLUT("lut.txt");
+map<string, int> CMSPatternLayer::z_lut = loadZLUT("lut.txt");
 
 CMSPatternLayer::CMSPatternLayer():PatternLayer(){
 
@@ -24,7 +27,7 @@ CMSPatternLayer* CMSPatternLayer::clone(){
 
 
 bool CMSPatternLayer::isFake(){
-  return (getPhi()==15);
+  return (getPhi()==1);
 }
 
 vector<SuperStrip*> CMSPatternLayer::getSuperStrip(int l, const vector<int>& ladd, const map<int, vector<int> >& modules, Detector& d){
@@ -52,7 +55,7 @@ vector<SuperStrip*> CMSPatternLayer::getSuperStrip(int l, const vector<int>& lad
       Ladder* patternLadder = la->getLadder(ladderID);
       if(patternLadder!=NULL){
 	map<int, vector<int> >::const_iterator iterator = modules.find(ladderID); // get the vector of module IDs for this ladder
-	int moduleID = iterator->second[getModule()];// getthe module ID from its position
+	int moduleID = iterator->second[getModule()];// get the module ID from its position
 	Module* patternModule = patternLadder->getModule(moduleID);
 	if(patternModule!=NULL){
 	  Segment* patternSegment = patternModule->getSegment(getSegment());
@@ -128,6 +131,42 @@ void CMSPatternLayer::setValues(short m, short phi, short strip, short seg){
     (phi&PHI_MASK)<<PHI_START_BIT |
     (strip&STRIP_MASK)<<STRIP_START_BIT |
     (seg&SEG_MASK)<<SEG_START_BIT;
+}
+
+void CMSPatternLayer::computeSuperstrip(short layerID, short module, short phi, short strip, short seg, int sstripSize){
+
+  if(phi==1){
+    setValues(0, 1, 0, 0);
+    return;
+  }
+
+  ostringstream oss;
+  oss<<std::setfill('0');
+  oss<<layerID<<setw(2)<<phi<<module;
+  int delta_phi = phi_lut[oss.str()];
+  //cout<<"phi_lut["<<oss.str()<<") = "<<delta_phi<<endl;
+  int superStrip = delta_phi-strip;
+  //cout<<"-> Superstrip = "<<superStrip<<endl;
+  //cout<<"utilisation de "<<sstripSize<<" strips par superstrip"<<endl;
+  superStrip = superStrip/sstripSize;
+  //cout<<"  -> superstrip apres resolution = "<<superStrip<<endl;
+  int delta_z = z_lut[oss.str()];
+  //cout<<"z_lut["<<oss.str()<<") = "<<delta_z<<endl;
+  int z = delta_z-seg;
+  //cout<<"-> module = "<<z<<endl;
+
+  if(layerID>=5 && layerID<=7)
+    z = z/(16*4);
+  else if (layerID>10 && phi<=8)
+    z = z/(16*4);
+  else
+    z = z/1;
+
+  //z=0;
+  //  if(layerID>7 && layerID<=10)
+  // cout<<"  -> module apres resolution = "<<z<<endl;
+
+  setValues(z, 0, superStrip, 0);
 }
 
 short CMSPatternLayer::getModule(){
@@ -477,21 +516,24 @@ int CMSPatternLayer::getNbStripsInSegment(){
 }
 
 int CMSPatternLayer::getSegmentCode(int layerID, int ladderID, int segmentID){
+  return segmentID;
+  /*
   if(layerID>7 && layerID<11)
-    return segmentID/(OUTER_LAYER_SEG_DIVIDE);
+    return segmentID;
   if(layerID>=5 && layerID<=7)
-    return segmentID/(16*INNER_LAYER_SEG_DIVIDE);
+    return segmentID/16;
   if(ladderID<=8)
     return segmentID/16;
   return segmentID;
+  */
 }
 
 
 int CMSPatternLayer::getModuleCode(int layerID, int moduleID){
   switch(layerID){
-  case 5 : return (moduleID/2);
-  case 6 : return (moduleID/2);
-  case 7 : return (moduleID/2);
+  case 5 : return (moduleID);
+  case 6 : return (moduleID);
+  case 7 : return (moduleID);
   case 8 : return moduleID;
   case 9 : return moduleID;
   case 10 : return moduleID;
@@ -568,4 +610,78 @@ map<int, pair<float,float> > CMSPatternLayer::getLayerDefInEta(){
   eta[21]=pair<float,float>(-2.5,-1.49);
   eta[22]=pair<float,float>(-2.5,-1.65);
   return eta;
+}
+
+map< string, int > CMSPatternLayer::loadPhiLUT(string name){
+  string line;
+  ifstream myfile (name.c_str());
+  map< string, int > phi_lut;
+  if (myfile.is_open()){
+    while ( myfile.good() ){
+      getline (myfile,line);
+      if(line.length()>0 && line.find("#")!=0){
+	
+	stringstream ss(line);
+	std::string item;
+	vector<string> items;
+	while (getline(ss, item, '/')) {
+	  std::string::iterator end_pos = std::remove(item.begin(), item.end(), ' ');
+	  item.erase(end_pos, item.end());
+	  items.push_back(item);
+	}
+	if(items.size()==6){
+	  istringstream buffer(items[2]);
+	  istringstream buffer2(items[3]);
+	  int startStrip;
+	  int superStripIndex;
+	  buffer >> startStrip;
+	  buffer2 >> superStripIndex;
+	  phi_lut[items[1]]=startStrip+superStripIndex;
+	}
+      }
+    }
+    myfile.close();
+  }
+  else{
+    cout << "Can not find file "<<name<<" to load the lookup table!"<<endl;
+    exit(-1);
+  }
+  return phi_lut;
+}
+
+map< string, int > CMSPatternLayer::loadZLUT(string name){
+  string line;
+  ifstream myfile (name.c_str());
+  map< string, int > phi_lut;
+  if (myfile.is_open()){
+    while ( myfile.good() ){
+      getline (myfile,line);
+      if(line.length()>0 && line.find("#")!=0){
+	
+	stringstream ss(line);
+	std::string item;
+	vector<string> items;
+	while (getline(ss, item, '/')) {
+	  std::string::iterator end_pos = std::remove(item.begin(), item.end(), ' ');
+	  item.erase(end_pos, item.end());
+	  items.push_back(item);
+	}
+	if(items.size()==6){
+	  istringstream buffer(items[4]);
+	  istringstream buffer2(items[5]);
+	  int startStrip;
+	  int superStripIndex;
+	  buffer >> startStrip;
+	  buffer2 >> superStripIndex;
+	  phi_lut[items[1]]=startStrip+superStripIndex;
+	}
+      }
+    }
+    myfile.close();
+  }
+  else{
+    cout << "Can not find file "<<name<<" to load the lookup table!"<<endl;
+    exit(-1);
+  }
+  return phi_lut;
 }
