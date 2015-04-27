@@ -142,8 +142,8 @@ void CMSPatternLayer::setValues(short m, short phi, short strip, short seg){
     (seg&SEG_MASK)<<SEG_START_BIT;
 }
 
-void CMSPatternLayer::computeSuperstrip(short layerID, short module, short phi, short strip, short seg, int sstripSize){
-    if(phi==1){
+void CMSPatternLayer::computeSuperstrip(short layerID, short module, short phi, short strip, short seg, int sstripSize, bool fake){
+    if(fake){
       setValues(0, 1, 0, 0);
       return;
     }

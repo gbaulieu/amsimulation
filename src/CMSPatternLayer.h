@@ -95,7 +95,7 @@ class CMSPatternLayer : public PatternLayer{
   **/
   void setValues(short m, short phi, short strip, short seg);
 
-  void computeSuperstrip(short layerID, short module, short phi, short strip, short seg, int sstripSize);
+  void computeSuperstrip(short layerID, short module, short phi, short strip, short seg, int sstripSize, bool fake=0);
 
   /**
      \brief Returns a string representation of the PatternLayer
