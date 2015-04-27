@@ -8,6 +8,7 @@
 #include <iomanip>
 #include <bitset>
 #include "PatternLayer.h"
+#include <stdexcept>
 
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/export.hpp>

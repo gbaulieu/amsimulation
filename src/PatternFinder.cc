@@ -18,7 +18,7 @@ PatternFinder::PatternFinder(int at, SectorTree* st, string f, string of){
   if(sector_list.size()>0){
     for(int i=0;i<sector_list[0]->getNbLayers();i++){
       int layerID = sector_list[0]->getLayerID(i);
-      tracker.addLayer(layerID,1,1,32,sector_list[0]->getNbLadders(layerID)*1024/sectors->getSuperStripSize(layerID),sectors->getSuperStripSize(layerID));
+      tracker.addLayer(layerID,1,1,32,sector_list[0]->getNbLadders(layerID)*1024,sectors->getSuperStripSize(layerID));
     }
   }
 
@@ -1050,10 +1050,12 @@ void PatternFinder::find(int start, int& stop){
 	continue;
       int ladder = CMSPatternLayer::getLadderCode(layer, m_stub_ladder[i]);
       int segment =  CMSPatternLayer::getSegmentCode(layer, ladder, m_stub_seg[i]);
+      /*
       if(segment<0 || segment>1){
 	cout<<"Invalid segment on event "<<n_evt<<endl;
 	continue;
       }
+      */
       int strip = m_stub_strip[i];
       int tp = m_stub_tp[i];
       float eta = m_stub_eta_gen[i];
@@ -1176,6 +1178,7 @@ void PatternFinder::find(int start, int& stop){
       for(unsigned int j=0;j<pl.size();j++){
 	if(j<max_patterns){
 	  //loop on layers
+	  cout<<*pl[j]<<endl;
 	  for(int k=0;k<nb_layers;k++){
 	    int sstripValue = pl[j]->getLayerStrip(k)->getIntValue();
 	    superStrips[k][patternIndex]=sstripValue;

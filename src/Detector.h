@@ -18,6 +18,7 @@ class Detector{
  private:
   vector<Layer*> layers;
   vector<int> layerNumber;
+  vector<int> superStripSizes;
   SuperStrip* dump;//used for fake superstrips in the patterns
 
   int getLayerPosition(int pos);

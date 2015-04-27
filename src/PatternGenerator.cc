@@ -133,6 +133,11 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
   int ld_fd_factor = (int)pow(2.0,(double)variableRes);
 
   int layers[tracker_layers.size()];
+  /*
+  int layers_backup[tracker_layers.size()];
+  TH1I* sstrips_error = new TH1I("PHI errors","Missmatch on phi (in superstrips)", 201, -100, 100);
+  TH1I* sstrips_error2 = new TH1I("Z Errors","Missmatch on Z (in outer segments)", 101, -50, 50);
+  */
   vector<int> ladder_per_layer(tracker_layers.size());
   vector<int> module_per_layer(tracker_layers.size());
 
@@ -146,6 +151,11 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
     for(unsigned int j=0;j<tracker_layers.size();j++){
       layers[j]=-1;
     }
+    /*
+    for(unsigned int j=0;j<tracker_layers.size();j++){
+      layers_backup[j]=-1;
+    }
+    */
     for(unsigned int j=0;j<tracker_layers.size();j++){
       ladder_per_layer[j]=-1;
     }
@@ -196,6 +206,10 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
       }
 
       if(layer_position!=-1){ // is this layer in the layer list?
+	/*
+	if(layers[layer_position]!=-1)
+	  layers_backup[layer_position]=layers[layer_position];
+	*/
 	layers[layer_position]=j;
 	ladder_per_layer[layer_position]=CMSPatternLayer::getLadderCode(layer, ladder);
 	module = CMSPatternLayer::getModuleCode(layer, module);
@@ -289,7 +303,13 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
       short ladder = -1;
       short strip = -1;
       short seg = -1;
-
+      /*
+      int stub_number_backup = layers_backup[j];
+      short module_backup = -1;
+      short ladder_backup = -1;
+      short strip_backup = -1;
+      short seg_backup = -1;
+      */
       if(stub_number==-2){//creation of a fake superstrip
 	module=0;
 	strip=0;
@@ -305,13 +325,26 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
 	module = value/100;
 	value = value-module*100;
 	seg = value;
-
+	/*
+	if(stub_number_backup!=-1){
+	  int value_backup = m_stub_modid[stub_number_backup];
+	  //	cout<<value<<endl;
+	  value_backup = value_backup-(value_backup/1000000)*1000000;
+	  ladder_backup = value_backup/10000;
+	  value_backup = value_backup-ladder_backup*10000;
+	  module_backup = value_backup/100;
+	  value_backup = value_backup-module_backup*100;
+	  seg_backup = value_backup;
+	  strip_backup = m_stub_strip[stub_number_backup];
+	}
+	*/
 	seg = CMSPatternLayer::getSegmentCode(tracker_layers[j], CMSPatternLayer::getLadderCode(tracker_layers[j],ladder), seg);	
 	//convertion to sector relative positions
 	//module = sector->getModuleCode(tracker_layers[j], CMSPatternLayer::getLadderCode(tracker_layers[j],ladder), CMSPatternLayer::getModuleCode(tracker_layers[j],module));
 	//ladder=sector->getLadderCode(tracker_layers[j],CMSPatternLayer::getLadderCode(tracker_layers[j],ladder));
 	
 	strip = m_stub_strip[stub_number];
+
 	//if(variableRes){
 	//  stripLD = strip/ld_fd_factor;
 	//}
@@ -327,7 +360,36 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
 	last_pt = m_stub_ptGEN[stub_number];
       CMSPatternLayer pat;
       CMSPatternLayer lowDef_layer;
-      pat.computeSuperstrip(tracker_layers[j], module, ladder, strip, seg, sectors->getSuperStripSize(tracker_layers[j]));
+      try{
+	pat.computeSuperstrip(tracker_layers[j], module, ladder, strip, seg, sectors->getSuperStripSize(tracker_layers[j]));
+      }
+      catch (const std::out_of_range& oor) {
+	std::cerr << "One of the stubs can not be linked to a superstrip"<<endl;
+	continue;
+      }
+      /*
+      if(stub_number_backup!=-1 && ladder!=ladder_backup && module==module_backup){
+	try{
+	  CMSPatternLayer pat_backup;
+	  pat_backup.computeSuperstrip(tracker_layers[j], module_backup, ladder_backup, strip_backup, seg_backup, sectors->getSuperStripSize(tracker_layers[j]));
+	  cout<<"we have an overlap :"<<endl;
+	  cout<<"    Layer "<<tracker_layers[j]<<" segment "<<seg<<" module "<<module<<" ladder "<<ladder<<" strip "<<strip<<endl;
+	  cout<<pat.toString()<<endl;
+	  cout<<"    Layer "<<tracker_layers[j]<<" segment "<<seg_backup<<" module "<<module_backup<<" ladder "<<ladder_backup<<" strip "<<strip_backup<<endl;
+	  cout<<pat_backup.toString()<<endl;
+	  int diff_phi = pat.getStrip()-pat_backup.getStrip();
+	  int diff_eta = pat.getModule()-pat_backup.getModule();
+	  cout<<"diff PHI is "<<diff_phi<<endl;
+	  cout<<"diff ETA is "<<diff_eta<<endl;
+	  cout<<endl;
+	  sstrips_error->Fill(diff_phi);
+	  sstrips_error2->Fill(diff_eta);
+	}
+	catch (const std::out_of_range& oor) {
+
+	}
+      }
+      */
       p->setLayerStrip(j, &pat);
 
       if(variableRes){
@@ -366,7 +428,14 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
   }
 
   *nbTrackUsed=nbModuleOk;
-
+  /*
+  sstrips_error->SetFillColor(41);
+  sstrips_error->Write();
+  delete sstrips_error;
+  sstrips_error2->SetFillColor(41);
+  sstrips_error2->Write();
+  delete sstrips_error2;
+  */
   if(coverageEstimation==NULL){
     cout<<"Event index : "<<*evtIndex<<endl;
     cout<<"Nb Events with stubs on all layers : "<<nbInLayer<<endl;
@@ -379,6 +448,7 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
   }
   else
     return 0;
+
 }
 
 
@@ -404,6 +474,7 @@ void PatternGenerator::generate(SectorTree* sectors, int step, float threshold, 
   cout<<"Starting patterns generation using iterations of "<<step<<" events"<<endl;
   
   while((1-dif)<threshold && iterationNbTracks>0){
+    threshold=0;
     loop++;
     iterationNbTracks=0;
     newCount = generate(tc, &indexPart, step, &nbTracks, sectors, eta_limits);
