@@ -368,7 +368,7 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
 	continue;
       }
       /*
-      if(stub_number_backup!=-1 && ladder!=ladder_backup && module==module_backup){
+      if(stub_number_backup!=-1 && ladder==ladder_backup && module!=module_backup){
 	try{
 	  CMSPatternLayer pat_backup;
 	  pat_backup.computeSuperstrip(tracker_layers[j], module_backup, ladder_backup, strip_backup, seg_backup, sectors->getSuperStripSize(tracker_layers[j]));

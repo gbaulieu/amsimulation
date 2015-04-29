@@ -8,8 +8,8 @@ short CMSPatternLayer::MOD_MASK = 0x1F;
 short CMSPatternLayer::PHI_MASK = 0x1;
 short CMSPatternLayer::STRIP_MASK = 0x3FF;
 short CMSPatternLayer::SEG_MASK = 0x0;
-short CMSPatternLayer::OUTER_LAYER_SEG_DIVIDE = 20;
-short CMSPatternLayer::INNER_LAYER_SEG_DIVIDE = 20;
+short CMSPatternLayer::OUTER_LAYER_SEG_DIVIDE = 1;
+short CMSPatternLayer::INNER_LAYER_SEG_DIVIDE = 2;
 
 map<string, int> CMSPatternLayer::phi_lut = loadPhiLUT("lut.txt");
 map<string, int> CMSPatternLayer::z_lut = loadZLUT("lut.txt");
@@ -147,9 +147,29 @@ void CMSPatternLayer::computeSuperstrip(short layerID, short module, short phi, 
       setValues(0, 1, 0, 0);
       return;
     }
-    
+
     ostringstream oss;
-    oss<<std::setfill('0');
+    oss<<std::setfill('0');    
+    oss<<layerID<<setw(2)<<phi<<module;
+    int delta_z = z_lut.at(oss.str());
+    //cout<<"z_lut["<<oss.str()<<") = "<<delta_z<<endl;
+    //if(module%2!=0)
+    //  delta_z++;
+    
+    int z = delta_z-seg;
+ 
+    //if(layerID>7 && layerID<11) 
+    //  z = z-seg;
+    
+    //cout<<"-> module = "<<z<<endl;
+    
+    if(layerID>=5 && layerID<=7)
+      z = z/(32*INNER_LAYER_SEG_DIVIDE);
+    else if (layerID>10 && phi<=8)
+      z = z/(32*INNER_LAYER_SEG_DIVIDE);
+    else
+      z = z/OUTER_LAYER_SEG_DIVIDE;
+
     /****************/
     if(module%2!=0){
       module--;
@@ -174,6 +194,8 @@ void CMSPatternLayer::computeSuperstrip(short layerID, short module, short phi, 
 	strip = (1.006*strip)-3;
       }break;
       }
+      oss.clear();
+      oss.str("");
       oss<<layerID<<setw(2)<<phi<<module;
       
       try{
@@ -181,13 +203,13 @@ void CMSPatternLayer::computeSuperstrip(short layerID, short module, short phi, 
       }
       catch (const std::out_of_range& oor) {
 	module+=2;
+	oss.clear();
+	oss.str("");
+	oss<<layerID<<setw(2)<<phi<<module;
       }
-      oss.clear();
-      oss.str("");
     }
     /***************/
 
-    oss<<layerID<<setw(2)<<phi<<module;
     int delta_phi = phi_lut.at(oss.str());
     //cout<<"phi_lut["<<oss.str()<<") = "<<delta_phi<<endl;
 
@@ -196,17 +218,6 @@ void CMSPatternLayer::computeSuperstrip(short layerID, short module, short phi, 
     //cout<<"utilisation de "<<sstripSize<<" strips par superstrip"<<endl;
     superStrip = superStrip/sstripSize;
     //cout<<"  -> superstrip apres resolution = "<<superStrip<<endl;
-    int delta_z = z_lut.at(oss.str());
-    //cout<<"z_lut["<<oss.str()<<") = "<<delta_z<<endl;
-    int z = delta_z-seg;
-    //cout<<"-> module = "<<z<<endl;
-    
-    if(layerID>=5 && layerID<=7)
-      z = z/(32*INNER_LAYER_SEG_DIVIDE);
-    else if (layerID>10 && phi<=8)
-      z = z/(32*INNER_LAYER_SEG_DIVIDE);
-    else
-      z = z/OUTER_LAYER_SEG_DIVIDE;
     
     //z=0;
     //  if(layerID>7 && layerID<=10)
