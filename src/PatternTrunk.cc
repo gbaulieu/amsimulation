@@ -34,6 +34,7 @@ void PatternTrunk::addFDPattern(Pattern* p){
 
 void PatternTrunk::addFDPattern(Pattern* p, float pt){
   lowDefPattern->increment(pt);
+  lowDefPattern->mergeInfos(p->getStatisticalInformations());
   if(p!=NULL){
     string key=p->getKey();
     map<string, GradedPattern*>::iterator it = fullDefPatterns.find(key);
@@ -44,7 +45,6 @@ void PatternTrunk::addFDPattern(Pattern* p, float pt){
     }
     else{
       (it->second)->increment(pt);
-      (it->second)->mergeInfos(p->getStatisticalInformations());
     }
   }
 }
@@ -126,11 +126,6 @@ void PatternTrunk::computeAdaptativePattern(short r){
 	    bits[j]=2;
 	}
       }
-
-      if(i==0){ // first pass
-	lowDefPattern->mergeInfos(itr->second->getStatisticalInformations());
-      }
-
     }
 
     for(unsigned int j=0;j<bits.size();j++){

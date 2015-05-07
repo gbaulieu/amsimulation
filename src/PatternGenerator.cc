@@ -388,12 +388,16 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
     float Z0 = computeZ0(stubs_x, stubs_y, stubs_z);
     
     if(coverageEstimation==NULL){
-      p->updateInfos(last_eta,Z0,last_pt);
       if(variableRes){
+	p->updateInfos(last_eta,Z0,last_pt);
 	sector->getPatternTree()->addPattern(lowDef_p,p, last_pt);
       }
       else{
-	sector->getPatternTree()->addPattern(p,NULL, last_pt);
+	//we need a copy of the pattern without the PatternInfo stuff
+	Pattern* p_copy = new Pattern(*p);
+	p->updateInfos(last_eta,Z0,last_pt);
+	sector->getPatternTree()->addPattern(p_copy,p, last_pt);
+	delete p_copy;
       }
     }
     else{
