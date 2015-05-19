@@ -548,6 +548,7 @@ void PatternGenerator::generate(SectorTree* sectors, int step, float threshold, 
 
       OUT->Fill();
     }
-    OUT->Write();
+    OUT->Write("", TObject::kOverwrite);
+    delete OUT;
   }
 }

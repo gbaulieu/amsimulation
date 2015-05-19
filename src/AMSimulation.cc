@@ -380,7 +380,8 @@ void createAnalysis(SectorTree &st){
 
       OUT->Fill();
     }
-    OUT->Write();
+    OUT->Write("", TObject::kOverwrite);
+    delete OUT;
   }
 
   /*
