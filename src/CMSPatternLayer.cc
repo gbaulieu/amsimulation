@@ -742,3 +742,20 @@ map< string, int > CMSPatternLayer::loadZLUT(string name){
   }
   return phi_lut;
 }
+
+vector<int> CMSPatternLayer::getHDSuperstrips(){
+  vector<int> array;
+  int nb_dc = getDCBitsNumber();
+  int base_index = getStripCode()<<nb_dc;
+  if(nb_dc>0){
+    vector<short> positions=getPositionsFromDC();
+    for(unsigned int i=0;i<positions.size();i++){
+      int index = base_index | positions[i];
+      array.push_back(grayToBinary(index));
+    }
+  }
+  else{
+    array.push_back(grayToBinary(base_index));
+  }
+  return array;
+}

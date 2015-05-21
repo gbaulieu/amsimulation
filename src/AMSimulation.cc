@@ -348,6 +348,36 @@ void createAnalysis(SectorTree &st){
     delete pt_histo;
   }
 
+  int patt_id;
+  int patt_ssid;
+  int patt_layer;
+  int patt_z;
+  int patt_sstrip;
+  TTree *OUT2    = new TTree("PatternGeom", "Geometry of patterns");
+  OUT2->Branch("id",    &patt_id);
+  OUT2->Branch("ssid",  &patt_ssid);
+  OUT2->Branch("layer", &patt_layer);
+  OUT2->Branch("z",     &patt_z);
+  OUT2->Branch("phi",   &patt_sstrip);
+  
+  for(unsigned int i=0;i<allPatterns.size();i++){
+    GradedPattern* p = allPatterns[i];
+    patt_id=i;
+    for(int j=0;j<p->getNbLayers();j++){
+      patt_layer = j;
+      CMSPatternLayer* pl = (CMSPatternLayer*)p->getLayerStrip(j);
+      vector<int> positions = pl->getHDSuperstrips();
+      for(unsigned int k=0;k<positions.size();k++){
+	patt_ssid = k;
+	patt_z = pl->getModule();
+	patt_sstrip = positions[k];
+	OUT2->Fill();
+      }
+    }
+  }
+  OUT2->Write("", TObject::kOverwrite);
+  delete OUT2;
+
   /*
   TGraph* nbPatt = new TGraph(allPatterns.size(),patterns,tracks);
   nbPatt->GetXaxis()->SetTitle("Patterns bank size");
