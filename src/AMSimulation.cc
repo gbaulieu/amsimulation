@@ -1640,6 +1640,31 @@ int main(int av, char** ac){
     int nbPatterns2 = list2[0]->getPatternTree()->getLDPatternNumber();
     cout<<nbPatterns2<<" patterns found."<<endl;
 
+    bool dc_bits_ok = true;
+    vector<GradedPattern*> patterns_1 = list1[0]->getPatternTree()->getLDPatterns();
+    vector<GradedPattern*> patterns_2 = list2[0]->getPatternTree()->getLDPatterns();
+    for(int k=0;k<patterns_1[0]->getNbLayers();k++){
+      PatternLayer* pl1 = patterns_1[0]->getLayerStrip(k);
+      PatternLayer* pl2 = patterns_2[0]->getLayerStrip(k);
+      if(pl1->getDCBitsNumber()!=pl2->getDCBitsNumber()){
+	dc_bits_ok=false;
+	break;
+      }
+    }
+    for(unsigned int j=0;j<patterns_1.size();j++){
+      delete patterns_1[j];
+    }
+    patterns_1.clear();
+    for(unsigned int j=0;j<patterns_2.size();j++){
+      delete patterns_2[j];
+    }
+    patterns_2.clear();
+
+    if(!dc_bits_ok){
+      cout<<"The 2 banks must use the same number of DC bits for merging!"<<endl;
+      return -1;
+    }
+
     cout<<"Merging banks..."<<endl;
     if(nbPatterns1>nbPatterns2){
       list1[0]->getPatternTree()->addPatternsFromTree(list2[0]->getPatternTree());
