@@ -8,7 +8,7 @@ short CMSPatternLayer::MOD_MASK = 0x1F;
 short CMSPatternLayer::PHI_MASK = 0x1;
 short CMSPatternLayer::STRIP_MASK = 0x3FF;
 short CMSPatternLayer::SEG_MASK = 0x0;
-short CMSPatternLayer::OUTER_LAYER_SEG_DIVIDE = 1;
+short CMSPatternLayer::OUTER_LAYER_SEG_DIVIDE = 2;
 short CMSPatternLayer::INNER_LAYER_SEG_DIVIDE = 2;
 
 map<string, int> CMSPatternLayer::phi_lut = loadPhiLUT("lut.txt");

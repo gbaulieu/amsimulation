@@ -288,6 +288,7 @@ void displayInformations(SectorTree &st){
   for(unsigned int i=0;i<list.size();i++){
     vector<GradedPattern*> patterns = list[i]->getPatternTree()->getLDPatterns();
     vector<int> layers = list[i]->getLayersID();
+    vector<int> maxDC;
     
     cout<<"The bank contains "<<patterns.size();
     if(patterns.size()>1)
@@ -300,11 +301,11 @@ void displayInformations(SectorTree &st){
     cout<<"Superstrips size :"<<endl;
     for(unsigned int j=0;j<layers.size();j++){
       cout<<"\tLayer "<<layers[j]<<" : "<<st.getSuperStripSize(layers[j])<<endl;
+      maxDC.push_back(0);
     }
 
     float maxPT=-1;
     float minPT=1000;    
-    int maxDC = 0;
     int nbDC = 0;
     for(unsigned int j=0;j<patterns.size();j++){
       float pt = patterns[j]->getAveragePt();
@@ -316,15 +317,19 @@ void displayInformations(SectorTree &st){
       for(int k=0;k<patterns[j]->getNbLayers();k++){
 	PatternLayer* pl = patterns[j]->getLayerStrip(k);
 	nbDC = pl->getDCBitsNumber();
-	if(maxDC<nbDC)
-	  maxDC=nbDC;
+	if(maxDC[k]<nbDC)
+	  maxDC[k]=nbDC;
       }
       delete patterns[j];
     }
     patterns.clear();
+    
+    cout<<"Number of used DC bits :"<<endl;
+    for(unsigned int j=0;j<layers.size();j++){
+      cout<<"\tLayer "<<layers[j]<<" : "<<maxDC[j]<<endl;
+    }
 
     cout<<"PT range is ["<<round(minPT)<<","<<round(maxPT)<<"] GeV"<<endl;
-    cout<<"Number of used DC bits is "<<maxDC<<endl;
   }
 }
 
@@ -841,7 +846,7 @@ int main(int av, char** ac){
     ("stopEvent", po::value<int>(), "The last event index")
     ("decode", po::value<int>(), "Decode the given super strip")
     ("ss_size", po::value<string>(), "Number of strips in a super strip {16,32,64,128,256,512,1024}. Either one value for all detector or one value per layer")
-    ("dc_bits", po::value<int>(), "Number of used DC bits [0-3]")
+    ("dc_bits", po::value<string>(), "Number of used DC bits [0-3]. Either one value for all detector or one value per layer")
     ("pt_min", po::value<int>(), "Only tracks having a greater PT will be used to generate a pattern")
     ("pt_max", po::value<int>(), "Only tracks having a smaller PT will be used to generate a pattern")
     ("eta_min", po::value<float>(), "Only tracks having a greater ETA will be used to generate a pattern")
@@ -920,7 +925,8 @@ int main(int av, char** ac){
     vector<int> layers;
     SectorTree st;
     string stripSizes="";
-    int dcBits=0;
+    string dcBits="";
+    vector<int> layer_dc_bits_number;
     string partDirName="";
     string bankFileName="";
     string rootFileName="";
@@ -940,8 +946,8 @@ int main(int av, char** ac){
     try{
       stripSizes=vm["ss_size"].as<string>();
       cout<<"Superstrip sizes : "<<stripSizes<<endl;
-      dcBits=vm["dc_bits"].as<int>();
-      cout<<"DC bits number : "<<dcBits<<endl;
+      dcBits=vm["dc_bits"].as<string>();
+      cout<<"DC bits numbers : "<<dcBits<<endl;
       min=vm["pt_min"].as<int>();
       cout<<"PT min : "<<min<<endl;
       max=vm["pt_max"].as<int>();
@@ -1037,6 +1043,10 @@ int main(int av, char** ac){
 	st.setSuperStripSize(-1);
       }
       
+      std::istringstream bits( dcBits );
+      while( bits >> n ) {
+	layer_dc_bits_number.push_back(n);
+      }
 
       size_t end_index = bankFileName.find(".pbk");
       if(end_index==string::npos)
@@ -1073,7 +1083,15 @@ int main(int av, char** ac){
     pg.setMaxEta(maxEta);
     pg.setMaxFakeSuperstrips(maxNbFake);
     TFile f(rootFileName.c_str(), "recreate");
-    pg.setVariableResolution(dcBits);
+    if(layer_dc_bits_number.size()==active_layers.size() || layer_dc_bits_number.size()==1){
+      for(unsigned int i=0;i<active_layers.size();i++){
+	if(layer_dc_bits_number.size()==1)
+	  pg.setVariableResolution(layer_dc_bits_number[0], active_layers[i]);
+	else
+	  pg.setVariableResolution(layer_dc_bits_number[i], active_layers[i]);
+      }
+    }
+    
     pg.generate(&st, 100000, threshold, eta);
 
 
@@ -1651,6 +1669,31 @@ int main(int av, char** ac){
     }
     int nbPatterns2 = list2[0]->getPatternTree()->getLDPatternNumber();
     cout<<nbPatterns2<<" patterns found."<<endl;
+
+    bool dc_bits_ok = true;
+    vector<GradedPattern*> patterns_1 = list1[0]->getPatternTree()->getLDPatterns();
+    vector<GradedPattern*> patterns_2 = list2[0]->getPatternTree()->getLDPatterns();
+    for(int k=0;k<patterns_1[0]->getNbLayers();k++){
+      PatternLayer* pl1 = patterns_1[0]->getLayerStrip(k);
+      PatternLayer* pl2 = patterns_2[0]->getLayerStrip(k);
+      if(pl1->getDCBitsNumber()!=pl2->getDCBitsNumber()){
+	dc_bits_ok=false;
+	break;
+      }
+    }
+    for(unsigned int j=0;j<patterns_1.size();j++){
+      delete patterns_1[j];
+    }
+    patterns_1.clear();
+    for(unsigned int j=0;j<patterns_2.size();j++){
+      delete patterns_2[j];
+    }
+    patterns_2.clear();
+
+    if(!dc_bits_ok){
+      cout<<"The 2 banks must use the same number of DC bits for merging!"<<endl;
+      return -1;
+    }
 
     cout<<"Merging banks..."<<endl;
     if(nbPatterns1>nbPatterns2){
