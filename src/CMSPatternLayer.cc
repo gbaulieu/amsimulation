@@ -149,15 +149,26 @@ void CMSPatternLayer::computeSuperstrip(short layerID, short module, short phi, 
     }
     
     int superStrip = strip/sstripSize;
-    int z = (module*2)+seg;
+    int segment = seg;
+    
+    /*
+      On P/S modules segment values are ranging from 0 to 31 -> we only want 0 or 1
+     */
+    if((layerID>=5 && layerID<=7) || (layerID>10 && phi<=8))
+      segment = segment/16;
+
+    // mix modules and segments
+    // P/S modules are devided by 2 to get the same granularity as S/S modules
+    int z = (module*2)+segment;
     if(layerID>=5 && layerID<=7)
-      z = z/(32*INNER_LAYER_SEG_DIVIDE);
+      z = z/(2*INNER_LAYER_SEG_DIVIDE);
     else if (layerID>10 && phi<=8)
-      z = z/(32*INNER_LAYER_SEG_DIVIDE);
+      z = z/(2*INNER_LAYER_SEG_DIVIDE);
     else
       z = z/OUTER_LAYER_SEG_DIVIDE;
 
     setValues(z,phi, superStrip, 0);
+    cout<<toString()<<endl;
 }
 
 short CMSPatternLayer::getModule(){
