@@ -168,7 +168,6 @@ void CMSPatternLayer::computeSuperstrip(short layerID, short module, short phi, 
       z = z/OUTER_LAYER_SEG_DIVIDE;
 
     setValues(z,phi, superStrip, 0);
-    cout<<toString()<<endl;
 }
 
 short CMSPatternLayer::getModule(){

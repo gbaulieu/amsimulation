@@ -284,12 +284,12 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
     else{
       nbInSector++;
     }
-  
+    /*
     for(unsigned int j=0;j<tracker_layers.size();j++){
       cout<<"stubs "<<ladder_per_layer[j]<<"/"<<module_per_layer[j]<<"-";
     }
     cout<<endl;
-    
+    */
     /*
     cout<<"Secteur : "<<sector<<endl;
     */
