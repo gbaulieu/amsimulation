@@ -1,12 +1,12 @@
 #include "CMSPatternLayer.h"
 
-short CMSPatternLayer::MOD_START_BIT = 10;
-short CMSPatternLayer::PHI_START_BIT = 15;
+short CMSPatternLayer::MOD_START_BIT = 11;
+short CMSPatternLayer::PHI_START_BIT = 7;
 short CMSPatternLayer::STRIP_START_BIT = 0;
 short CMSPatternLayer::SEG_START_BIT = 0;
 short CMSPatternLayer::MOD_MASK = 0x1F;
-short CMSPatternLayer::PHI_MASK = 0x1;
-short CMSPatternLayer::STRIP_MASK = 0x3FF;
+short CMSPatternLayer::PHI_MASK = 0xF;
+short CMSPatternLayer::STRIP_MASK = 0x7F;
 short CMSPatternLayer::SEG_MASK = 0x0;
 short CMSPatternLayer::OUTER_LAYER_SEG_DIVIDE = 2;
 short CMSPatternLayer::INNER_LAYER_SEG_DIVIDE = 2;
@@ -27,7 +27,7 @@ CMSPatternLayer* CMSPatternLayer::clone(){
 
 
 bool CMSPatternLayer::isFake(){
-  return (getPhi()==1);
+  return (getPhi()==15);
 }
 
 vector<SuperStrip*> CMSPatternLayer::getSuperStrip(int l, const vector<int>& ladd, const map<int, vector<int> >& modules, Detector& d){
@@ -51,12 +51,12 @@ vector<SuperStrip*> CMSPatternLayer::getSuperStrip(int l, const vector<int>& lad
   else{
     Layer* la = d.getLayerFromAbsolutePosition(l);
     if(la!=NULL){
-      //int ladderID = ladd[getPhi()];//getPhi() is the position in the sector;ladd[getPhi()] gives the ID of the ladder
-      Ladder* patternLadder = la->getLadder(0);
+      int ladderID = ladd[getPhi()];//getPhi() is the position in the sector;ladd[getPhi()] gives the ID of the ladder
+      Ladder* patternLadder = la->getLadder(ladderID);
       if(patternLadder!=NULL){
-	//map<int, vector<int> >::const_iterator iterator = modules.find(ladderID); // get the vector of module IDs for this ladder
-	//int moduleID = iterator->second[getModule()];// get the module ID from its position
-	Module* patternModule = patternLadder->getModule(0);
+	map<int, vector<int> >::const_iterator iterator = modules.find(ladderID); // get the vector of module IDs for this ladder
+	int moduleID = iterator->second[getModule()];// get the module ID from its position
+	Module* patternModule = patternLadder->getModule(moduleID);
 	if(patternModule!=NULL){
 	  Segment* patternSegment = patternModule->getSegment(getModule());
 	  if(patternSegment!=NULL){
@@ -144,25 +144,12 @@ void CMSPatternLayer::setValues(short m, short phi, short strip, short seg){
 
 void CMSPatternLayer::computeSuperstrip(short layerID, short module, short phi, short strip, short seg, int sstripSize, bool fake){
     if(fake){
-      setValues(0, 1, 0, 0);
+      setValues(0, 15, 0, 0);
       return;
     }
-
-    ostringstream oss;
-    oss<<std::setfill('0');    
-    oss<<layerID<<setw(2)<<phi<<module;
-    int delta_z = z_lut.at(oss.str());
-    //cout<<"z_lut["<<oss.str()<<") = "<<delta_z<<endl;
-    //if(module%2!=0)
-    //  delta_z++;
     
-    int z = delta_z-seg;
- 
-    //if(layerID>7 && layerID<11) 
-    //  z = z-seg;
-    
-    //cout<<"-> module = "<<z<<endl;
-    
+    int superStrip = strip/sstripSize;
+    int z = (module*2)+seg;
     if(layerID>=5 && layerID<=7)
       z = z/(32*INNER_LAYER_SEG_DIVIDE);
     else if (layerID>10 && phi<=8)
@@ -170,60 +157,7 @@ void CMSPatternLayer::computeSuperstrip(short layerID, short module, short phi, 
     else
       z = z/OUTER_LAYER_SEG_DIVIDE;
 
-    /****************/
-    if(module%2!=0){
-      module--;
-    
-      switch(layerID){
-      case 5:{
-	strip = (1.026*strip)-13;
-      }break;
-      case 6:{
-	strip = (1.017*strip)-8;
-      }break;
-      case 7:{
-	strip = (0.988*strip)+7;
-      }break;
-      case 8:{
-	strip = (1.009*strip)-5;
-      }break;
-      case 9:{
-	strip = (1.006*strip)-4;
-      }break;
-      case 10:{
-	strip = (1.006*strip)-3;
-      }break;
-      }
-      oss.clear();
-      oss.str("");
-      oss<<layerID<<setw(2)<<phi<<module;
-      
-      try{
-	phi_lut.at(oss.str());
-      }
-      catch (const std::out_of_range& oor) {
-	module+=2;
-	oss.clear();
-	oss.str("");
-	oss<<layerID<<setw(2)<<phi<<module;
-      }
-    }
-    /***************/
-
-    int delta_phi = phi_lut.at(oss.str());
-    //cout<<"phi_lut["<<oss.str()<<") = "<<delta_phi<<endl;
-
-    int superStrip = delta_phi-strip;
-    //cout<<"-> Superstrip = "<<superStrip<<endl;
-    //cout<<"utilisation de "<<sstripSize<<" strips par superstrip"<<endl;
-    superStrip = superStrip/sstripSize;
-    //cout<<"  -> superstrip apres resolution = "<<superStrip<<endl;
-    
-    //z=0;
-    //  if(layerID>7 && layerID<=10)
-    //cout<<"  -> module apres resolution = "<<z<<endl;
-    
-    setValues(z, 0, superStrip, 0);
+    setValues(z,phi, superStrip, 0);
 }
 
 short CMSPatternLayer::getModule(){
@@ -574,15 +508,6 @@ int CMSPatternLayer::getNbStripsInSegment(){
 
 int CMSPatternLayer::getSegmentCode(int layerID, int ladderID, int segmentID){
   return segmentID;
-  /*
-  if(layerID>7 && layerID<11)
-    return segmentID;
-  if(layerID>=5 && layerID<=7)
-    return segmentID/16;
-  if(ladderID<=8)
-    return segmentID/16;
-  return segmentID;
-  */
 }
 
 

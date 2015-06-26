@@ -13,12 +13,17 @@ PatternFinder::PatternFinder(int at, SectorTree* st, string f, string of){
 
   map< int, vector<int> > detector_config = Sector::readConfig("detector.cfg");
 
-  //We add the layers corresponding to the sectors structure
+  //We add the layers corresponding to the sector structure
   vector<Sector*> sector_list = sectors->getAllSectors();
   if(sector_list.size()>0){
     for(int i=0;i<sector_list[0]->getNbLayers();i++){
       int layerID = sector_list[0]->getLayerID(i);
-      tracker.addLayer(layerID,1,1,32,sector_list[0]->getNbLadders(layerID)*1024,sectors->getSuperStripSize(layerID));
+      if(detector_config.size()>0){
+	if(detector_config.find(layerID)!=detector_config.end())
+	  tracker.addLayer(detector_config[layerID][0],detector_config[layerID][1],1, detector_config[layerID][2]*2, detector_config[layerID][3], sectors->getSuperStripSize(layerID));
+	else
+	  cout<<"WARNING : Layer "<<layerID<<" is used in the sector definition of the bank but is missing in the configuration of the virtual detector"<<endl;
+      }
     }
   }
 
