@@ -148,7 +148,7 @@ void Pattern::unlink(){
   nb_strips = NULL;
 }
 
-void Pattern::link(Detector& d, const vector< vector<int> >& sec, const vector<map<int, vector<int> > >& modules){
+void Pattern::link(Detector& d){
   if(strips!=NULL){// already linked
     unlink();
   }
@@ -156,7 +156,7 @@ void Pattern::link(Detector& d, const vector< vector<int> >& sec, const vector<m
   nb_strips=new char[nb_layer];
   strips = new SuperStrip**[nb_layer];
   for(int i=0;i<nb_layer;i++){
-    vector<SuperStrip*> tmp_strips = layer_strips[i]->getSuperStrip(i, sec[i], modules[i], d);
+    vector<SuperStrip*> tmp_strips = layer_strips[i]->getSuperStrip(i, d);
     nb_strips[i] = tmp_strips.size();
     strips[i] = new SuperStrip*[nb_strips[i]];
     for(unsigned int j=0;j<tmp_strips.size();j++){

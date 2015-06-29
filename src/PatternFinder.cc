@@ -27,6 +27,8 @@ PatternFinder::PatternFinder(int at, SectorTree* st, string f, string of){
     }
   }
 
+  tracker.setSectorMaps(sector_list[0]->getLadderCodeMap(),sector_list[0]->getModuleCodeMap());
+
   //Link the patterns with the tracker representation
   cout<<"linking..."<<endl;
   sectors->link(tracker);
@@ -66,7 +68,7 @@ PatternFinder::PatternFinder(int at, SectorTree* st, string f, string of, patter
        cout<<"error! "<<cudaGetErrorString(cudaGetLastError())<<endl;
 
     if(cudaSuccess !=cudaMemcpy(d_parameters->nbPatterns,&nb_patterns, sizeof(int), cudaMemcpyHostToDevice))
-       cout<<"error! "<<cudaGetErrorString(cudaGetLastError())<<endl;
+      cout<<"error! "<<cudaGetErrorString(cudaGetLastError())<<endl;
   }
 
 }

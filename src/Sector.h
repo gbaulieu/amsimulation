@@ -37,6 +37,12 @@ class Sector{
   int officialID;
   void getRecKeys(vector< vector<int> > &v, int level, string temp, vector<string> &res);
 
+  static map<string,int> toLadderCode;
+  static map<string,int> toModuleCode;
+
+  void buildLadderCodeMap();
+  void buildModuleCodeMap();
+
   friend class boost::serialization::access;
   
   template<class Archive> void save(Archive & ar, const unsigned int version) const{
@@ -301,6 +307,19 @@ class Sector{
      \brief Update the Phi Rotation value of the current fitter
    **/
   void updateFitterPhiRotation();
+
+  /**
+     \brief Get a map allowing the conversion from global ladder ID to sector numbering
+     \return A map between layer ID + ladder ID and the local ladder numbering (map[0515]=2 -> id of ladder 15 on layer 5 is 2)
+   **/
+  map<string,int> getLadderCodeMap();
+
+  /**
+     \brief Get a map allowing the conversion from global module ID to sector numbering
+     \return A map between layer ID + ladder ID + module ID and the local module numbering (map[051521]=2 -> id of module 21 on ladder 15, layer 5 is 2)
+   **/
+  map<string,int> getModuleCodeMap();
+
 
   static map< int, vector<int> > readConfig(string name);
 };

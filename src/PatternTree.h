@@ -59,10 +59,8 @@ class PatternTree{
   /**
      \brief Link all patterns to the detector structure
      \param d The detector
-     \param sec The ladders in the sector (one vector per layer)
-     \param modules The modules in the sector (one vector per ladder)
   **/
-  void link(Detector& d, const vector< vector<int> >& sec, const vector<map<int, vector<int> > >& modules);
+  void link(Detector& d);
 #ifdef USE_CUDA
   /**
      \brief Link all patterns to the detector structure

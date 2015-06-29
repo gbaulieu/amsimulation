@@ -30,7 +30,7 @@ bool CMSPatternLayer::isFake(){
   return (getPhi()==15);
 }
 
-vector<SuperStrip*> CMSPatternLayer::getSuperStrip(int l, const vector<int>& ladd, const map<int, vector<int> >& modules, Detector& d){
+vector<SuperStrip*> CMSPatternLayer::getSuperStrip(int l, Detector& d){
   int nb_dc = getDCBitsNumber();
   vector<SuperStrip*> v;
 
@@ -51,12 +51,9 @@ vector<SuperStrip*> CMSPatternLayer::getSuperStrip(int l, const vector<int>& lad
   else{
     Layer* la = d.getLayerFromAbsolutePosition(l);
     if(la!=NULL){
-      int ladderID = ladd[getPhi()];//getPhi() is the position in the sector;ladd[getPhi()] gives the ID of the ladder
-      Ladder* patternLadder = la->getLadder(ladderID);
+      Ladder* patternLadder = la->getLadder(getPhi());
       if(patternLadder!=NULL){
-	map<int, vector<int> >::const_iterator iterator = modules.find(ladderID); // get the vector of module IDs for this ladder
-	int moduleID = iterator->second[getModule()];// get the module ID from its position
-	Module* patternModule = patternLadder->getModule(moduleID);
+	Module* patternModule = patternLadder->getModule(0);
 	if(patternModule!=NULL){
 	  Segment* patternSegment = patternModule->getSegment(getModule());
 	  if(patternSegment!=NULL){
@@ -87,7 +84,7 @@ vector<SuperStrip*> CMSPatternLayer::getSuperStrip(int l, const vector<int>& lad
 	cout<<"cannot find ladder 0"<<endl;
       }
     }
-    cout<<"Error : can not link layer "<<l<<" ladder "<<ladd[0]<<" module "<<getModule()<<" segment "<<getSegment()<<" strip "<<getStrip()<<endl;
+    cout<<"Error : can not link layer "<<l<<endl;
   }
   return v;
 }

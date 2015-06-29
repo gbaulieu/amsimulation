@@ -163,15 +163,15 @@ void PatternTree::computeAdaptativePatterns(vector<int> r){
   }
 }
 
-void PatternTree::link(Detector& d, const vector< vector<int> >& sec, const vector<map<int, vector<int> > >& modules){
+void PatternTree::link(Detector& d){
   if(patterns.size()!=0){
     for(map<string, PatternTrunk*>::iterator itr = patterns.begin(); itr != patterns.end(); ++itr){
-      itr->second->link(d,sec, modules);
+      itr->second->link(d);
     }
   }
   else{
     for(vector<PatternTrunk*>::iterator itr = v_patterns.begin(); itr != v_patterns.end(); ++itr){
-      (*itr)->link(d,sec, modules);
+      (*itr)->link(d);
     }
   }
 }

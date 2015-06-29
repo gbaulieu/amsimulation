@@ -57,6 +57,7 @@ class PatternFinder{
   **/
   PatternFinder(int at, SectorTree* st, string f, string of, patternBank* p, deviceDetector* d, deviceParameters* dp);
 
+
   /**
      \brief Get active patterns from list of hits (public for CMSSW).
   **/

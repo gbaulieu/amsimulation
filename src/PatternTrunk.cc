@@ -71,8 +71,8 @@ int PatternTrunk::getFDPatternNumber(){
   return fullDefPatterns.size();
 }
 
-void PatternTrunk::link(Detector& d, const vector< vector<int> >& sec, const vector<map<int, vector<int> > >& modules){
-  lowDefPattern->link(d, sec, modules);
+void PatternTrunk::link(Detector& d){
+  lowDefPattern->link(d);
 }
 
 #ifdef USE_CUDA

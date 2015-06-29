@@ -83,10 +83,8 @@ class PatternTrunk{
   /**
      \brief Link the low definition patterns to the detector structure
      \param d The detector
-     \param sec The ladders in the sector
-     \param modules The modules in the sector (one vector per ladder)
   **/  
-  void link(Detector& d, const vector< vector<int> >& sec, const vector<map<int, vector<int> > >& modules);
+  void link(Detector& d);
 
 #ifdef USE_CUDA
  /**

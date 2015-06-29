@@ -83,7 +83,7 @@ class CMSPatternLayer : public PatternLayer{
 
   CMSPatternLayer();
   CMSPatternLayer* clone();
-  vector<SuperStrip*> getSuperStrip(int l, const vector<int>& ladd, const map<int, vector<int> >& modules, Detector& d);
+  vector<SuperStrip*> getSuperStrip(int l, Detector& d);
   void getSuperStripCuda(int l, const vector<int>& ladd, const map<int, vector<int> >& modules, int layerID, unsigned int* v);
   
   /**

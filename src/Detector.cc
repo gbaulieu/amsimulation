@@ -1,4 +1,5 @@
 #include "Detector.h"
+
 #include "CMSPatternLayer.h"
 
 Detector::Detector(){
@@ -14,6 +15,11 @@ void Detector::addLayer(int lNum, int nbLad, int nbMod, int nbSeg, int segmentSi
   layers.push_back(l);
 }
 
+void Detector::setSectorMaps(map<string,int> lm, map<string,int> mm){
+  ladderMap = lm;
+  moduleMap = mm;
+}
+
 Detector::~Detector(){
   if(dump!=NULL)
     delete dump;
@@ -22,6 +28,8 @@ Detector::~Detector(){
   }
   layers.clear();
   layerNumber.clear();
+  ladderMap.clear();
+  moduleMap.clear();
 }
 
 int Detector::getLayerPosition(int pos){
@@ -59,8 +67,17 @@ void Detector::receiveHit(const Hit& h){
     if(la!=NULL){
       try{
 	CMSPatternLayer pat;
-	pat.computeSuperstrip(h.getLayer(), h.getModule(), h.getLadder(), h.getStripNumber(), h.getSegment(), superStripSizes[l]);
-	SuperStrip* s = la->getLadder(pat.getPhi())->getModule(pat.getSegment())->getSegment(pat.getModule())->getSuperStripFromIndex(pat.getStrip());
+	
+	ostringstream oss;
+	oss<<std::setfill('0');
+	oss<<setw(2)<<(int)h.getLayer();
+	oss<<setw(2)<<(int)h.getLadder();
+	string lad = oss.str();
+	oss<<setw(2)<<(int)h.getModule();
+
+	pat.computeSuperstrip(h.getLayer(), moduleMap[oss.str()], ladderMap[lad], h.getStripNumber(), h.getSegment(), superStripSizes[l]);
+	SuperStrip* s = la->getLadder(pat.getPhi())->getModule(0)->getSegment(pat.getModule())->getSuperStripFromIndex(pat.getStrip());
+
 	if(s==NULL)
 	  cout<<"ERROR : Cannot find superStrip corresponding to the following hit : "<<h<<endl;
 	else
