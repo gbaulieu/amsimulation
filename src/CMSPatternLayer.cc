@@ -1,13 +1,13 @@
 #include "CMSPatternLayer.h"
 
-short CMSPatternLayer::MOD_START_BIT = 11;
+short CMSPatternLayer::MOD_START_BIT = 12;
 short CMSPatternLayer::PHI_START_BIT = 7;
 short CMSPatternLayer::STRIP_START_BIT = 0;
-short CMSPatternLayer::SEG_START_BIT = 0;
-short CMSPatternLayer::MOD_MASK = 0x1F;
+short CMSPatternLayer::SEG_START_BIT = 11;
+short CMSPatternLayer::MOD_MASK = 0xF;
 short CMSPatternLayer::PHI_MASK = 0xF;
 short CMSPatternLayer::STRIP_MASK = 0x7F;
-short CMSPatternLayer::SEG_MASK = 0x0;
+short CMSPatternLayer::SEG_MASK = 0x1;
 short CMSPatternLayer::OUTER_LAYER_SEG_DIVIDE = 2;
 short CMSPatternLayer::INNER_LAYER_SEG_DIVIDE = 2;
 
@@ -53,9 +53,9 @@ vector<SuperStrip*> CMSPatternLayer::getSuperStrip(int l, Detector& d){
     if(la!=NULL){
       Ladder* patternLadder = la->getLadder(getPhi());
       if(patternLadder!=NULL){
-	Module* patternModule = patternLadder->getModule(0);
+	Module* patternModule = patternLadder->getModule(la->isBarrel()?0:getModule());
 	if(patternModule!=NULL){
-	  Segment* patternSegment = patternModule->getSegment(getModule());
+	  Segment* patternSegment = patternModule->getSegment(la->isBarrel()?getModule()*2+getSegment():getSegment());
 	  if(patternSegment!=NULL){
 	    int base_index = getStripCode()<<nb_dc;
 	    if(nb_dc>0){
@@ -154,17 +154,22 @@ void CMSPatternLayer::computeSuperstrip(short layerID, short module, short phi, 
     if((layerID>=5 && layerID<=7) || (layerID>10 && phi<=8))
       segment = segment/16;
 
-    // mix modules and segments
-    // P/S modules are devided by 2 to get the same granularity as S/S modules
-    int z = (module*2)+segment;
-    if(layerID>=5 && layerID<=7)
-      z = z/(2*INNER_LAYER_SEG_DIVIDE);
-    else if (layerID>10 && phi<=8)
-      z = z/(2*INNER_LAYER_SEG_DIVIDE);
-    else
-      z = z/OUTER_LAYER_SEG_DIVIDE;
-
-    setValues(z,phi, superStrip, 0);
+    if(layerID<11){ //barrel
+      // mix modules and segments
+      int z = (module*2)+(1-segment);
+      // P/S modules are devided by 2 to get the same granularity as S/S modules
+      if(layerID>=5 && layerID<=7)
+	z = z/(2*INNER_LAYER_SEG_DIVIDE);
+      else if (layerID>10 && phi<=8)
+	z = z/(2*INNER_LAYER_SEG_DIVIDE);
+      else
+	z = z/OUTER_LAYER_SEG_DIVIDE;
+      
+      setValues(z/2,phi, superStrip, z%2);//store 4 bits on module and 1 bit on segment
+    }
+    else{//endcap
+      setValues(module,phi, superStrip, segment);
+    }
 }
 
 short CMSPatternLayer::getModule(){
@@ -269,18 +274,18 @@ string CMSPatternLayer::toAM05Format(){
     nb_dc_bits=used_dc_bits;
 
   //Default organization of bits (0 to 2 DC bits used)
-  short AM05_MOD_START_BIT = 13;
+  short AM05_MOD_START_BIT = 14;
   short AM05_PHI_START_BIT = 9;
-  short AM05_SEG_START_BIT = 8;
+  short AM05_SEG_START_BIT = 13;
   short AM05_STRIP_START_BIT = 4;
   short AM05_STRIP_DC0_BIT = 2;
   short AM05_STRIP_DC1_BIT = 0;
   short AM05_STRIP_DC2_BIT = 0;
 
-  short AM05_MOD_MASK = 0x1F;
+  short AM05_MOD_MASK = 0xF;
   short AM05_PHI_MASK = 0xF;
   short AM05_SEG_MASK = 0x1;
-  short AM05_STRIP_MASK = 0xF;//4 bits + 2 DC bits
+  short AM05_STRIP_MASK = 0x1F;//5 bits + 2 DC bits
   short AM05_STRIP_DC0_MASK = 0x3;
   short AM05_STRIP_DC1_MASK = 0x3;
   short AM05_STRIP_DC2_MASK = 0;
@@ -319,7 +324,7 @@ string CMSPatternLayer::toAM05Format(){
       dcbit1_val=3;//11
     }
 
-    //5 bits for Z + 4 bits for ladder + 1 bit for seg + 4 bits for sstrip + 2 bits for sstrips DC bit 0 + 2 bits for sstrips DC bit 1 = 18 bits
+    //4 bits for Z + 1 bit for seg + 4 bits for ladder + 5 bits for sstrip + 2 bits for sstrips DC bit 0 + 2 bits for sstrips DC bit 1 = 18 bits
     am_format |= (z&AM05_MOD_MASK)<<AM05_MOD_START_BIT |
       (ladder&AM05_PHI_MASK)<<AM05_PHI_START_BIT |
       (seg&AM05_SEG_MASK)<<AM05_SEG_START_BIT |
@@ -358,7 +363,7 @@ string CMSPatternLayer::toAM05Format(){
       dcbit1_val=3;//11
     }
 
-    //5 bits for Z + 4 bits for ladder + 1 bit for seg + 4 bits for sstrip + 2 bits for sstrips DC bit 0 + 2 bits for sstrips DC bit 1 = 18 bits
+    //4 bits for Z + 1 bit for seg + 4 bits for ladder + 5 bits for sstrip + 2 bits for sstrips DC bit 0 + 2 bits for sstrips DC bit 1 = 18 bits
     am_format |= (z&AM05_MOD_MASK)<<AM05_MOD_START_BIT |
       (ladder&AM05_PHI_MASK)<<AM05_PHI_START_BIT |
       (seg&AM05_SEG_MASK)<<AM05_SEG_START_BIT |
@@ -396,7 +401,7 @@ string CMSPatternLayer::toAM05Format(){
       dcbit1_val=3;//11
     }    
 
-    //5 bits for Z + 4 bits for ladder + 1 bit for seg + 4 bits for sstrip + 2 bits for sstrips DC bit 0 + 2 bits for sstrips DC bit 1 = 18 bits
+    //4 bits for Z + 1 bit for seg + 4 bits for ladder + 5 bits for sstrip + 2 bits for sstrips DC bit 0 + 2 bits for sstrips DC bit 1 = 18 bits
     am_format |= (z&AM05_MOD_MASK)<<AM05_MOD_START_BIT |
       (ladder&AM05_PHI_MASK)<<AM05_PHI_START_BIT |
       (seg&AM05_SEG_MASK)<<AM05_SEG_START_BIT |
@@ -406,18 +411,18 @@ string CMSPatternLayer::toAM05Format(){
   }
   else if(used_dc_bits==3){
 
-    AM05_MOD_START_BIT = 14;
+    AM05_MOD_START_BIT = 15;
     AM05_PHI_START_BIT = 10;
-    AM05_SEG_START_BIT = 9;
+    AM05_SEG_START_BIT = 14;
     AM05_STRIP_START_BIT = 6;
     AM05_STRIP_DC0_BIT = 4;
     AM05_STRIP_DC1_BIT = 2;
     AM05_STRIP_DC2_BIT = 0;
     
-    AM05_MOD_MASK = 0xF;
+    AM05_MOD_MASK = 0x7;
     AM05_PHI_MASK = 0xF;
     AM05_SEG_MASK = 0x1;
-    AM05_STRIP_MASK = 0x7;//3 bits + 3 DC bits
+    AM05_STRIP_MASK = 0xF;//4 bits + 3 DC bits
     AM05_STRIP_DC0_MASK = 0x3;
     AM05_STRIP_DC1_MASK = 0x3;
     AM05_STRIP_DC2_MASK = 0x3;
@@ -454,9 +459,9 @@ string CMSPatternLayer::toAM05Format(){
       break;
     }
     
-    //we are using 4 bits for the Z value so it must be below 16 (should be ok with official trigger towers)
-    if(z>15){
-      cout<<"The module value is too high ("<<z<<">15) : pattern can not be stored in an AM05 chip"<<endl;
+    //we are using 3 bits for the Z value so it must be below 8
+    if(z>7){
+      cout<<"The module value is too high ("<<z<<">7) : pattern can not be stored in an AM05 chip with this DC bit configuration."<<endl;
       exit(-1);
     }
 
@@ -467,7 +472,7 @@ string CMSPatternLayer::toAM05Format(){
       dcbit2_val=3;//11
     }
 
-    //4 bits for Z + 4 bits for ladder + 1 bit for seg + 3 bits for sstrip + 2 bits for sstrips DC bit 0 + 2 bits for sstrips DC bit 1 + 2 bits for sstrips DC bit 2 = 18 bits
+    //3 bits for Z + 1 bit for seg + 4 bits for ladder + 4 bits for sstrip + 2 bits for sstrips DC bit 0 + 2 bits for sstrips DC bit 1 + 2 bits for sstrips DC bit 2 = 18 bits
     am_format |= (z&AM05_MOD_MASK)<<AM05_MOD_START_BIT |
       (ladder&AM05_PHI_MASK)<<AM05_PHI_START_BIT |
       (seg&AM05_SEG_MASK)<<AM05_SEG_START_BIT |
@@ -477,7 +482,7 @@ string CMSPatternLayer::toAM05Format(){
       (dcbit2_val&AM05_STRIP_DC2_MASK)<<AM05_STRIP_DC2_BIT;
   }
   ostringstream oss;
-  oss<<am_format<<" "<<nb_dc_bits;
+  oss<<hex<<"0x"<<std::setfill ('0') << std::setw (5)<<am_format<<" "<<nb_dc_bits;
   return oss.str();
 }
 

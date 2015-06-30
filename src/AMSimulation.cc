@@ -1405,44 +1405,50 @@ int main(int av, char** ac){
 	}
       }
 
+      int maxDC=-1;      
+      int nbDC = 0;
+      for(unsigned int j=0;j<patterns.size();j++){
+	for(int k=0;k<patterns[j]->getNbLayers();k++){
+	  PatternLayer* pl = patterns[j]->getLayerStrip(k);
+	  nbDC = pl->getDCBitsNumber();
+	  if(maxDC<nbDC)
+	    maxDC=nbDC;
+	}
+	if(maxDC==3)
+	  break;
+      }
+      
       if(vm.count("nbActiveLayers"))
 	expected_active_layers = vm["nbActiveLayers"].as<int>(); // we only want patterns with this number of active layers (ie layers without fake superstrips)
-
+      
       cout<<"** Bank of patterns formatted for AM05 chip. Patterns are displayed with 1 line per layer (from innermost to outermost layer) and separated with an empty line."<<endl;
-      cout<<"** Each line contains the decimal representation of the 18 bits value to store in the AM chip followed by the number of DC bits configured on that layer."<<endl;
-      cout<<"** The format of the 16 bits superstrips to send to the AM chip is (all positions are relative to the trigger tower): "<<endl;
-      int total_nb_bits = PatternLayer::getSizeFromMask(CMSPatternLayer::MOD_MASK)+
-	PatternLayer::getSizeFromMask(CMSPatternLayer::PHI_MASK)+
-	PatternLayer::getSizeFromMask(CMSPatternLayer::SEG_MASK)+
-	PatternLayer::getSizeFromMask(CMSPatternLayer::STRIP_MASK);
-
-      bool overflow = false;
-      if(total_nb_bits+patterns[0]->getLayerStrip(0)->getDCBitsNumber()>18){//format+DC bit too large
-	if(PatternLayer::getSizeFromMask(CMSPatternLayer::MOD_MASK)==5){//can we take of a module bit?
-	  overflow=true;
-	  cout<<"** \t1 bit set at 0"<<endl;
-	  cout<<"** \t4 bits for the position of the module on the ladder"<<endl;
-	}
-	else{//not enough room...
-	  cout<<"** Your format can not fit in the 18 bits of the AM05 chip!!! ("<<total_nb_bits+patterns[0]->getLayerStrip(0)->getDCBitsNumber()<<" bits needed)"<<endl;
-	}
+      cout<<"** Each line contains the hexadecimal representation of the 18 bits value to store in the AM chip followed by the number of DC bits configured on that layer."<<endl;
+      cout<<"**"<<endl;
+      cout<<"** On endcap disks, the format of the 16 bits superstrips to send to the AM chip is (all positions are relative to the trigger tower): "<<endl;
+      cout<<"** \t4 bits for the position of the module on the ladder"<<endl;
+      cout<<"** \t1 bit for the position of the segment on the module. (initial value divided by 16 on P/S modules)"<<endl;
+      cout<<"** \t4 bits for the position of the ladder on the layer."<<endl;
+      cout<<"** \t7 bits for the position of the superstrip on the segment. (stub's strip index divided by the superstrip size (see below) ENCODED IN GRAY CODE)"<<endl;
+      cout<<"**"<<endl;
+      cout<<"** On inner barrel layers (5,6,7), the format of the 16 bits superstrips to send to the AM chip is (all positions are relative to the trigger tower): "<<endl;
+      if(maxDC==3){
+	cout<<"** \t1 bit at 0"<<endl;
+	cout<<"** \t4 bits for the Z position : (module position*2+(1-segment/16))/"<<2*CMSPatternLayer::INNER_LAYER_SEG_DIVIDE<<endl;
       }
-      else{//we have enough room
-	if(!overflow){//module is not already treated
-	  cout<<"** \t"<<PatternLayer::getSizeFromMask(CMSPatternLayer::MOD_MASK)<<" bits for the position of the module on the ladder"<<endl;
-	}
-	cout<<"** \t"<<PatternLayer::getSizeFromMask(CMSPatternLayer::PHI_MASK)<<" bits for the position of the ladder on the layer"<<endl;
-	cout<<"** \t"<<PatternLayer::getSizeFromMask(CMSPatternLayer::SEG_MASK)<<" bit for the position of the segment on the module";
-	if(CMSPatternLayer::INNER_LAYER_SEG_DIVIDE==2 && CMSPatternLayer::OUTER_LAYER_SEG_DIVIDE==2) 
-	  cout<<" (forced to 0 on barrel layers)"<<endl;
-	else if(CMSPatternLayer::INNER_LAYER_SEG_DIVIDE==2){
-	  cout<<" (forced to 0 on the 3 innermost barrel layers)"<<endl;
-	}
-	else if(CMSPatternLayer::OUTER_LAYER_SEG_DIVIDE==2){
-	  cout<<" (forced to 0 on the 3 outermost barrel layers)"<<endl;
-	}
-	cout<<"** \t"<<PatternLayer::getSizeFromMask(CMSPatternLayer::STRIP_MASK)<<" bits for the position of the superstrip on the segment (stub's strip index divided by the superstrip size (see below) ENCODED IN GRAY CODE)"<<endl;
+      else
+	cout<<"** \t5 bits for the Z position : (module position*2+(1-segment/16))/"<<2*CMSPatternLayer::INNER_LAYER_SEG_DIVIDE<<endl;
+      cout<<"** \t4 bits for the position of the ladder on the layer."<<endl;
+      cout<<"** \t7 bits for the position of the superstrip on the segment. (stub's strip index divided by the superstrip size (see below) ENCODED IN GRAY CODE)"<<endl;
+      cout<<"**"<<endl;
+      cout<<"** On outer barrel layers (8,9,10), the format of the 16 bits superstrips to send to the AM chip is (all positions are relative to the trigger tower): "<<endl;
+      if(maxDC==3){
+	cout<<"** \t1 bit at 0"<<endl;
+	cout<<"** \t4 bits for the Z position : (module position*2+(1-segment))/"<<CMSPatternLayer::OUTER_LAYER_SEG_DIVIDE<<endl;
       }
+      else
+	cout<<"** \t5 bits for the Z position : (module position*2+(1-segment))/"<<CMSPatternLayer::OUTER_LAYER_SEG_DIVIDE<<endl;
+      cout<<"** \t4 bits for the position of the ladder on the layer."<<endl;
+      cout<<"** \t7 bits for the position of the superstrip on the segment. (stub's strip index divided by the superstrip size (see below) ENCODED IN GRAY CODE)"<<endl;
       cout<<"**"<<endl;
       while(true){
 	cout<<"** The 8 input buses are used for the following layers (CMS IDs - superstrips size between parenthesis) : ";
@@ -1490,7 +1496,7 @@ int main(int av, char** ac){
 	  }
 	  //unused layers set to 15 (2 DC with "cannot be activated" value)
 	  for(int k=p->getNbLayers();k<8;k++){
-	    cout<<"15 2"<<endl;
+	    cout<<hex<<"0x"<<std::setfill ('0') << std::setw (5)<<15<<" "<<2<<endl;
 	  }
 	  cout<<endl;
 	}

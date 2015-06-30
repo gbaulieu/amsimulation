@@ -40,8 +40,9 @@ class Detector{
      \param nbSeg Number of segments for each module
      \param segmentSize Number of strips in each segment
      \param sstripSize Size of a superStrip (number of strips)
+     \param barrel True if it's a barrel layer
   **/
-  void addLayer(int lNum, int nbLad, int nbMod, int nbSeg, int segmentSize, int sstripSize);
+  void addLayer(int lNum, int nbLad, int nbMod, int nbSeg, int segmentSize, int sstripSize, bool barrel);
   /**
      \brief Destructor
      Delete all layers.

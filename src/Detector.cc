@@ -6,10 +6,10 @@ Detector::Detector(){
   dump=NULL;
 }
 
-void Detector::addLayer(int lNum, int nbLad, int nbMod, int nbSeg, int segmentSize, int sstripSize){
+void Detector::addLayer(int lNum, int nbLad, int nbMod, int nbSeg, int segmentSize, int sstripSize, bool barrel){
   if(dump==NULL)
       dump = new SuperStrip(sstripSize);
-  Layer* l = new Layer(nbLad, nbMod, nbSeg, segmentSize, sstripSize);
+  Layer* l = new Layer(nbLad, nbMod, nbSeg, segmentSize, sstripSize, barrel);
   layerNumber.push_back(lNum);
   superStripSizes.push_back(sstripSize);
   layers.push_back(l);
@@ -76,7 +76,7 @@ void Detector::receiveHit(const Hit& h){
 	oss<<setw(2)<<(int)h.getModule();
 
 	pat.computeSuperstrip(h.getLayer(), moduleMap[oss.str()], ladderMap[lad], h.getStripNumber(), h.getSegment(), superStripSizes[l]);
-	SuperStrip* s = la->getLadder(pat.getPhi())->getModule(0)->getSegment(pat.getModule())->getSuperStripFromIndex(pat.getStrip());
+	SuperStrip* s = la->getLadder(pat.getPhi())->getModule(la->isBarrel()?0:pat.getModule())->getSegment(la->isBarrel()?pat.getModule()*2+pat.getSegment():pat.getSegment())->getSuperStripFromIndex(pat.getStrip());
 
 	if(s==NULL)
 	  cout<<"ERROR : Cannot find superStrip corresponding to the following hit : "<<h<<endl;

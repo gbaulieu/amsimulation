@@ -50,6 +50,10 @@ class CMSPatternLayer : public PatternLayer{
   template<class Archive> void load(Archive & ar, const unsigned int version)
     {
       ar >> boost::serialization::base_object<PatternLayer>(*this);
+      if(version<2){
+	cout<<"This release does not support old PBK files. Please use up-to-date files or switch to an older release."<<endl;
+	exit(-1);
+      }
       if(version<1){
 	//Convert the strip value to gray code
 	char current_val = getStripCode();
@@ -221,5 +225,5 @@ class CMSPatternLayer : public PatternLayer{
   static map<string, int> z_lut;
 
 };
-BOOST_CLASS_VERSION(CMSPatternLayer, 1)
+BOOST_CLASS_VERSION(CMSPatternLayer, 2)
 #endif
