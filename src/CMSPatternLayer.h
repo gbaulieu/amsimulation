@@ -218,12 +218,6 @@ class CMSPatternLayer : public PatternLayer{
   **/
   static map<int, pair<float,float> > getLayerDefInEta();
 
-  static map< string, int > loadPhiLUT(string name);
-  static map< string, int > loadZLUT(string name);
-
-  static map<string, int> phi_lut;
-  static map<string, int> z_lut;
-
 };
 BOOST_CLASS_VERSION(CMSPatternLayer, 2)
 #endif

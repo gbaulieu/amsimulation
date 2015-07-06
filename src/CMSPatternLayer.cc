@@ -11,9 +11,6 @@ short CMSPatternLayer::SEG_MASK = 0x1;
 short CMSPatternLayer::OUTER_LAYER_SEG_DIVIDE = 2;
 short CMSPatternLayer::INNER_LAYER_SEG_DIVIDE = 2;
 
-map<string, int> CMSPatternLayer::phi_lut = loadPhiLUT("lut.txt");
-map<string, int> CMSPatternLayer::z_lut = loadZLUT("lut.txt");
-
 CMSPatternLayer::CMSPatternLayer():PatternLayer(){
 
 }
@@ -604,80 +601,6 @@ map<int, pair<float,float> > CMSPatternLayer::getLayerDefInEta(){
   eta[21]=pair<float,float>(-2.5,-1.49);
   eta[22]=pair<float,float>(-2.5,-1.65);
   return eta;
-}
-
-map< string, int > CMSPatternLayer::loadPhiLUT(string name){
-  string line;
-  ifstream myfile (name.c_str());
-  map< string, int > phi_lut;
-  if (myfile.is_open()){
-    while ( myfile.good() ){
-      getline (myfile,line);
-      if(line.length()>0 && line.find("#")!=0){
-	
-	stringstream ss(line);
-	std::string item;
-	vector<string> items;
-	while (getline(ss, item, '/')) {
-	  std::string::iterator end_pos = std::remove(item.begin(), item.end(), ' ');
-	  item.erase(end_pos, item.end());
-	  items.push_back(item);
-	}
-	if(items.size()==6){
-	  istringstream buffer(items[2]);
-	  istringstream buffer2(items[3]);
-	  int startStrip;
-	  int superStripIndex;
-	  buffer >> startStrip;
-	  buffer2 >> superStripIndex;
-	  phi_lut[items[1]]=startStrip+superStripIndex;
-	}
-      }
-    }
-    myfile.close();
-  }
-  else{
-    cout << "Can not find file "<<name<<" to load the lookup table!"<<endl;
-    exit(-1);
-  }
-  return phi_lut;
-}
-
-map< string, int > CMSPatternLayer::loadZLUT(string name){
-  string line;
-  ifstream myfile (name.c_str());
-  map< string, int > phi_lut;
-  if (myfile.is_open()){
-    while ( myfile.good() ){
-      getline (myfile,line);
-      if(line.length()>0 && line.find("#")!=0){
-	
-	stringstream ss(line);
-	std::string item;
-	vector<string> items;
-	while (getline(ss, item, '/')) {
-	  std::string::iterator end_pos = std::remove(item.begin(), item.end(), ' ');
-	  item.erase(end_pos, item.end());
-	  items.push_back(item);
-	}
-	if(items.size()==6){
-	  istringstream buffer(items[4]);
-	  istringstream buffer2(items[5]);
-	  int startStrip;
-	  int superStripIndex;
-	  buffer >> startStrip;
-	  buffer2 >> superStripIndex;
-	  phi_lut[items[1]]=startStrip+superStripIndex;
-	}
-      }
-    }
-    myfile.close();
-  }
-  else{
-    cout << "Can not find file "<<name<<" to load the lookup table!"<<endl;
-    exit(-1);
-  }
-  return phi_lut;
 }
 
 vector<int> CMSPatternLayer::getHDSuperstrips(){
