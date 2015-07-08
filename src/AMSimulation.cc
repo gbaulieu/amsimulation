@@ -127,16 +127,7 @@ using namespace std;
    ./AMSimulation --findPatterns --inputFile <path to Root File containing events (local or RFIO)> --bankFile <path to your pattern bank file> --outputFile <Root output file> --ss_threshold <minimum number of stubs to activate the pattern> --startEvent <Index of first event to analyse> --stopEvent <Index of last event to analyse>
    \endcode
 
-  The program is using a virtual detector during the search process. The geometry of this detector (layers, ladders, Z modules and strips per segment) is contained in the CMSPatternLayer class but can be overwritten with a detector.cfg file located in the root directory of the program. Here is an example of the syntax :
-  \code
-  #layerID,nb ladders,nb Z modules,nb strips per segment
-  5,16,15,1024
-  6,24,15,1024
-  7,36,15,1024
-  8,48,14,1024
-  9,60,14,1024
-  10,76,14,1024
-  \endcode
+   If you add the option --verbose to the previous command, for each stub in the sector the program will display the corresponding superstrip value (the format is one line per stub, the first value is the layer's ID, the second value is the superstrip value in hexa). 
 
 If you compiled the program using the cuda libraries, you can add the --useGPU flag to use the GPU device to perform the pattern recognition.
 
@@ -834,7 +825,6 @@ int main(int av, char** ac){
     ("testCode", "Dev tests")
     ("analyseBank", "Creates histograms from a pattern bank file (needs --bankFile and --outputFile)")
     ("showBankInfos", "Display some informations about the bank content (needs --bankFile)")
-    ("stubsToSuperstrips", "Display each stub of an event file as a superstrip (used for tests) (needs --inputFile, --bankFile, --startEvent, --stopEvent)")
     ("alterBank", "Creates a new bank from an existing one, the existing bank is not modified (used with --bankFile and --outputFile and --truncate or --minFS and/or --maxFS)")
     ("inputFile", po::value<string>(), "The file to analyse")
     ("secondFile", po::value<string>(), "Second file to merge")
@@ -844,6 +834,7 @@ int main(int av, char** ac){
     ("ss_missingHits", po::value<int>(), "The maximum number of non activated layers to activate a pattern. --ss_threshold is used as a mandatory minimum value.")
     ("startEvent", po::value<int>(), "The first event index")
     ("stopEvent", po::value<int>(), "The last event index")
+    ("verbose", "During pattern recognition, display each stub of an event as a superstrip (format is Layer_ID SUPERSTRIP_IN_HEXA)")
     ("decode", po::value<int>(), "Decode the given super strip")
     ("ss_size", po::value<string>(), "Number of strips in a super strip {16,32,64,128,256,512,1024}. Either one value for all detector or one value per layer")
     ("dc_bits", po::value<string>(), "Number of used DC bits [0-3]. Either one value for all detector or one value per layer")
@@ -1131,34 +1122,6 @@ int main(int av, char** ac){
     p.setIntValue(val);
     cout<<p.toString()<<endl;
   }
-  else if(vm.count("stubsToSuperstrips")) {
-    SectorTree st;
-    cout<<"Loading pattern bank..."<<endl;
-    {
-      std::ifstream ifs(vm["bankFile"].as<string>().c_str());
-      boost::iostreams::filtering_stream<boost::iostreams::input> f;
-      f.push(boost::iostreams::gzip_decompressor());
-      //we try to read a compressed file
-      try { 
-	f.push(ifs);
-	boost::archive::text_iarchive ia(f);
-	ia >> st;
-      }
-      catch (boost::iostreams::gzip_error& e) {
-	if(e.error()==4){//file is not compressed->read it without decompression
-	  std::ifstream new_ifs(vm["bankFile"].as<string>().c_str());
-	  boost::archive::text_iarchive ia(new_ifs);
-	  ia >> st;
-	}
-      }
-    }
-    PatternFinder pf(0, &st,  vm["inputFile"].as<string>().c_str(),  "none");
-    {
-      int start = vm["startEvent"].as<int>();
-      int stop = vm["stopEvent"].as<int>();
-      pf.displayEventsSuperstrips(start, stop);
-    }
-  }
   else if(vm.count("findPatterns")) {
     SectorTree st;
     cout<<"Loading pattern bank..."<<endl;
@@ -1244,6 +1207,9 @@ int main(int av, char** ac){
 
 	if(vm.count("ss_missingHits")){
 	    pf.useMissingHitThreshold(nbMissingHit);
+	}
+	if(vm.count("verbose")){
+	    pf.setVerboseMode(true);
 	}
 	pf.find(start, stop);
 	cout<<"Time used to analyse "<<stop-start+1<<" events : "<<endl;
