@@ -117,7 +117,7 @@ using namespace std;
    \endcode
    will set the value of the ss_size option to 64, whatever is contained in the configuration file. If --ss_size is a unique value it will be used for all layers. If you want to use a different values you have to set a value per layer (same format than --active_layers).
 
-   If you have created 2 banks for the same sector with 2 different PT range (2-10 GeV and 10-50 GeV for example), you can merge the 2 files into a single one using the command :
+   If you have created 2 banks for the same trigger tower with 2 different PT range (2-10 GeV and 10-50 GeV for example), you can merge the 2 files into a single one using the command :
    \code
    ./AMSimulation --MergeBanks --inputFile testPT2-10.pbk --secondFile testPT10-50.pbk --outputFile testPT2-10-50.pbk
    \endcode
@@ -127,12 +127,12 @@ using namespace std;
    ./AMSimulation --findPatterns --inputFile <path to Root File containing events (local or RFIO)> --bankFile <path to your pattern bank file> --outputFile <Root output file> --ss_threshold <minimum number of stubs to activate the pattern> --startEvent <Index of first event to analyse> --stopEvent <Index of last event to analyse>
    \endcode
 
-   If you add the option --verbose to the previous command, for each stub in the sector the program will display the corresponding superstrip value (the format is one line per stub, the first value is the layer's ID, the second value is the superstrip value in hexa). 
+   If you add the option --verbose to the previous command, for each stub in the trigger tower the program will display the stub's informations along with the corresponding superstrip value. The format is one line per stub + one line per superstrip (the first value is the layer's ID, the second value is the superstrip value in hexadecimal). 
 
 If you compiled the program using the cuda libraries, you can add the --useGPU flag to use the GPU device to perform the pattern recognition.
 
    \subsection merge Merging banks
-   If you have created 2 banks for the same sector but with different PT range (for example 2 to 10 GeV and 10 to 100 GeV) you can merge the 2 files into a single one by using the command :   
+   If you have created 2 banks for the same trigger tower but with different PT range (for example 2 to 10 GeV and 10 to 100 GeV) you can merge the 2 files into a single one by using the command :   
    \code
    ./AMSimulation --MergeBanks --inputFile <PBK file of the first bank> --secondFile <PBK file of the second bank> --outputFile  <output PBK file name>
    \endcode
@@ -153,10 +153,10 @@ If you compiled the program using the cuda libraries, you can add the --useGPU f
 
    The values will be displayed using hexadecimal values. If you prefer decimal values, you can use the command :
    \code
-   ./AMSimulation --printBankBinary --bankFile <You patterns bank file>
+   ./AMSimulation --printBankBinary --bankFile <Your patterns bank file>
    \endcode
 
-   It should display one pattern per line, with one value per layer from inner to outer. The interpretation process is the following : if you have '21251 (X1)' you have to convert the decimal value to binary.<br><p>On endcap layers you will have 0101 0 0110 0000011 (X1) : 0101 is the module number 5, 0 is segment 0, 0110 is ladder 6.</p><p>On barrel layers you will have 01010 0110 0000011 (X1) : 01010 is the Z value 10, 0110 is ladder 6.</p><p>0000011 gives you the superstrip position and is encoded using gray code. You have to append the DC bits : 0000011X1 which corresponds to 2 values : 000001101 and 000001111. The decimal values of these gray encoded binary values are 9 and 10 which are the indices of the high resolution superstrips inside the segment.</p>
+   It should display one pattern per line, with one value per layer from inner to outer. The interpretation process is the following : if you have '21251 (X1)' you have to convert the decimal value to binary.<br><p>On endcap layers you will have 0101 0 0110 0000011 (X1) : 0101 is the module number 5, 0 is segment 0, 0110 is ladder 6.</p><p>On barrel layers you will have 01010 0110 0000011 (X1) : 01010 is the Z value 10, 0110 is ladder 6.</p><p>0000011 gives you the superstrip position and is encoded using gray code. You have to append the DC bits : 0000011X1 which corresponds to 2 values : 000001101 and 000001111. The decimal values of these gray encoded binary values are 11 and 8 which are the indices of the high resolution superstrips inside the segment.</p>
 
    You can also display the patterns using a format compatible with AM05 chips : for every pattern you will get one 18 bits value per line corresponding to the value you have to upload in the AM05 chip. DC bits encoding is taken care of. 
    \code
@@ -164,6 +164,16 @@ If you compiled the program using the cuda libraries, you can add the --useGPU f
    \endcode
 
    You can use the --nbActiveLayers option to select the patterns having a specific number of active layers (useful if you want to group patterns by threshold value). In trigger towers using 9 layers, the patterns will be split in 2 groups of 8 layers patterns.
+
+   \subsection lut Getting trigger tower's LookUp Tables
+   If you need to compute the superstrip value corresponding to a stub in a given trigger tower, you will need to convert the global coordinates of the stub (ladder ID and module ID) to local coordinates (positions of the said ladder and module in the trigger tower). The following command will print the mapping between global and local coordinates : 
+   \code
+   ./AMSimulation --printSectorLUT --bankFile=<Your patterns bank file>
+   \endcode
+
+   The section starting with <b>LAYER/LADDER -> LOCAL LADDER</b> gives the mapping for ladders : <i>0506 0</i> means that ladder ID 6 on layer 5 has the local ID 0.<br>
+   The section starting with <b>LAYER/LADDER/MODULE -> LOCAL MODULE</b> gives the mapping for modules : <i>050634 4</i> means that module ID 34 on ladder ID 6 on layer 5 has the local ID 4.<br>
+   
 
    \author Guillaume Baulieu g.baulieu@ipnl.in2p3.fr
  **/
@@ -271,6 +281,28 @@ vector< vector<int> > getRestrictions(const vector<int> &layers){
   }
   return res;
 }
+
+void displaySectorLUT(SectorTree &st){ 
+  vector<Sector*> list = st.getAllSectors();
+  if(list.size()>0){
+    Sector* s = list[0];
+    map<string, int> ladderMap = s->getLadderCodeMap();
+    map<string, int> moduleMap = s->getModuleCodeMap();
+
+    cout<<"LUTs for sector "<<s->getOfficialID()<<endl;
+    cout<<endl;
+    cout<<"LAYER/LADDER -> LOCAL LADDER"<<endl;
+    for(map<string, int>::iterator it = ladderMap.begin(); it != ladderMap.end(); it++) {
+      cout<<it->first<<" "<<it->second<<endl;
+    }
+    cout<<endl;
+    cout<<"LAYER/LADDER/MODULE -> LOCAL MODULE"<<endl;
+    for(map<string, int>::iterator it = moduleMap.begin(); it != moduleMap.end(); it++) {
+      cout<<it->first<<" "<<it->second<<endl;
+    }
+  }
+}
+
 
 void displayInformations(SectorTree &st){ 
   vector<Sector*> list = st.getAllSectors();
@@ -823,6 +855,7 @@ int main(int av, char** ac){
     ("testCode", "Dev tests")
     ("analyseBank", "Creates histograms from a pattern bank file (needs --bankFile and --outputFile)")
     ("showBankInfos", "Display some informations about the bank content (needs --bankFile)")
+    ("printSectorLUT", "Display the mapping between global ladder and module IDs and local to sector IDs for a given bank (needs --bankFile)")
     ("alterBank", "Creates a new bank from an existing one, the existing bank is not modified (used with --bankFile and --outputFile and --truncate or --minFS and/or --maxFS)")
     ("inputFile", po::value<string>(), "The file to analyse")
     ("secondFile", po::value<string>(), "Second file to merge")
@@ -909,6 +942,28 @@ int main(int av, char** ac){
       }
     }
     displayInformations(st);
+  } else if (vm.count("printSectorLUT")) {
+    SectorTree st;
+    cout<<"Loading pattern bank..."<<endl;
+    {
+      std::ifstream ifs(vm["bankFile"].as<string>().c_str());
+      //Decompression
+      boost::iostreams::filtering_stream<boost::iostreams::input> f;
+      f.push(boost::iostreams::gzip_decompressor());
+      try { 
+	f.push(ifs);
+	boost::archive::text_iarchive ia(f);
+	ia >> st;
+      }
+      catch (boost::iostreams::gzip_error& e) {
+	if(e.error()==4){//file is not compressed->read it without decompression
+	  std::ifstream new_ifs(vm["bankFile"].as<string>().c_str());
+	  boost::archive::text_iarchive ia(new_ifs);
+	  ia >> st;
+	}
+      }
+    }
+    displaySectorLUT(st);
   } else if (vm.count("generateBank")) {
     
     vector<int> layers;
