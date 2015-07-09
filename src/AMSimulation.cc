@@ -1437,6 +1437,7 @@ int main(int av, char** ac){
 
 	for(unsigned int j=0;j<patterns.size();j++){
 	  Pattern* p = patterns[j];
+	  cout<<"# "<<*p;
 
 	  int nb_active_layers = p->getNbLayers()-p->getNbFakeSuperstrips();
 	  if(expected_active_layers!=-1 && expected_active_layers!=nb_active_layers) // the pattern does not have the expected number of active layers
@@ -1458,9 +1459,12 @@ int main(int av, char** ac){
 	    PatternLayer* mp = p->getLayerStrip(k);
 	    cout<<((CMSPatternLayer*)mp)->toAM05Format()<<endl;
 	  }
-	  //unused layers set to 15 (2 DC with "cannot be activated" value)
+	  //unused layers set to 0 (2 DC with "don't care" value)
+	  //We want a threshold at 5/6 but we have 8 buses and the threshold can not go below 6
+	  // -> unused layers are set to 0 and will be activated with a superstrip from 0 to 3
+	  // -> the threshold is set to 7 (5 used layers + 2 unused layers forced to active)
 	  for(int k=p->getNbLayers();k<8;k++){
-	    cout<<hex<<"0x"<<std::setfill ('0') << std::setw (5)<<15<<" "<<2<<endl;
+	    cout<<hex<<"0x"<<std::setfill ('0') << std::setw (5)<<0<<" "<<2<<endl;
 	  }
 	  cout<<endl;
 	}
