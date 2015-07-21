@@ -1080,7 +1080,7 @@ int main(int av, char** ac){
       }
       else if(layer_superstrip_size.size()==active_layers.size()){//one size per layer
 	for(unsigned int ln=0;ln<active_layers.size();ln++){
-	  st.setSuperStripSize(layer_superstrip_size[ln],active_layers[ln]);
+	  st.setSuperStripSize(layer_superstrip_size[ln],ln+5);
 	}
       }
       else{

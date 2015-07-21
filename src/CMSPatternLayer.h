@@ -40,6 +40,8 @@ class CMSPatternLayer : public PatternLayer{
   short binaryToGray(short num);
   short grayToBinary(short gray);
 
+  static map<string, int> size_lut;
+
   friend class boost::serialization::access;
   
   template<class Archive> void save(Archive & ar, const unsigned int version) const
@@ -223,6 +225,11 @@ class CMSPatternLayer : public PatternLayer{
   **/
   static map<int, pair<float,float> > getLayerDefInEta();
 
+  static int getSuperstripID(int layerID, int ladderID);
+
+  static map< string, int > loadSStripSizeLUT(string name);
+  
+  static int getSuperstripSize(int layer_id, int ladder_id);
 };
 BOOST_CLASS_VERSION(CMSPatternLayer, 2)
 #endif

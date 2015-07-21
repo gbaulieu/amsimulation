@@ -154,6 +154,7 @@ vector<Sector*> SectorTree::getActivePatternsPerSectorUsingMissingHit(int max_nb
 }
 
 int SectorTree::getSuperStripSize(int layer_id){
+  //cout<<"getSuperStripSize de "<<layer_id<<endl;
   try{
     return superStripSize.at(layer_id);
   }

@@ -23,7 +23,7 @@ PatternFinder::PatternFinder(int at, SectorTree* st, string f, string of){
 	  if(layerID<11)//barrel : 1 module with 2*nb_modules segments
 	    tracker.addLayer(detector_config[layerID][0],detector_config[layerID][1],1, detector_config[layerID][2]*2, detector_config[layerID][3], sectors->getSuperStripSize(layerID), true);
 	  else // endcap
-	    tracker.addLayer(detector_config[layerID][0],detector_config[layerID][1], detector_config[layerID][2],2, detector_config[layerID][3], sectors->getSuperStripSize(layerID), false);
+	    tracker.addLayer(detector_config[layerID][0],detector_config[layerID][1], detector_config[layerID][2],2, detector_config[layerID][3], 8, false);
 	else
 	  cout<<"WARNING : Layer "<<layerID<<" is used in the sector definition of the bank but is missing in the configuration of the virtual detector"<<endl;
       }

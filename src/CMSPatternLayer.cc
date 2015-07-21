@@ -11,6 +11,8 @@ short CMSPatternLayer::SEG_MASK = 0x1;
 short CMSPatternLayer::OUTER_LAYER_SEG_DIVIDE = 2;
 short CMSPatternLayer::INNER_LAYER_SEG_DIVIDE = 2;
 
+map<string, int> CMSPatternLayer::size_lut;
+
 CMSPatternLayer::CMSPatternLayer():PatternLayer(){
 
 }
@@ -137,36 +139,37 @@ void CMSPatternLayer::setValues(short m, short phi, short strip, short seg){
 }
 
 void CMSPatternLayer::computeSuperstrip(short layerID, short module, short phi, short strip, short seg, int sstripSize, bool fake){
-    if(fake){
-      setValues(0, 15, 0, 0);
-      return;
-    }
+  if(fake){
+    setValues(0, 15, 0, 0);
+    return;
+  }
+  
+  int superStrip = strip/sstripSize;
+  int segment = seg;
+  
+  /*
+    On P/S modules segment values are ranging from 0 to 31 -> we only want 0 or 1
+  */
+  if((layerID>=5 && layerID<=7) || (layerID>10 && phi<=8))
+    segment = segment/16;
+  
+  if(layerID<11){ //barrel
+    // mix modules and segments
+    int z = (module*2)+(1-segment);
+    // P/S modules are devided by 2 to get the same granularity as S/S modules
+    if(layerID>=5 && layerID<=7)
+      z = z/(2*INNER_LAYER_SEG_DIVIDE);
+    else if (layerID>10 && phi<=8)
+      z = z/(2*INNER_LAYER_SEG_DIVIDE);
+    else
+      z = z/OUTER_LAYER_SEG_DIVIDE;
     
-    int superStrip = strip/sstripSize;
-    int segment = seg;
-    
-    /*
-      On P/S modules segment values are ranging from 0 to 31 -> we only want 0 or 1
-     */
-    if((layerID>=5 && layerID<=7) || (layerID>10 && phi<=8))
-      segment = segment/16;
-
-    if(layerID<11){ //barrel
-      // mix modules and segments
-      int z = (module*2)+(1-segment);
-      // P/S modules are devided by 2 to get the same granularity as S/S modules
-      if(layerID>=5 && layerID<=7)
-	z = z/(2*INNER_LAYER_SEG_DIVIDE);
-      else if (layerID>10 && phi<=8)
-	z = z/(2*INNER_LAYER_SEG_DIVIDE);
-      else
-	z = z/OUTER_LAYER_SEG_DIVIDE;
-      
-      setValues(z/2,phi, superStrip, z%2);//store 4 bits on module and 1 bit on segment
-    }
-    else{//endcap
-      setValues(module,phi, superStrip, segment);
-    }
+    setValues(z/2,phi, superStrip, z%2);//store 4 bits on module and 1 bit on segment
+  }
+  else{//endcap
+    //segment = 0;
+    setValues(module,phi, superStrip, segment);
+  }
 }
 
 short CMSPatternLayer::getModule(){
@@ -594,4 +597,76 @@ vector<int> CMSPatternLayer::getHDSuperstrips(){
     array.push_back(grayToBinary(base_index));
   }
   return array;
+}
+
+int CMSPatternLayer::getSuperstripID(int layerID, int ladderID){
+  //cout<<"getSuperstripID() with "<<layerID<<" and "<<ladderID<<endl;
+  if(layerID<11)
+    return layerID;
+  else{
+    if(ladderID>=13)
+      return 10;
+    if(ladderID>=11)
+      return 9;
+    if(ladderID>=9)
+      return 8;
+    if(ladderID>=6)
+      return 7;
+    if(ladderID>=3)
+      return 6;
+    return 5;
+  }
+}
+
+map< string, int > CMSPatternLayer::loadSStripSizeLUT(string name){
+  string line;
+  ifstream myfile (name.c_str());
+  map< string, int > size_lut;
+  if (myfile.is_open()){
+    while ( myfile.good() ){
+      getline (myfile,line);
+      if(line.length()>0 && line.find("#")!=0){
+	stringstream ss(line);
+	std::string item;
+	vector<string> items;
+	while (getline(ss, item, ' ')) {
+	  std::string::iterator end_pos = std::remove(item.begin(), item.end(), ' ');
+	  item.erase(end_pos, item.end());
+	  items.push_back(item);
+	}
+	if(items.size()==2){
+	  istringstream buffer2(items[1]);
+	  int size;
+	  buffer2 >> size;
+	  size_lut[items[0]]=size;
+	  cout<<items[0]<<" : "<<size<<endl;
+	}
+      }
+    }
+    myfile.close();
+  }
+  else{
+    cout << "Can not find file "<<name<<" to load the lookup table!"<<endl;
+    exit(-1);
+  }
+  return size_lut;
+}
+
+int CMSPatternLayer::getSuperstripSize(int layer_id, int ladder_id){
+  if(size_lut.size()==0)
+    size_lut = loadSStripSizeLUT("ss_sizes.txt");
+  if(layer_id<11){ // barrel
+    ostringstream oss;
+    oss<<std::setfill('0');
+    oss<<setw(2)<<(int)layer_id;
+    return size_lut[oss.str()];
+  }
+  else{//endcap
+    ostringstream oss;
+    oss<<std::setfill('0');
+    oss<<setw(2)<<(int)layer_id;
+    oss<<setw(2)<<(int)ladder_id;
+    //cout<<oss.str()<<" : "<<size_lut[oss.str()]<<endl;
+    return size_lut[oss.str()];
+  }
 }
