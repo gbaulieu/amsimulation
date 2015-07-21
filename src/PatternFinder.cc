@@ -8,6 +8,8 @@ PatternFinder::PatternFinder(int at, SectorTree* st, string f, string of){
   eventsFilename = f;
   outputFileName = of;
 
+  st->displaySuperstripSizes();
+
   //we don't need the map of patterns, a vector will be enough and uses less memory
   sectors->getAllSectors()[0]->getPatternTree()->switchToVector();
 
@@ -21,7 +23,7 @@ PatternFinder::PatternFinder(int at, SectorTree* st, string f, string of){
       if(detector_config.size()>0){
 	if(detector_config.find(layerID)!=detector_config.end())
 	  if(layerID<11)//barrel : 1 module with 2*nb_modules segments
-	    tracker.addLayer(detector_config[layerID][0],detector_config[layerID][1],1, detector_config[layerID][2]*2, detector_config[layerID][3], sectors->getSuperStripSize(layerID), true);
+	    tracker.addLayer(detector_config[layerID][0],detector_config[layerID][1],1, detector_config[layerID][2]*2, detector_config[layerID][3], SectorTree::getSuperstripSize(layerID), true);
 	  else // endcap
 	    tracker.addLayer(detector_config[layerID][0],detector_config[layerID][1], detector_config[layerID][2],2, detector_config[layerID][3], 8, false);
 	else
