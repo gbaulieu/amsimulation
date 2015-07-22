@@ -871,8 +871,8 @@ int main(int av, char** ac){
     ("decode", po::value<int>(), "Decode the given super strip")
     ("ss_size_file", po::value<string>(), "Name of the file containing the superstrip sizes definition")
     ("dc_bits", po::value<string>(), "Number of used DC bits [0-3]. Either one value for all detector or one value per layer")
-    ("pt_min", po::value<int>(), "Only tracks having a greater PT will be used to generate a pattern")
-    ("pt_max", po::value<int>(), "Only tracks having a smaller PT will be used to generate a pattern")
+    ("pt_min", po::value<float>(), "Only tracks having a greater PT will be used to generate a pattern")
+    ("pt_max", po::value<float>(), "Only tracks having a smaller PT will be used to generate a pattern")
     ("eta_min", po::value<float>(), "Only tracks having a greater ETA will be used to generate a pattern")
     ("eta_max", po::value<float>(), "Only tracks having a smaller ETA will be used to generate a pattern")
     ("maxFakeSStrips", po::value<int>(), "The maximum number of fake superstrips used in a pattern (0=desactivated)")
@@ -994,9 +994,9 @@ int main(int av, char** ac){
       cout<<"Superstrip sizes file : "<<size_file<<endl;
       dcBits=vm["dc_bits"].as<string>();
       cout<<"DC bits numbers : "<<dcBits<<endl;
-      min=vm["pt_min"].as<int>();
+      min=vm["pt_min"].as<float>();
       cout<<"PT min : "<<min<<endl;
-      max=vm["pt_max"].as<int>();
+      max=vm["pt_max"].as<float>();
       cout<<"PT max : "<<max<<endl;
       minEta=vm["eta_min"].as<float>();
       cout<<"ETA min : "<<minEta<<endl;
