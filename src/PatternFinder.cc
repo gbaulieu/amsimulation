@@ -8,8 +8,6 @@ PatternFinder::PatternFinder(int at, SectorTree* st, string f, string of){
   eventsFilename = f;
   outputFileName = of;
 
-  st->displaySuperstripSizes();
-
   //we don't need the map of patterns, a vector will be enough and uses less memory
   sectors->getAllSectors()[0]->getPatternTree()->switchToVector();
 
