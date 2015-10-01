@@ -1468,7 +1468,7 @@ int main(int av, char** ac){
 	    continue;
 	  if(hybrid_sector && !first_pass && layers[j]==biggestBarrelID)
 	    continue;
-	  cout<<layers[j]<<" ("<<st.getSuperstripSize(layers[j])<<") - ";
+	  cout<<layers[j]<<" - ";
 	}
 	for(unsigned int j=layers.size();j<8;j++){
 	  cout<<"Unused - ";
