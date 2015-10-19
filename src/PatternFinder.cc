@@ -1016,7 +1016,7 @@ void PatternFinder::find(int start, int& stop){
   /*************************************************/
 
   /***************** INPUT FILE ****************/
-  TChain* TT = new TChain("L1TrackTrigger");
+  TChain* TT = new TChain("TkStubs");
   TT->Add(eventsFilename.c_str());
   
   int               n_evt;
@@ -1060,25 +1060,25 @@ void PatternFinder::find(int start, int& stop){
   vector<float>         *p_m_stub_z =      &m_stub_z;
 
 
-  TT->SetBranchAddress("evt",            &n_evt);
-  TT->SetBranchAddress("STUB_n",         &m_stub);
-  TT->SetBranchAddress("STUB_layer",     &p_m_stub_layer);
-  TT->SetBranchAddress("STUB_module",    &p_m_stub_module);
-  TT->SetBranchAddress("STUB_ladder",    &p_m_stub_ladder);
-  TT->SetBranchAddress("STUB_seg",       &p_m_stub_seg);
-  TT->SetBranchAddress("STUB_strip",     &p_m_stub_strip);
-  TT->SetBranchAddress("STUB_tp",        &p_m_stub_tp);
-  TT->SetBranchAddress("STUB_X0",        &p_m_stub_x0);
-  TT->SetBranchAddress("STUB_Y0",        &p_m_stub_y0);
-  TT->SetBranchAddress("STUB_Z0",        &p_m_stub_z0);
-  TT->SetBranchAddress("STUB_PHI0",      &p_m_stub_phi0);
-  TT->SetBranchAddress("STUB_etaGEN",    &p_m_stub_etaGEN);
-  TT->SetBranchAddress("STUB_pxGEN",     &p_m_stub_pxGEN);
-  TT->SetBranchAddress("STUB_pyGEN",     &p_m_stub_pyGEN);
-  TT->SetBranchAddress("STUB_deltas",    &p_m_stub_deltas);
-  TT->SetBranchAddress("STUB_x",         &p_m_stub_x);
-  TT->SetBranchAddress("STUB_y",         &p_m_stub_y);
-  TT->SetBranchAddress("STUB_z",         &p_m_stub_z);
+  TT->SetBranchAddress("L1Tkevt",            &n_evt);
+  TT->SetBranchAddress("L1TkSTUB_n",         &m_stub);
+  TT->SetBranchAddress("L1TkSTUB_layer",     &p_m_stub_layer);
+  TT->SetBranchAddress("L1TkSTUB_module",    &p_m_stub_module);
+  TT->SetBranchAddress("L1TkSTUB_ladder",    &p_m_stub_ladder);
+  TT->SetBranchAddress("L1TkSTUB_seg",       &p_m_stub_seg);
+  TT->SetBranchAddress("L1TkSTUB_strip",     &p_m_stub_strip);
+  TT->SetBranchAddress("L1TkSTUB_tp",        &p_m_stub_tp);
+  TT->SetBranchAddress("L1TkSTUB_X0",        &p_m_stub_x0);
+  TT->SetBranchAddress("L1TkSTUB_Y0",        &p_m_stub_y0);
+  TT->SetBranchAddress("L1TkSTUB_Z0",        &p_m_stub_z0);
+  TT->SetBranchAddress("L1TkSTUB_PHI0",      &p_m_stub_phi0);
+  TT->SetBranchAddress("L1TkSTUB_etaGEN",    &p_m_stub_etaGEN);
+  TT->SetBranchAddress("L1TkSTUB_pxGEN",     &p_m_stub_pxGEN);
+  TT->SetBranchAddress("L1TkSTUB_pyGEN",     &p_m_stub_pyGEN);
+  TT->SetBranchAddress("L1TkSTUB_deltas",    &p_m_stub_deltas);
+  TT->SetBranchAddress("L1TkSTUB_x",         &p_m_stub_x);
+  TT->SetBranchAddress("L1TkSTUB_y",         &p_m_stub_y);
+  TT->SetBranchAddress("L1TkSTUB_z",         &p_m_stub_z);
 
   /*******************************************************/
 
@@ -1527,7 +1527,7 @@ void PatternFinder::findCuda(int start, int& stop, deviceStubs* d_stubs){
 
   /***************** INPUT FILE ****************/
 
-  TChain* TT = new TChain("L1TrackTrigger");
+  TChain* TT = new TChain("TkStubs");
   TT->Add(eventsFilename.c_str());
   
   int               n_evt;
@@ -1569,24 +1569,24 @@ void PatternFinder::findCuda(int start, int& stop, deviceStubs* d_stubs){
   vector<float>         *p_m_stub_z =      &m_stub_z;
 
 
-  TT->SetBranchAddress("evt",            &n_evt);
-  TT->SetBranchAddress("STUB_n",         &m_stub);
-  TT->SetBranchAddress("STUB_layer",     &p_m_stub_layer);
-  TT->SetBranchAddress("STUB_module",    &p_m_stub_module);
-  TT->SetBranchAddress("STUB_ladder",    &p_m_stub_ladder);
-  TT->SetBranchAddress("STUB_seg",       &p_m_stub_seg);
-  TT->SetBranchAddress("STUB_strip",     &p_m_stub_strip);
-  TT->SetBranchAddress("STUB_tp",        &p_m_stub_tp);
-  TT->SetBranchAddress("STUB_X0",        &p_m_stub_x0);
-  TT->SetBranchAddress("STUB_Y0",        &p_m_stub_y0);
-  TT->SetBranchAddress("STUB_Z0",        &p_m_stub_z0);
-  TT->SetBranchAddress("STUB_PHI0",      &p_m_stub_phi0);
-  TT->SetBranchAddress("STUB_etaGEN",    &p_m_stub_etaGEN);
-  TT->SetBranchAddress("STUB_pxGEN",     &p_m_stub_pxGEN);
-  TT->SetBranchAddress("STUB_pyGEN",     &p_m_stub_pyGEN);
-  TT->SetBranchAddress("STUB_x",         &p_m_stub_x);
-  TT->SetBranchAddress("STUB_y",         &p_m_stub_y);
-  TT->SetBranchAddress("STUB_z",         &p_m_stub_z);
+  TT->SetBranchAddress("L1Tkevt",            &n_evt);
+  TT->SetBranchAddress("L1TkSTUB_n",         &m_stub);
+  TT->SetBranchAddress("L1TkSTUB_layer",     &p_m_stub_layer);
+  TT->SetBranchAddress("L1TkSTUB_module",    &p_m_stub_module);
+  TT->SetBranchAddress("L1TkSTUB_ladder",    &p_m_stub_ladder);
+  TT->SetBranchAddress("L1TkSTUB_seg",       &p_m_stub_seg);
+  TT->SetBranchAddress("L1TkSTUB_strip",     &p_m_stub_strip);
+  TT->SetBranchAddress("L1TkSTUB_tp",        &p_m_stub_tp);
+  TT->SetBranchAddress("L1TkSTUB_X0",        &p_m_stub_x0);
+  TT->SetBranchAddress("L1TkSTUB_Y0",        &p_m_stub_y0);
+  TT->SetBranchAddress("L1TkSTUB_Z0",        &p_m_stub_z0);
+  TT->SetBranchAddress("L1TkSTUB_PHI0",      &p_m_stub_phi0);
+  TT->SetBranchAddress("L1TkSTUB_etaGEN",    &p_m_stub_etaGEN);
+  TT->SetBranchAddress("L1TkSTUB_pxGEN",     &p_m_stub_pxGEN);
+  TT->SetBranchAddress("L1TkSTUB_pyGEN",     &p_m_stub_pyGEN);
+  TT->SetBranchAddress("L1TkSTUB_x",         &p_m_stub_x);
+  TT->SetBranchAddress("L1TkSTUB_y",         &p_m_stub_y);
+  TT->SetBranchAddress("L1TkSTUB_z",         &p_m_stub_z);
 
   /*******************************************************/
 
