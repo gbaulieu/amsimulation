@@ -1746,44 +1746,41 @@ int main(int av, char** ac){
 #else
     string result;
     {
-      SectorTree sTest;
-      cout<<"Loading pattern bank..."<<endl;
-      {
-	string file = "/home/infor/baulieu/private/cms/slc6/CMSSW_6_2_0_SLHC15/src/amsimulation_dev/test3_Fountain_NoSeg_2DC_lowmidhig.pbk";
-	std::ifstream ifs(file.c_str());
-	boost::iostreams::filtering_stream<boost::iostreams::input> f;
-	f.push(boost::iostreams::gzip_decompressor());
-	//we try to read a compressed file
-	try { 
-	  f.push(ifs);
-	  boost::archive::text_iarchive ia(f);
-	  ia >> sTest;
-	}
-	catch (boost::iostreams::gzip_error& e) {
-	  if(e.error()==4){//file is not compressed->read it without decompression
-	    std::ifstream new_ifs(file.c_str());
-	    boost::archive::text_iarchive ia(new_ifs);
-	    ia >> sTest;
+      vector<int> endcap_layers_1 = {5,6,18,19,20,21,22};
+      vector<int> endcap_layers_2 = {5,6,11,12,13,14,15};
+      vector<int> barrel_layers = {5,6,7,8,9,10};
+      vector<int> hybrid_layers_1 = {5,6,7,8,9,10,18,19,20};
+      vector<int> hybrid_layers_2 = {5,6,7,8,9,10,11,12,13};
+      
+
+      for(int i=0;i<48;i++){
+	SectorTree sTest;
+	vector<int> active_layers;
+	if(i<8)
+	  active_layers=endcap_layers_1;
+	if(i>7 && i<16)
+	  active_layers=hybrid_layers_1;
+	if(i>15 && i<32)
+	  active_layers=barrel_layers;
+	if(i>31 && i<40)
+	  active_layers=hybrid_layers_2;
+	if(i>39)
+	  active_layers=endcap_layers_2;
+
+	cout<<"Sector "<<i<<endl;
+	createSectorFromRootFile(&sTest,"./baseline_Eta6_Phi8.csv", active_layers, i);
+	Sector* s = sTest.getAllSectors()[0];
+	for(int l=0;l<s->getNbLayers();l++){
+	  vector<int> ladders = s->getLadders(l);
+	  cout<<ladders.size()<<" ladders on layer "<<active_layers[l]<<" : "<<endl;
+	  for(unsigned lad_index=0;lad_index<ladders.size();lad_index++){
+	    vector<int> modules = s->getModules(l,ladders[lad_index]);
+	    //if(modules.size()>16)
+	      cout<<"\tLadder "<<ladders[lad_index]<<" with "<<modules.size()<<" modules"<<endl;
 	  }
 	}
       }
-      cout<<"Sector :"<<endl;
-      cout<<*(sTest.getAllSectors()[0])<<endl;
-      cout<<"loaded "<<sTest.getAllSectors()[0]->getLDPatternNumber()<<" patterns for sector "<<sTest.getAllSectors()[0]->getOfficialID()<<endl;
-      sTest.getAllSectors()[0]->getPatternTree()->truncate(1000000);
 
-      cout<<"Saving new bank in testOut.pbk..."<<endl;
-      {
-	const SectorTree& ref = sTest;
-	std::ofstream ofs("./testOut.pbk");
-	// Compression part
-	boost::iostreams::filtering_stream<boost::iostreams::output> f;
-	f.push(boost::iostreams::gzip_compressor(boost::iostreams::gzip_params(boost::iostreams::gzip::best_compression)));
-	f.push(ofs);
-	//
-	boost::archive::text_oarchive oa(f);
-	oa << ref;
-      }
     }
 #endif
   }
