@@ -91,6 +91,7 @@ void PatternFinder::mergeFiles(string outputFile, string inputFile1, string inpu
   //used to generate the root dictionnary to support vector<vector<int>> and vector<float>
   gROOT->ProcessLine(".L Loader.C+");
 
+  TFile *oldFile = TFile::Open(inputFile1.c_str());
   /*********************INPUT 1 FILE *************************************/
 
   TChain *PATT1    = new TChain("L1tracks"); // infos about patterns
@@ -293,6 +294,24 @@ void PatternFinder::mergeFiles(string outputFile, string inputFile1, string inpu
 
   PATTOUT->Write();
 
+  ///////COPY EXISTING DATA TO OUTPUT FILE
+
+  TTree *old_mc_tree = (TTree*)oldFile->Get("MC");
+  old_mc_tree->SetBranchStatus("*",1);
+  TTree *new_mc_tree = old_mc_tree->CloneTree();
+  new_mc_tree->AutoSave();
+  delete new_mc_tree;
+  delete old_mc_tree;
+
+  TTree *old_tkstubs_tree = (TTree*)oldFile->Get("TkStubs");
+  old_tkstubs_tree->SetBranchStatus("*",1);
+  TTree *new_tkstubs_tree = old_tkstubs_tree->CloneTree();
+  new_tkstubs_tree->AutoSave();
+  delete new_tkstubs_tree;
+  delete old_tkstubs_tree;
+
+  ////////////////////////////////////////
+
   t->Close();
 
   delete PATT1;
@@ -337,8 +356,8 @@ void PatternFinder::find(int start, int& stop){
   gROOT->ProcessLine(".L Loader.C+");
 
   /**************** OUTPUT FILE ****************/
-  TTree* Out = new TTree("L1tracks", "Official L1-AM tracks info");
   TFile *t = new TFile(outputFileName.c_str(),"recreate");
+  TTree* Out = new TTree("L1tracks", "Official L1-AM tracks info");
 
   // Tree definition ////////////////////
   int event_id;
@@ -580,9 +599,10 @@ void PatternFinder::find(int start, int& stop){
     num_evt++;
   }
   //Out->Print();
+
   Out->Write();
+
   t->Close();
-  delete Out;
   delete t;
 
   delete TT;
@@ -597,6 +617,32 @@ void PatternFinder::find(int start, int& stop){
   delete m_trk_z;
   delete m_trk_links;
   delete m_trk_secid;
+  
+  ///////COPY EXISTING DATA TO OUTPUT FILE
+  TFile *oldFile = TFile::Open(eventsFilename.c_str());
+  t = new TFile(outputFileName.c_str(),"update");
+
+  cout<<"Copying input data to output file..."<<endl;
+
+  TTree *old_mc_tree = (TTree*)oldFile->Get("MC");
+  old_mc_tree->SetBranchStatus("*",1);
+  TTree *new_mc_tree = old_mc_tree->CloneTree();
+  new_mc_tree->AutoSave();
+  delete new_mc_tree;
+  delete old_mc_tree;
+
+  TTree *old_tkstubs_tree = (TTree*)oldFile->Get("TkStubs");
+  old_tkstubs_tree->SetBranchStatus("*",1);
+  TTree *new_tkstubs_tree = old_tkstubs_tree->CloneTree();
+  new_tkstubs_tree->AutoSave();
+  delete new_tkstubs_tree;
+  delete old_tkstubs_tree;
+  ////////////////////////////////////////
+
+  delete oldFile;
+  t->Close();
+  delete t;
+  
 }
 
 #ifdef USE_CUDA
