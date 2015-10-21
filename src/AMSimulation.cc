@@ -289,14 +289,14 @@ void displaySectorLUT(SectorTree &st){
     map<string, int> ladderMap = s->getLadderCodeMap();
     map<string, int> moduleMap = s->getModuleCodeMap();
 
-    cout<<"LUTs for sector "<<s->getOfficialID()<<endl;
+    cout<<"** LUTs for sector "<<s->getOfficialID()<<endl;
     cout<<endl;
-    cout<<"LAYER/LADDER -> LOCAL LADDER"<<endl;
+    cout<<"** LAYER/LADDER -> LOCAL LADDER"<<endl;
     for(map<string, int>::iterator it = ladderMap.begin(); it != ladderMap.end(); it++) {
       cout<<it->first<<" "<<it->second<<endl;
     }
     cout<<endl;
-    cout<<"LAYER/LADDER/MODULE -> LOCAL MODULE"<<endl;
+    cout<<"** LAYER/LADDER/MODULE -> LOCAL MODULE"<<endl;
     for(map<string, int>::iterator it = moduleMap.begin(); it != moduleMap.end(); it++) {
       cout<<it->first<<" "<<it->second<<endl;
     }
@@ -1460,6 +1460,9 @@ int main(int av, char** ac){
       cout<<"** "<<endl;
       cout<<"** Lookup table for the superstrip sizes : "<<endl;
       st.displaySuperstripSizes();
+      cout<<"**"<<endl;
+      cout<<"** Lookup table for global to local conversion : "<<endl;
+      displaySectorLUT(st);
       cout<<"**"<<endl;
       while(true){
 	cout<<"** The 8 input buses are used for the following layers (CMS IDs) : ";
