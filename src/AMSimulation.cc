@@ -1570,7 +1570,7 @@ int main(int av, char** ac){
 
     SectorTree st2(st);
 
-    if(newNbPatterns>0){
+    if(maxFS<0 && minFS<0 && newNbPatterns>0){
       cout<<"loaded "<<st.getAllSectors()[0]->getLDPatternNumber()<<" patterns for sector "<<st.getAllSectors()[0]->getOfficialID()<<endl;
       st.getAllSectors()[0]->getPatternTree()->truncate(newNbPatterns);
       save=&st;
@@ -1588,8 +1588,13 @@ int main(int av, char** ac){
 	  int nbFS = p->getNbFakeSuperstrips();
 	  if(nbFS<=maxFS && nbFS>=minFS){
 	    //add the pattern
-	    newSector->getPatternTree()->addPattern(p,NULL,p->getAveragePt());
+	    for(int k=0;k<p->getGrade();k++){
+	      newSector->getPatternTree()->addPattern(p,NULL,p->getAveragePt());
+	    }
 	  }
+	}
+	if(newNbPatterns>0){
+	  newSector->getPatternTree()->truncate(newNbPatterns);
 	}
 	cout<<"Sector "<<mySector->getOfficialID()<<" :\n\tinput bank : "<<mySector->getPatternTree()->getLDPatternNumber()<<" patterns\n\toutput bank : "<<newSector->getPatternTree()->getLDPatternNumber()<<" patterns."<<endl;
       }
