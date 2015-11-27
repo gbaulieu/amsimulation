@@ -282,6 +282,10 @@ vector< vector<int> > getRestrictions(const vector<int> &layers){
   return res;
 }
 
+bool comparePatternIDs(GradedPattern* p1, GradedPattern* p2){
+  return p1->getOrderInChip()<p2->getOrderInChip();
+}
+
 void displaySectorLUT(SectorTree &st){ 
   vector<Sector*> list = st.getAllSectors();
   if(list.size()>0){
@@ -1131,6 +1135,8 @@ int main(int av, char** ac){
     if(pg.getVariableResolutionState()>0){
       cout<<"LD Patterns : "<<st.getLDPatternNumber()<<endl;
     }
+
+    st.getAllSectors()[0]->getPatternTree()->truncate(-1);
   
     cout<<"Saving SectorTree...";
     {
@@ -1286,7 +1292,9 @@ int main(int av, char** ac){
 
     PrincipalFitGenerator pfg(vm["input_directory"].as<string>().c_str(), &st);
     pfg.generate(eta_limits, 2, 100, 0, 0.87);
-    
+
+    st.getAllSectors()[0]->getPatternTree()->truncate(-1);
+
     cout<<"Saving SectorTree...";
     {
       const SectorTree& ref = st;
@@ -1327,6 +1335,7 @@ int main(int av, char** ac){
     for(unsigned int i=0;i<sectors.size();i++){
       Sector* mySector = sectors[i];
       vector<GradedPattern*> patterns = mySector->getPatternTree()->getLDPatterns();
+      sort(patterns.begin(),patterns.end(), comparePatternIDs);//order by orderInChip
       for(unsigned int j=0;j<patterns.size();j++){
 	Pattern* p = patterns[j];
 	for(int k=0;k<p->getNbLayers();k++){
@@ -1362,6 +1371,7 @@ int main(int av, char** ac){
     for(unsigned int i=0;i<sectors.size();i++){
       Sector* mySector = sectors[i];
       vector<GradedPattern*> patterns = mySector->getPatternTree()->getLDPatterns();
+      sort(patterns.begin(),patterns.end(), comparePatternIDs);//order by orderInChip
       for(unsigned int j=0;j<patterns.size();j++){
 	Pattern* p = patterns[j];
 	for(int k=0;k<p->getNbLayers();k++){
@@ -1397,6 +1407,7 @@ int main(int av, char** ac){
       Sector* mySector = sectors[i];
       int sector_id = mySector->getOfficialID();
       vector<GradedPattern*> patterns = mySector->getPatternTree()->getLDPatterns();
+      sort(patterns.begin(),patterns.end(), comparePatternIDs);//order by orderInChip
       vector<int> layers = mySector->getLayersID();
       int expected_active_layers = -1;
       bool hybrid_sector = layers.size()>8;//we have more layers than input buses
@@ -1593,9 +1604,7 @@ int main(int av, char** ac){
 	    }
 	  }
 	}
-	if(newNbPatterns>0){
-	  newSector->getPatternTree()->truncate(newNbPatterns);
-	}
+	newSector->getPatternTree()->truncate(newNbPatterns);
 	cout<<"Sector "<<mySector->getOfficialID()<<" :\n\tinput bank : "<<mySector->getPatternTree()->getLDPatternNumber()<<" patterns\n\toutput bank : "<<newSector->getPatternTree()->getLDPatternNumber()<<" patterns."<<endl;
       }
       save=&st2;
@@ -1714,6 +1723,7 @@ int main(int av, char** ac){
     if(nbPatterns1>nbPatterns2){
       list1[0]->getPatternTree()->addPatternsFromTree(list2[0]->getPatternTree());
       cout<<"-> "<<list1[0]->getPatternTree()->getLDPatternNumber()<<" patterns."<<endl;
+      list1[0]->getPatternTree()->truncate(-1);
       cout<<"Saving new bank in "<<vm["outputFile"].as<string>().c_str()<<"..."<<endl;
       {
 	const SectorTree& ref = st1;
@@ -1729,6 +1739,7 @@ int main(int av, char** ac){
     }
     else{
       list2[0]->getPatternTree()->addPatternsFromTree(list1[0]->getPatternTree());
+      list2[0]->getPatternTree()->truncate(-1);
       cout<<"-> "<<list2[0]->getPatternTree()->getLDPatternNumber()<<" patterns."<<endl;
       cout<<"Saving new bank in "<<vm["outputFile"].as<string>().c_str()<<"..."<<endl;
       {
@@ -1752,43 +1763,33 @@ int main(int av, char** ac){
     delete gp;
     //cuProfilerStop();
 #else
-    string result;
+    SectorTree st;
     {
-      vector<int> endcap_layers_1 = {5,6,18,19,20,21,22};
-      vector<int> endcap_layers_2 = {5,6,11,12,13,14,15};
-      vector<int> barrel_layers = {5,6,7,8,9,10};
-      vector<int> hybrid_layers_1 = {5,6,7,8,9,10,18,19,20};
-      vector<int> hybrid_layers_2 = {5,6,7,8,9,10,11,12,13};
-      
-
-      for(int i=0;i<48;i++){
-	SectorTree sTest;
-	vector<int> active_layers;
-	if(i<8)
-	  active_layers=endcap_layers_1;
-	if(i>7 && i<16)
-	  active_layers=hybrid_layers_1;
-	if(i>15 && i<32)
-	  active_layers=barrel_layers;
-	if(i>31 && i<40)
-	  active_layers=hybrid_layers_2;
-	if(i>39)
-	  active_layers=endcap_layers_2;
-
-	cout<<"Sector "<<i<<endl;
-	createSectorFromRootFile(&sTest,"./baseline_Eta6_Phi8.csv", active_layers, i);
-	Sector* s = sTest.getAllSectors()[0];
-	for(int l=0;l<s->getNbLayers();l++){
-	  vector<int> ladders = s->getLadders(l);
-	  cout<<ladders.size()<<" ladders on layer "<<active_layers[l]<<" : "<<endl;
-	  for(unsigned lad_index=0;lad_index<ladders.size();lad_index++){
-	    vector<int> modules = s->getModules(l,ladders[lad_index]);
-	    //if(modules.size()>16)
-	      cout<<"\tLadder "<<ladders[lad_index]<<" with "<<modules.size()<<" modules"<<endl;
-	  }
+      std::ifstream ifs(vm["bankFile"].as<string>().c_str());
+      boost::iostreams::filtering_stream<boost::iostreams::input> f;
+      f.push(boost::iostreams::gzip_decompressor());
+      //we try to read a compressed file
+      try { 
+	f.push(ifs);
+	boost::archive::text_iarchive ia(f);
+	ia >> st;
+      }
+      catch (boost::iostreams::gzip_error& e) {
+	if(e.error()==4){//file is not compressed->read it without decompression
+	  std::ifstream new_ifs(vm["bankFile"].as<string>().c_str());
+	  boost::archive::text_iarchive ia(new_ifs);
+	  ia >> st;
 	}
       }
-
+    }
+    vector<Sector*> sectors = st.getAllSectors();
+    for(unsigned int i=0;i<sectors.size();i++){
+      Sector* mySector = sectors[i];
+      vector<GradedPattern*> patterns = mySector->getPatternTree()->getLDPatterns();
+      sort(patterns.begin(),patterns.end(), comparePatternIDs);
+      for(unsigned int j=0;j<patterns.size();j++){
+	cout<<"("<<patterns[j]->getGrade()<<" - "<<patterns[j]->getAveragePt()<<")"<<*(patterns[j])<<endl;
+      }
     }
 #endif
   }
