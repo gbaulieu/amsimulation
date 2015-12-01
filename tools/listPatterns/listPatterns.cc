@@ -149,6 +149,7 @@ public:
 	  cout<<endl;
 	}
       }
+      m_patt=0;
     }
 
   delete TT;
