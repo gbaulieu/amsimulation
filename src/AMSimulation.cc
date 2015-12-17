@@ -385,31 +385,6 @@ void createAnalysis(SectorTree &st){
   //sorting the patterns
   sort(allPatterns.begin(), allPatterns.end(), sorting);
   
-  //float patterns[allPatterns.size()];
-  //float tracks[allPatterns.size()];
-  //float tracks_nb[allPatterns.size()];
-  //float average_pt[allPatterns.size()];
-  //int coveredTracks = 0;
-  //TH1I* histo = new TH1I("Pattern Eff","Nb Tracks per pattern", allPatterns[0]->getGrade()+10, 0, allPatterns[0]->getGrade()+10);
-
-  //Creates the layer plots
-  /*
-  for(unsigned int k=0;k<allPatterns.size();k++){
-    patterns[k]=k;
-    coveredTracks+=allPatterns[k]->getGrade();
-    tracks[k]=coveredTracks*100/(float)nbTracks;
-    histo->Fill(allPatterns[k]->getGrade());
-    average_pt[k]=allPatterns[k]->getAveragePt();
-    tracks_nb[k]=allPatterns[k]->getGrade();
-    for(int j=0;j<nbLayers;j++){
-      CMSPatternLayer* pl = (CMSPatternLayer*)allPatterns[k]->getLayerStrip(j);
-      modulesPlot[j]->Fill(pl->getModule());
-    }
-  }
-  histo->SetFillColor(41);
-  histo->Write();
-  delete histo;
-  */
   for(unsigned int k=0;k<list.size();k++){
     vector<int> PT = list[k]->getPatternTree()->getPTHisto();
     TH1I* pt_histo = new TH1I("PT sector "+k,"PT of pattern generating tracks", 110, 0, 110);
@@ -424,6 +399,30 @@ void createAnalysis(SectorTree &st){
     pt_histo->Write();
     delete pt_histo;
   }
+
+  float* patts = new float[allPatterns.size()];
+  float* scores = new float[allPatterns.size()];
+  int total_score=0;
+  for(unsigned int i=0;i<allPatterns.size();i++){
+    total_score+=allPatterns[i]->getGrade();
+  }
+
+  int score_accumulation = 0;
+  double scale = 100/(double)total_score;
+  for(unsigned int i=0;i<allPatterns.size();i++){
+    patts[i]=i;
+    score_accumulation+=allPatterns[i]->getGrade();
+    scores[i]=score_accumulation*scale;
+  }
+
+  TGraph* bank_eff = new TGraph(allPatterns.size(),patts,scores);
+  bank_eff->SetTitle("Efficiency evolution");
+  bank_eff->GetXaxis()->SetTitle("Patterns bank size");
+  bank_eff->GetYaxis()->SetTitle("Efficiency (%)");
+  bank_eff->Write();
+  delete bank_eff;
+  delete patts;
+  delete scores;
 
   int patt_id;
   int patt_ssid;
@@ -455,22 +454,6 @@ void createAnalysis(SectorTree &st){
   OUT2->Write("", TObject::kOverwrite);
   delete OUT2;
 
-  /*
-  TGraph* nbPatt = new TGraph(allPatterns.size(),patterns,tracks);
-  nbPatt->GetXaxis()->SetTitle("Patterns bank size");
-  nbPatt->GetYaxis()->SetTitle("Tracks covered (%)");
-  nbPatt->SetTitle("Patterns coverage");
-  nbPatt->Write();
-  delete nbPatt;
-  */
-  /*
-  TGraph* ptFreq = new TGraph(allPatterns.size(),tracks_nb,average_pt);
-  ptFreq->GetXaxis()->SetTitle("nb tracks per pattern");
-  ptFreq->GetYaxis()->SetTitle("average Pt per pattern");
-  ptFreq->SetTitle("Average Pt / pattern size");
-  ptFreq->Write();
-  delete ptFreq;
-  */
   for(int i=0;i<nbLayers;i++){
     modulesPlot[i]->Write();
     delete modulesPlot[i];
