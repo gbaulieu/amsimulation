@@ -29,14 +29,14 @@ ifeq ($(CUDA_ENABLED),true)
 	OBJECTS=SuperStrip.o Hit.o Pattern.o PatternLayer.o GradedPattern.o PatternTrunk.o PatternTree.o \
 	PatternGenerator.o Sector.o SectorTree.o CMSPatternLayer.o Segment.o Module.o Ladder.o Layer.o \
 	Detector.o PatternFinder.o Track.o TrackFitter.o FitParams.o PrincipalTrackFitter.o \
-	PrincipalFitGenerator.o MultiDimFitData.o KarimakiTrackFitter.o HoughFitter.o SeedClusteringFitter.o \
+	PrincipalFitGenerator.o MultiDimFitData.o KarimakiTrackFitter.o TCBuilder.o HoughFitter.o SeedClusteringFitter.o \
 	ComputerHough.o	Retina.o RetinaTrackFitter.o libhoughCPU.o FileEventProxy.o GPUPooler.o gpu.o
 else
 	OBJECTS=SuperStrip.o Hit.o Pattern.o PatternLayer.o GradedPattern.o PatternTrunk.o PatternTree.o \
 	PatternGenerator.o Sector.o SectorTree.o CMSPatternLayer.o Segment.o Module.o \
 	Ladder.o Layer.o Detector.o PatternFinder.o Track.o TrackFitter.o FitParams.o \
 	PrincipalTrackFitter.o PrincipalFitGenerator.o MultiDimFitData.o \
-	Retina.o RetinaTrackFitter.o KarimakiTrackFitter.o HoughFitter.o SeedClusteringFitter.o \
+	Retina.o RetinaTrackFitter.o KarimakiTrackFitter.o TCBuilder.o HoughFitter.o SeedClusteringFitter.o \
 	ComputerHough.o libhoughCPU.o
 endif
 
@@ -120,6 +120,9 @@ KarimakiTrackFitter.o:${SRC}/KarimakiTrackFitter.h ${SRC}/KarimakiTrackFitter.cc
 
 HoughFitter.o:${SRC}/HoughFitter.h ${SRC}/HoughFitter.cc
 	g++ -c ${FLAG} ${INC} ${SRC}/HoughFitter.cc
+
+TCBuilder.o:${SRC}/TCBuilder.h ${SRC}/TCBuilder.cc
+	g++ -c ${FLAG} ${INC} ${SRC}/TCBuilder.cc
 
 SeedClusteringFitter.o:${SRC}/SeedClusteringFitter.h ${SRC}/SeedClusteringFitter.cc
 	g++ -c ${FLAG} ${INC} ${SRC}/SeedClusteringFitter.cc
