@@ -161,6 +161,8 @@ class SectorTree{
   
   bool hasSameSuperstripSizes(const SectorTree& st);
 
+  map<string, int> getSuperstripSize_lut();
+
   static void displaySuperstripSizes();
   static void setSuperstripSizeFile(string fileName);
 

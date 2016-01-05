@@ -209,6 +209,14 @@ class CMSPatternLayer : public PatternLayer{
   **/
   static int getNbModules(int layerID, int ladderID);  
 
+  /**
+     \brief Convertion from CMSSW layer numbering (one id per layer/disk) to PRBF2 numbering (id depends on the layer AND the module type)
+     \param cms_layer The CMSSW layer ID (5 to 10 for barrel, 11 to 15 for first TEC and 18 to 22 for second TEC)
+     \param isPS True if the module is PS, False if 2S
+     \return The PRBF2 layer ID
+  **/
+  static int cmssw_layer_to_prbf2_layer(int cms_layer, bool isPS);
+
  /**
      \brief Check if the PatternLayer is a fake one (used on layers not crossed by the track)
      \return True if the PatternLayer is a placeholder

@@ -307,6 +307,50 @@ void displaySectorLUT(SectorTree &st){
   }
 }
 
+void displaySuperstripSizesWithLocalID(SectorTree &st){
+  vector<Sector*> list = st.getAllSectors();
+  map<string, int> ladderMap = list[0]->getLadderCodeMap();
+  map<string, int> superstripSize_lut = st.getSuperstripSize_lut();
+  for(map<string, int>::iterator it=superstripSize_lut.begin();it!=superstripSize_lut.end();it++){
+    if(it->first.length()==2 && it->first.compare("00")!=0){//barrel and not 00
+      //Get the global layer ID
+      istringstream buffer(it->first);
+      //Convertion to integer
+      int l;
+      buffer >> l;
+      //Check module's type
+      bool is_ps_module = l<8;
+      //Get new layer ID
+      int new_layer = CMSPatternLayer::cmssw_layer_to_prbf2_layer(l,is_ps_module);
+      //display
+      ostringstream oss;
+      oss<<std::setfill('0');
+      oss<<setw(2)<<new_layer;
+      cout<<oss.str()<<" "<<it->second<<endl;
+    }
+    if(it->first.length()==4){//endcap
+      //Get the global layer ID
+      istringstream buffer_layer(it->first.substr(0,2));
+      istringstream buffer_ladder(it->first.substr(2,2));
+      //Convertion to integer
+      int old_layer;
+      int old_ladder;
+      buffer_layer >> old_layer;
+      buffer_ladder >> old_ladder;
+      //Check module's type
+      bool is_ps_module = (old_layer>10 && old_ladder<9);
+      int new_layer = CMSPatternLayer::cmssw_layer_to_prbf2_layer(old_layer,is_ps_module);
+      map<string, int>::iterator ladder_it = ladderMap.find(it->first);
+      if(ladder_it!=ladderMap.end()){
+	ostringstream oss;
+	oss<<std::setfill('0');
+	oss<<setw(2)<<new_layer<<setw(2)<<ladder_it->second;
+	cout<<oss.str()<<" "<<it->second<<endl;
+      }
+    }
+  }
+}
+
 
 void displayInformations(SectorTree &st){ 
   vector<Sector*> list = st.getAllSectors();
@@ -1457,6 +1501,9 @@ int main(int av, char** ac){
       cout<<"**"<<endl;
       cout<<"** Lookup table for global to local conversion : "<<endl;
       displaySectorLUT(st);
+      cout<<"**"<<endl;
+      cout<<"** LOCAL LAYER/LADDER -> Superstrip Size "<<endl;
+      displaySuperstripSizesWithLocalID(st);
       cout<<"**"<<endl;
       while(true){
 	cout<<"** The 8 input buses are used for the following layers (CMS IDs) : ";

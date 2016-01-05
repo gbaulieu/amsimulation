@@ -597,4 +597,24 @@ vector<int> CMSPatternLayer::getHDSuperstrips(){
   return array;
 }
 
-
+int CMSPatternLayer::cmssw_layer_to_prbf2_layer(int cms_layer, bool isPS){
+  int layer_code = -1;
+  if(isPS){
+    if(cms_layer<11)
+      layer_code = cms_layer-5;
+    else{
+      if(cms_layer>15)
+	cms_layer=cms_layer-7;
+      layer_code = cms_layer-8;
+    }
+  }else{
+    if(cms_layer<11)
+      layer_code = cms_layer;
+    else{
+      if(cms_layer>15)
+	cms_layer=cms_layer-7;
+      layer_code = cms_layer;
+    }
+  }
+  return layer_code;
+}
