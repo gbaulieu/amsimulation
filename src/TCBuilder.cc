@@ -469,14 +469,61 @@ void TCBuilder::getThresholds(int nLaySeed1, int nLaySeed2, int nLayTestStub, fl
 
 char TCBuilder::transcodeLayer(Hit * pHit)
 {
-  //LAYER ID TRANSCODING
-  
-  //Barrel only for now
-  if (pHit->getLayer()<=7)
-    return pHit->getLayer()-5;
-  else
-    return pHit->getLayer();
+  int nOrigLayer = pHit->getLayer();
 
+  //layer transcoding of the disks is based on the radius, it can be optimized by using the ladder_ID
+  int X = pHit->getX();
+  int Y = pHit->getY();
+
+  int nTransLayer;
+		
+	if (nOrigLayer <= 10)
+	{
+		//If the stub is in the barrel
+
+		if (nOrigLayer <= 7)
+    {    
+      //If layer 5, 6, 7
+      nTransLayer = nOrigLayer - 5;     //5->0, 6->1, ...
+    }    
+    else
+    {
+      //If layer 8, 9, 10
+      nTransLayer = nOrigLayer;         //no change
+    }
+  }
+	else if (sqrt(X*X + Y*Y) >= 62)
+	{
+		//If the stub is on an outer ring of a disk !!! (2S modules)
+
+		if (nOrigLayer <= 15)
+    {
+      //If layer 11, 12, 13, 14, 15
+      nTransLayer = nOrigLayer;         //no change
+    }
+    else
+    {
+      //If layer 18, 19, 20, 21, 22
+      nTransLayer = nOrigLayer - 7;     //18->11, 19->12, ...
+    }
+	}
+	else
+  {
+		//If the stub is on an inner ring of a disk !!! (PS modules)
+
+		if (nOrigLayer <= 15)
+    {
+      //If layer 11, 12, 13, 14, 15
+      nTransLayer = nOrigLayer - 8;     //11->3, 12->4, ...
+    }
+    else
+    {
+      //If layer 18, 19, 20, 21, 22
+      nTransLayer = nOrigLayer - 15;    //18->3, 19->4, ...
+    }
+	}
+
+  return nTransLayer;	
 }
 
 // TC builder module
@@ -605,7 +652,7 @@ void TCBuilder::fit(vector<Hit*> originalHits)
         float tabScore[2];
         alignScore(hSeed1, hSeed2, hTestStub, tabScore, nFractionnalPartWidth);
         
-        cout<< "Score RPHI = "<<tabScore[0]<<"   Score RZ = "<<tabScore[1]<<endl;
+        //cout<< "Score RPHI = "<<tabScore[0]<<"   Score RZ = "<<tabScore[1]<<endl;
 
         //Get the thresholds corresponding to the current layer combination
         float tabThresh[2];
@@ -647,7 +694,7 @@ void TCBuilder::fit(vector<Hit*> originalHits)
         float fCurrentCandidateScore = 0.0;
         while (vecCurrentCandidateScore.empty() == false)
         {
-          fCurrentCandidateScore += vecCurrentCandidateScore.back();  //TODO abs + norm?
+          fCurrentCandidateScore += abs(vecCurrentCandidateScore.back());  //TODO norm?
           vecCurrentCandidateScore.pop_back();
         }
 
