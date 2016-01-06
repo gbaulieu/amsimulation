@@ -185,330 +185,11 @@ void TCBuilder::mergeTracks(){
   cout<<"We have "<<tracks.size()<<" tracks after merging..."<<endl;
 }
 
-// TC builder module
-//
-// Take as input the list of stubs contained in a matched road
-
-void TCBuilder::fit(vector<Hit*> hits)
+Track* TCBuilder::createFittedTrack(vector <Hit*> &bestTC)
 {
-  cout<<"trying to fit "<<hits.size()<<" points"<<endl;
-  //  cout << "Into the TC builder " << endl;
-
-  int tow = sector_id; // The tower ID, necessary to get the phi shift
-
-  //  cout << "Into the TC builder " << tow << endl;
-
-  float sec_phi = 0;
-  if (tow%8==0) sec_phi = 0.4; 
-  if (tow%8==1) sec_phi = 1.2; 
-  if (tow%8==2) sec_phi = 2.0; 
-  if (tow%8==3) sec_phi = 2.7; 
-  if (tow%8==4) sec_phi = 3.6; 
-  if (tow%8==5) sec_phi = -2.0; 
-  if (tow%8==6) sec_phi = -1.2; 
-  if (tow%8==7) sec_phi = -0.4; 
-
-  float ci = cos(sec_phi);
-  float si = sin(sec_phi);
-
-
-  int type=1; // Hybrid per default
-
-  if (tow>15 && tow<32) type = 2; // Barrel
-  if (tow<8 || tow>39)  type = 0; // Endcap
-
-  idxs_lay.clear();
-  list_cand6.clear();
-  list_scores6.clear();
-  list_cand5.clear();   
-  list_scores5.clear();
-
-  std::vector<int> slist, cand;
-    
-  int s_k,s_l;
-  int lad_ref,lad_klm;  
-  int idx_j,idx_i,idx_kl;
-
-  float a_rp,b_rp,a_rz,b_rz;  
-
-  float ri,zi,pi,xi,yi;
-  float rj,zj,pj,xj,yj;
-  float rkl,zkl,pkl,xkl,ykl;
-
-  float dist_p,dist_z,dist_r;
-  float dist_pm,dist_rm,dist_zm,idx_klm;
-
-  float score;  
-  int nseeds=0;
-
-  for (int k=0;k<16;++k)
-  {
-    slist.clear();
-    slist.push_back(-1);
-    idxs_lay.push_back(slist);
-  }
-   
-  // First of all we 
-  // order the stubs per layers
-  // and count the number of layers touched    
-
-  // Layers are numbered as follows
-  // Barrel      : 0,1,2,8,9,10
-  // Disk z+/- PS: 3,4,5,6,7
-  // Disk z+/- 2S: 11,12,13,14,15
-
   int lay;
-  int patt_size=0;
   bool barrelmod;
 
-  for (unsigned int k=0;k<hits.size();++k) // Loop over stubs in the pattern
-  {
-    lay  = hits[k]->getLayer();
-    
-    if (idxs_lay.at(lay).size()==1) ++patt_size;
-    
-    idxs_lay.at(lay).push_back(k);
-  }
-    
-
-  if (patt_size>6) patt_size=6; // Max TC_size.
-
-  // Now test the seeds
-  // Not all the layers are used of the seeds
-
-  // For barrel and hybrid, layers 0,1,2
-
-  // For endcaps, layers 0/1/3/4    
-  // In disk, only PS modules are used
-
-  for (int k=0;k<5;++k) // Seed layer 1
-  {
-    if (idxs_lay.at(k).size()==1) continue; // No stub in this layer
-    if (type>0  && k>2)           continue; // Not a good barrel/hybrid seed
-    if (type==0 && k==2)          continue; // Not a good endcap seed
-    
-    for (int l=k+1;l<5;++l) // Seed layer 2
-    {
-      if (idxs_lay.at(l).size()==1) continue; // No stub in this layer
-      if (type>0  && l>2)           continue; // Not a good barrel/hybrid seed
-      if (type==0 && l==2)          continue; // Not a good endcap seed
-
-      //      std::cout << "Seeds for tow type " << type << ": " << k << "/" << l << endl;
-            
-      s_k = idxs_lay.at(k).size(); // Number of stubs on seed layer 1
-      s_l = idxs_lay.at(l).size(); // Number of stubs on seed layer 2
-
-      // Now test all possible seeds            
-      for (int i=1;i<s_k;++i)
-      {
-	for (int j=1;j<s_l;++j)
-	{
-	  ++nseeds; // We have a seed!
-
-	  idx_i = idxs_lay.at(k).at(i); // Index of stub 1
-	  idx_j = idxs_lay.at(l).at(j); // Index of stub 2
-                 
-	  xi = hits[idx_i]->getX()*ci+ hits[idx_i]->getY()*si;
-	  yi = -hits[idx_i]->getX()*si+ hits[idx_i]->getY()*ci;
-	  zi = hits[idx_i]->getZ();
-	  ri = sqrt(xi*xi+yi*yi);
-	  pi = atan2(yi,xi);
-
-	  xj = hits[idx_j]->getX()*ci+ hits[idx_j]->getY()*si;
-	  yj = -hits[idx_j]->getX()*si+ hits[idx_j]->getY()*ci;
-	  zj = hits[idx_j]->getZ();
-	  rj = sqrt(xj*xj+yj*yj);
-	  pj = atan2(yj,xj);
-	
-	  // We now have seed coordinates
-						   						   
-	  if (pi==pj || zi==zj) continue; // Not done for the moment
-                    
-	  a_rp = (ri-rj)/(pi-pj);
-	  b_rp = (ri*pj-rj*pi)/(pj-pi);
-	  a_rz = (ri-rj)/(zi-zj);
-	  b_rz = (ri*zj-rj*zi)/(zj-zi);
-                    
-	  // And tracklet direction in r/phi/z space                    
-	  // Try to extend the seed
-                
-	  cand.clear();
-	  score=0;
-                    
-	  // The 2 seeding stubs are pushed into the pre-TC
-	  cand.push_back(idx_i);
-	  cand.push_back(idx_j);
-                    
-	  for (int kk=0;kk<16;++kk) // Loop over all the layers
-	  {
-	    if (kk==k || kk==l) continue; // Seeding layers are excluded
-	    if (idxs_lay.at(kk).size()==1) continue; // No stubs on layer
-                        
-	    // Select the best candidate in the given layer, and increment
-	    
-	    dist_pm = 10000;
-	    dist_zm = 10000;
-	    dist_rm = 10000;
-	    idx_klm = -1;
-	    lad_klm = -1;
-                    
-	    barrelmod=0;
-	    if (kk<=2 || (kk>=8 && kk<=10)) barrelmod=1;
-    
-	    // Loop over all stubs contained in the test layer
-	    for (unsigned int kl=1;kl<idxs_lay.at(kk).size();++kl)
-	    {
-
-	      idx_kl = idxs_lay.at(kk).at(kl);
-	      lad_ref = hits[idx_kl]->getLadder();
-
-	      // Get stub coordinates
-
-	      xkl = hits[idx_kl]->getX()*ci+ hits[idx_kl]->getY()*si;
-	      ykl = -hits[idx_kl]->getX()*si+ hits[idx_kl]->getY()*ci;
-	      zkl = hits[idx_kl]->getZ();
-	      rkl = sqrt(xkl*xkl+ykl*ykl);
-	      pkl = atan2(ykl,xkl);
-    
-	      // Get residuals w.r.t. the seed projection
-
-	      dist_p = fabs((rkl - b_rp)/a_rp - pkl);
-
-	      if (dist_p>dist_pm) continue;	      
-
-	      dist_z = fabs((rkl - b_rz)/a_rz - zkl);
-	      dist_r = fabs(b_rz+a_rz*zkl - rkl);
-
-	      // Check that the stub is in the extrapolation windows
-	      // And that it is closer to the tracklet projection 
-	      // if there is another stub already within the windows
-
-	      if (barrelmod) // Barrel
-	      {
-		lay=kk;
-		if(kk>=8) lay=kk-5;
-
-		if (dist_p>fenetre_b_phi[type][lay]) continue;
-		if (dist_z>fenetre_b_z[type][lay]) continue;
-	      }
-	      else
-	      {
-		if (dist_p>fenetre_e_phi[type][lad_ref]) continue;
-		if (dist_r>fenetre_e_r[type][lad_ref]) continue;
-	      }
-
-	      // This stub is a good candidate, keep it for the moment
-                            
-	      dist_pm = dist_p;
-	      dist_zm = dist_z;
-	      dist_rm = dist_r;
-	      
-	      idx_klm = idx_kl;
-	      lad_klm = lad_ref;
-	    }
-                        
-	    if (idx_klm==-1) continue; // No stub in the window, skip;
-                        
-	    // Add the best candidate to the pre-TC
-
-	    cand.push_back(idx_klm);
-			
-	    // Increment the TC score (will be used to select among different TCs)
-
-	    if (barrelmod) // Barrel
-	    {
-	      lay=kk;
-	      if(kk>=8) lay=kk-5;
-	      
-	      score += dist_pm/fenetre_b_phi[type][lay]+dist_zm/fenetre_b_z[type][lay];
-	    }
-	    else
-	    {
-	      score += dist_pm/fenetre_e_phi[type][lad_klm]+dist_rm/fenetre_e_r[type][lad_klm];
-	    }
-	  }
-                    
-	  // End of the loop, do we have a respectable TC or not?
-                    
-	  if (patt_size-cand.size()>1) continue; // For a road of size N, TC must have a size of at least N-1 
-	  if(type==0 && cand.size()<5) continue;
-	  if(type==1 && cand.size()<4) continue;
-	  if(type==2 && cand.size()<5) continue;
-          
-	  // OK, pass it
-          
-	  if (patt_size-cand.size()==1) // One missed layer
-	  {
-	    list_cand5.push_back(cand);
-	    list_scores5.push_back(score/cand.size());
-	  }
-	  else // No missed layer
-	  {
-	    list_cand6.push_back(cand);
-	    list_scores6.push_back(score/cand.size());
-	  }
-	}
-      }
-    }
-  }
-
-  // End of the loop over all seeds
-    
-  //cout <<  list_cand5.size() << "///" <<  list_cand6.size() << endl; 
-
-  // OK, end of the loop select the best TC among all the TCs built.
-  cout<<"check if we have candidates...";
-  if (list_cand6.size()==0 && list_cand5.size()==0) return;
-  cout<<"YES!"<<endl;
-  std::vector<Hit*> bestTC;
-
-  bestTC.clear();
-
-  // First look at 6 stubs candidates
-    
-  float score_min = 10000000000000;
-  int idx_cand    = -1;
-  int ids;
-
-  if (list_cand6.size()!=0)
-  {
-    for (unsigned int i=0;i<list_scores6.size();++i)
-    {
-      if (list_scores6.at(i)<score_min)
-      {
-	score_min = list_scores6.at(i);
-	idx_cand  = i;
-      }
-    } 
-        
-    for (unsigned int i=0;i<list_cand6.at(idx_cand).size();++i)
-    {
-      ids = list_cand6.at(idx_cand).at(i);
-      bestTC.push_back(hits[ids]);
-    }
-  }
-  else
-  {
-    for (unsigned int i=0;i<list_scores5.size();++i)
-    {
-      if (list_scores5.at(i)<score_min)
-      {
-	score_min = list_scores5.at(i);
-	idx_cand  = i;
-      }
-    }
-        
-    for (unsigned int i=0;i<list_cand5.at(idx_cand).size();++i)
-    {
-      ids = list_cand5.at(idx_cand).at(i);
-      bestTC.push_back(hits[ids]);
-    }
-  }
-        
-  //
-  // Now loop again on the stubs in order to estimate the track parameters
-  //
-        
   int size = bestTC.size();
     
   float r;
@@ -566,21 +247,21 @@ void TCBuilder::fit(vector<Hit*> hits)
     if (lay<=7)
     {
       (lay<=2)
-	? nPSb++
-	: nPSe++;
+	    ? nPSb++
+	    : nPSe++;
     }
     else
     {
       (lay<11)
-	? n2Sb++
-	: n2Se++;
+	    ? n2Sb++
+	    : n2Se++;
     }
             
     if (lay>10) continue; // 2S disks stubs not used
     ++npt;
         
-    x = bestTC.at(kk)->getX()*ci+bestTC.at(kk)->getY()*si;
-    y = -bestTC.at(kk)->getX()*si+bestTC.at(kk)->getY()*ci;
+    x = bestTC.at(kk)->getX();
+    y = bestTC.at(kk)->getY();
     r = sqrt(x*x+y*y);
     
     if (r<rmin)
@@ -627,8 +308,8 @@ void TCBuilder::fit(vector<Hit*> hits)
     if (!barrelmod && (nPSb+n2Sb)>=3) continue; // Barrel modules have a priority
     if (lay>10 && (nPSb+nPSe)>=3) continue;     // Don't use 2S modules in the disks if possible
     
-    x = bestTC.at(kk)->getX()*ci+bestTC.at(kk)->getY()*si;
-    y = -bestTC.at(kk)->getX()*si+bestTC.at(kk)->getY()*ci;
+    x = bestTC.at(kk)->getX();
+    y = bestTC.at(kk)->getY();
     r = sqrt(x*x+y*y);
     
     if (r>rmax2)
@@ -676,8 +357,8 @@ void TCBuilder::fit(vector<Hit*> hits)
     if (lay>2 && nPSb>=2) continue; // Don't use PS modules of the disks if number of good point in the barrel is sufficient        
 
     ++cnt;
-    x = bestTC.at(kk)->getX()*ci+bestTC.at(kk)->getY()*si;
-    y = -bestTC.at(kk)->getX()*si+bestTC.at(kk)->getY()*ci;    
+    x = bestTC.at(kk)->getX();
+    y = bestTC.at(kk)->getY();
     z = bestTC.at(kk)->getZ();        
     r = sqrt(x*x+y*y);
             
@@ -714,9 +395,286 @@ void TCBuilder::fit(vector<Hit*> hits)
   {
     fit_track->addStubIndex(bestTC[hitIndex]->getID());
   }
+
+  return fit_track;
+}
+
+float TCBuilder::binning(float fNumber, int nFractionnalPartWidth)
+{
+  if (nFractionnalPartWidth == 0)
+		//If this parameter is set to zero, no binning is applied
+		return fNumber;
+		
+	//The number is divided by the power of 2 corresponding to the fractionnal part width
+	float divRes = fNumber / pow(2 , -nFractionnalPartWidth);
+
+	//The result is rounded to the nearest integer and then multiplied by the power of 2
+	float fBinnedNumber = round(divRes) * pow(2 , -nFractionnalPartWidth);
+	
+	return fBinnedNumber;
+}
+
+void TCBuilder::alignScore(Hit& hSeed1, Hit& hSeed2, Hit& hTestStub, float tScores[], int nFractionnalPartWidth)
+{
+  float fRPHI_Score , fRZ_Score;
+
+  float X1, Y1, Z1, R1, PHI1;
+  float X2, Y2, Z2, R2, PHI2;
+  float X3, Y3, Z3, R3, PHI3;
+
+  float RPHI_S1, RPHI_S2, RZ_S1, RZ_S2;
+
+  X1 = binning(hSeed1.getX(), nFractionnalPartWidth);
+	Y1 = binning(hSeed1.getY(), nFractionnalPartWidth);
+  Z1 = binning(hSeed1.getZ(), nFractionnalPartWidth);
+	
+	X2 = binning(hSeed2.getX(), nFractionnalPartWidth);
+	Y2 = binning(hSeed2.getY(), nFractionnalPartWidth);
+	Z2 = binning(hSeed2.getZ(), nFractionnalPartWidth);
+
+	X3 = binning(hTestStub.getX(), nFractionnalPartWidth);
+	Y3 = binning(hTestStub.getY(), nFractionnalPartWidth);
+  Z3 = binning(hTestStub.getZ(), nFractionnalPartWidth);
+	
+	R1 = binning(sqrt(X1*X1 + Y1*Y1), nFractionnalPartWidth);
+	R2 = binning(sqrt(X2*X2 + Y2*Y2), nFractionnalPartWidth);
+	R3 = binning(sqrt(X3*X3 + Y3*Y3), nFractionnalPartWidth);
+
+	//RPHI plan
+  PHI1 = binning(atan(Y1/X1), nFractionnalPartWidth);
+  PHI2 = binning(atan(Y2/X2), nFractionnalPartWidth);
+  PHI3 = binning(atan(Y3/X3), nFractionnalPartWidth);
+
+  RPHI_S1 = binning((PHI2 - PHI1) * (R3 - R2), nFractionnalPartWidth);
+  RPHI_S2 = binning((PHI2 - PHI3) * (R2 - R1), nFractionnalPartWidth);
+
+  fRPHI_Score = binning(RPHI_S1 + RPHI_S2, nFractionnalPartWidth);
+
+  //RZ plan
+
+  RZ_S1 = binning((Z2 - Z1) * (R3 - R2), nFractionnalPartWidth);
+  RZ_S2 = binning((Z2 - Z3) * (R2 - R1), nFractionnalPartWidth);
+
+  fRZ_Score = binning(RZ_S1 + RZ_S2, nFractionnalPartWidth);
+
+  tScores[0] = fRPHI_Score;
+  tScores[1] = fRZ_Score;
+}
+
+void TCBuilder::getThresholds(int nLaySeed1, int nLaySeed2, int nLayTestStub, float tabThresh[])
+{
+  tabThresh[0] = 25.0;
+  tabThresh[1] = 25.0;
+}
+
+char TCBuilder::transcodeLayer(Hit * pHit)
+{
+  //LAYER ID TRANSCODING
   
-  cout<<"adding one track..."<<endl;
-  tracks.push_back(fit_track);
+  //Barrel only for now
+  if (pHit->getLayer()<=7)
+    return pHit->getLayer()-5;
+  else
+    return pHit->getLayer();
+
+}
+
+// TC builder module
+//
+// Take as input the list of stubs contained in a matched road
+
+void TCBuilder::fit(vector<Hit*> originalHits)
+{
+  int nFractionnalPartWidth = 0;
+  int nMissingHits = 1;
+
+  cout<<"trying to fit "<<originalHits.size()<<" points"<<endl;
+
+  int tow = sector_id; // The tower ID, necessary to get the phi shift
+  
+  //Process the starting phi of the tower
+  float sec_phi = (tow%8) * M_PI / 4 - 0.4;
+
+  //cos and sin values for a rotation of an angle -sec_phi
+  float ci = cos(-sec_phi);
+  float si = sin(-sec_phi);
+
+  float rotatedX, rotatedY;
+
+  //Create a new vector to store the custom hits parameters
+  vector <Hit> hits;
+  
+  Hit* pOrigHit;
+  
+  //For each hit of the lists
+  for (unsigned int origHitIndex = 0; origHitIndex<originalHits.size(); origHitIndex++)
+  {
+    pOrigHit = originalHits[origHitIndex];
+
+    //Process the rotated coordinnates
+    rotatedX = pOrigHit->getX() * ci - pOrigHit->getY() * si;
+    rotatedY = pOrigHit->getX() * si + pOrigHit->getY() * ci;
+    
+    //Add the modified hit to the hits vector
+    hits.push_back( Hit(transcodeLayer(pOrigHit),
+                        pOrigHit->getLadder(),
+                        pOrigHit->getModule(),
+                        pOrigHit->getSegment(),
+                        pOrigHit->getStripNumber(),
+                        pOrigHit->getID(),
+                        pOrigHit->getParticuleID(),
+                        pOrigHit->getParticulePT(),
+                        pOrigHit->getParticuleIP(),
+                        pOrigHit->getParticuleETA(),
+                        pOrigHit->getParticulePHI0(),
+                        binning(rotatedX, nFractionnalPartWidth),
+                        binning(rotatedY, nFractionnalPartWidth),
+                        binning(pOrigHit->getZ(), nFractionnalPartWidth),
+                        pOrigHit->getX0(),
+                        pOrigHit->getY0(),
+                        pOrigHit->getZ0(),
+                        pOrigHit->getBend())
+                        );
+
+  }
+
+  //Sort the hits by ascending order of layerID
+  //(using a lambda definition of the sorting criteria which return a boolean)
+  sort(hits.begin(), hits.end(), [ ]( const Hit& lhs, const Hit& rhs ) { return lhs.getLayer() < rhs.getLayer(); });
+
+  
+  int nLayersCurrentPattern = 0;
+  int lastAddedLayer = -1;
+  //Count the number of layers present in the pattern
+  for (unsigned int hitIndex=0; hitIndex < hits.size(); hitIndex++)
+  {
+    if (lastAddedLayer != hits[hitIndex].getLayer())
+    {
+      nLayersCurrentPattern++;
+      lastAddedLayer = hits[hitIndex].getLayer();
+    }
+  }
+
+
+  vector <Hit*> vecCurrentCandidateHits;
+  vector <float> vecCurrentCandidateScore;
+
+  vector <Hit*> vecBestCandidateHits;
+  float fBestCandidateScore = 0.0;
+
+  for (unsigned int seed1Index=0; seed1Index<hits.size(); seed1Index++)
+  {
+    Hit& hSeed1   = hits[seed1Index];
+    int nLaySeed1 = hSeed1.getLayer();
+
+    if (nLaySeed1 == 2) continue; //layer 2 can't be the innermost seed stub
+    if (nLaySeed1 > 3) break;     //no more possible combinations for this pattern
+
+    //We have a correct Seed1
+
+
+    for (unsigned int seed2Index = seed1Index+1; seed2Index<hits.size(); seed2Index++)
+    {
+      Hit& hSeed2   = hits[seed2Index];
+      int nLaySeed2 = hSeed2.getLayer();
+
+      if (nLaySeed1 == nLaySeed2) continue; //The seed layers have to be differents
+      if (nLaySeed2 > 4) break;             //no more possible combinations for the current seed1
+
+
+      //We have a correct Seed1/Seed2 combination !!!
+
+      //Current candidate initialization (the 2 seeds)
+      vecCurrentCandidateHits.clear();
+      vecCurrentCandidateHits.push_back(&hSeed1);
+      vecCurrentCandidateHits.push_back(&hSeed2);
+
+      vecCurrentCandidateScore.clear();
+
+
+      for (unsigned int testStubIndex = seed2Index+1; testStubIndex<hits.size(); testStubIndex++)
+      {
+
+        Hit& hTestStub    = hits[testStubIndex];
+        int nLayTestStub  = hTestStub.getLayer();
+
+        if (nLayTestStub == nLaySeed2) continue; //The layers have to be differents
+
+        
+        //Score processing of the Seed1/Seed2/testStub combination
+        float tabScore[2];
+        alignScore(hSeed1, hSeed2, hTestStub, tabScore, nFractionnalPartWidth);
+        
+        cout<< "Score RPHI = "<<tabScore[0]<<"   Score RZ = "<<tabScore[1]<<endl;
+
+        //Get the thresholds corresponding to the current layer combination
+        float tabThresh[2];
+        getThresholds(nLaySeed1, nLaySeed2, nLayTestStub, tabThresh);
+
+        if (tabScore[0] <= tabThresh[0] && tabScore[1] <= tabThresh[1])
+        {
+          //The stub is in the window defined by the seed projection (correct stub candidate !)
+          
+          if (nLayTestStub != vecCurrentCandidateHits.back()->getLayer())
+          {
+            //The current testStub layer is not yet in the TC
+            vecCurrentCandidateHits.push_back(&hTestStub);
+            vecCurrentCandidateScore.push_back(tabScore[0]);
+          }
+          else if (tabScore[0] < vecCurrentCandidateScore.back())
+          {
+            //The layer is already in the TC but the Phi score of the current stub is better than the previous one
+            vecCurrentCandidateHits.back()   = &hTestStub;            
+            vecCurrentCandidateScore.back()  = tabScore[0];
+          }
+        }
+      }
+
+      //If the current candidate own more than 6 stubs, the lasts (outtermost) are removed
+      while (vecCurrentCandidateHits.size() > 6)
+      {
+        vecCurrentCandidateHits.pop_back();
+        vecCurrentCandidateScore.pop_back();
+      }
+
+      //All the stubs have been tested for the current Seeds combination
+
+      if (int(vecCurrentCandidateHits.size()) >= nLayersCurrentPattern - nMissingHits)
+      {
+        //The current candidate has enough stubs to be a candidate
+ 
+        //Process the score of the track candidate
+        float fCurrentCandidateScore = 0.0;
+        while (vecCurrentCandidateScore.empty() == false)
+        {
+          fCurrentCandidateScore += vecCurrentCandidateScore.back();  //TODO abs + norm?
+          vecCurrentCandidateScore.pop_back();
+        }
+
+        if (vecCurrentCandidateHits.size() > vecBestCandidateHits.size() || (vecCurrentCandidateHits.size() == vecBestCandidateHits.size() && fCurrentCandidateScore < fBestCandidateScore))
+        {
+          //The current candidate is better than the previous best one
+          vecBestCandidateHits = vecCurrentCandidateHits;
+          fBestCandidateScore = fCurrentCandidateScore;
+        }
+      }
+    }
+  }
+
+  //All the Seeds combinations have been tested
+
+  if (vecBestCandidateHits.empty() == false)
+  {
+    //If there is a recorded best candidate
+
+    //Fit the parameters and create the corresponding track object
+    Track * fit_track;
+    fit_track = createFittedTrack(vecBestCandidateHits);
+    
+    cout<<"adding one track..."<<endl;
+    tracks.push_back(fit_track);
+  }
+
 }
 
 void TCBuilder::fit(){

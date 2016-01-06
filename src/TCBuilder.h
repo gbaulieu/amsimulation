@@ -66,6 +66,14 @@ class TCBuilder:public TrackFitter{
   void initialize();
   void mergePatterns();
   void mergeTracks();
+
+  Track* createFittedTrack(vector <Hit*>&);
+
+  void getThresholds(int, int, int, float[]);
+  char transcodeLayer(Hit *);
+  float binning(float, int);
+  void alignScore(Hit& , Hit& , Hit& , float [] , int);
+
   void fit();
   void fit(vector<Hit*> hits);
   TrackFitter* clone();
