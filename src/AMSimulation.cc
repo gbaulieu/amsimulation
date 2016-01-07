@@ -122,9 +122,9 @@ using namespace std;
    ./AMSimulation --MergeBanks --inputFile testPT2-10.pbk --secondFile testPT10-50.pbk --outputFile testPT2-10-50.pbk
    \endcode
    \subsection find Finding patterns in events
-   To search for patterns in events, enter :
+   To search for patterns in events (a branch will be added to the input file), enter :
    \code
-   ./AMSimulation --findPatterns --inputFile <path to Root File containing events (local or RFIO)> --bankFile <path to your pattern bank file> --outputFile <Root output file> --ss_threshold <minimum number of stubs to activate the pattern> --startEvent <Index of first event to analyse> --stopEvent <Index of last event to analyse>
+   ./AMSimulation --findPatterns --inputFile <path to Root File containing events (local or RFIO)> --bankFile <path to your pattern bank file> --ss_threshold <minimum number of stubs to activate the pattern> --startEvent <Index of first event to analyse> --stopEvent <Index of last event to analyse>
    \endcode
 
    If you add the option --verbose to the previous command, for each stub in the trigger tower the program will display the stub's informations along with the corresponding superstrip value. The format is one line per stub + one line per superstrip (the first value is the layer's ID, the second value is the superstrip value in hexadecimal). 
@@ -878,7 +878,7 @@ int main(int av, char** ac){
     ("MergeSectors", "Merge 2 root files having same events but different sectors (needs --inputFile --secondFile and --outputFile)")
     ("MergeBanks", "Merge 2 bank files having only 1 sector (needs --inputFile --secondFile and --outputFile)")
     ("buildFitParams", "Computes the Fit parameters for the given bank using tracks from the given directory (needs --bankFile, --input_directory and --outputFile)")
-    ("findPatterns", "Search for patterns in an event file (needs --ss_threshold --inputFile, --bankFile, --outputFile, --startEvent and --stopEvent)")
+    ("findPatterns", "Search for patterns in an event file (needs --ss_threshold --inputFile, --bankFile, --startEvent and --stopEvent)")
 #ifdef USE_CUDA
     ("useGPU", "Use the GPU card to accelerate the pattern recognition (needs cuda libraries and a configured GPU card)")
 #endif
@@ -1246,7 +1246,7 @@ int main(int av, char** ac){
 
       st.getAllSectors()[0]->linkCuda(&d_pb,&d_detector);
 
-      PatternFinder pf(vm["ss_threshold"].as<int>(), &st,  vm["inputFile"].as<string>().c_str(),  vm["outputFile"].as<string>().c_str(), 
+      PatternFinder pf(vm["ss_threshold"].as<int>(), &st,  vm["inputFile"].as<string>().c_str(),  vm["inputFile"].as<string>().c_str(), 
 		       &d_pb, &d_detector, &d_param); 
       {
 	boost::progress_timer t;
@@ -1274,7 +1274,7 @@ int main(int av, char** ac){
 	nbMissingHit=-1;
 	threshold=vm["ss_threshold"].as<int>();
       }
-      PatternFinder pf(threshold, &st,  vm["inputFile"].as<string>().c_str(),  vm["outputFile"].as<string>().c_str());
+      PatternFinder pf(threshold, &st,  vm["inputFile"].as<string>().c_str(),  vm["inputFile"].as<string>().c_str());
       {
 	boost::progress_timer t;
 	int start = vm["startEvent"].as<int>();
