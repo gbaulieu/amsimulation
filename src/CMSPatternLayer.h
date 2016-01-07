@@ -107,9 +107,10 @@ class CMSPatternLayer : public PatternLayer{
      \param strip The value of the stub's strip
      \param seg The value of the stub's segment
      \param sstripSize The size of a superstrip in numbner of strips
+     \param isPS True if we are on a P/S module
      \param fake True if you are building a fake superstrip
    **/
-  void computeSuperstrip(short layerID, short module, short phi, short strip, short seg, int sstripSize, bool fake=0);
+  void computeSuperstrip(short layerID, short module, short phi, short strip, short seg, int sstripSize, bool isPS, bool fake=0);
 
   /**
      \brief Returns a string representation of the PatternLayer
