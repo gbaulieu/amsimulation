@@ -396,7 +396,14 @@ Track* TCBuilder::createFittedTrack(vector <Hit*> &bestTC)
     
   int charge =-b/fabs(b);
    
-  phi_est = atan2(charge*a,-charge*b)+sec_phi;
+  phi_est = atan2(charge*a,-charge*b);
+
+  //Apply the rotation
+  phi_est += sec_phi;
+
+  //Set the value betweend -Pi and Pi
+  phi_est = fmod(phi_est + M_PI, 2 * M_PI) - M_PI;
+
   pt_est  = 0.003*3.833*sqrt(a*a+b*b);
 
   // Then we do the RZ fit (LS)
@@ -641,7 +648,7 @@ void TCBuilder::fit(vector<Hit*> originalHits)
     currentSec = SEC_ENDCAP;
 
   //Process the starting phi of the tower
-  double sec_phi = (tow%8) * M_PI / 4.0 - 0.4;
+  sec_phi = (tow%8) * M_PI / 4.0 - 0.4;
 
   //cos and sin values for a rotation of an angle -sec_phi
   double ci = cos(-sec_phi);
