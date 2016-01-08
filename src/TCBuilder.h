@@ -10,6 +10,9 @@
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/export.hpp>
 
+
+enum SEC_TYPE {SEC_BARREL, SEC_HYBRID, SEC_ENDCAP};
+
 /**
    \brief Implementation of a Seed Clustering  fitter
 **/
@@ -35,20 +38,12 @@ class TCBuilder:public TrackFitter{
   
   BOOST_SERIALIZATION_SPLIT_MEMBER()
 
+  double m_tabBarrelThresholds[2][3][10][2];  //Barrel LayMaxSeed1 = 1, LayMaxSeed2 = 2, LayMaxTestStub = 10
+  double m_tabHybridThresholds[2][3][14][2];  //Hybrid LayMaxSeed1 = 1, LayMaxSeed2 = 2, LayMaxTestStub = 13
+  double m_tabEndcapThresholds[4][5][16][2];  //Endcap LayMaxSeed1 = 3, LayMaxSeed2 = 4, LayMaxTestStub = 15
 
-  double fenetre_b_z[3][6];
-  double fenetre_b_phi[3][6];
-
-  double fenetre_e_r[3][15];
-  double fenetre_e_phi[3][15];
-
-  std::vector< std::vector<int> > idxs_lay;
-  std::vector< std::vector<int> > list_cand6;
-  std::vector<float> list_scores6;
-  std::vector< std::vector<int> > list_cand5;
-  std::vector<float> list_scores5;
-  
-  unsigned int m_nLayer;
+  int m_nFractionnalPartWidth;
+  int m_nMissingHits;
 
  public:
 
@@ -68,11 +63,12 @@ class TCBuilder:public TrackFitter{
   void mergeTracks();
 
   Track* createFittedTrack(vector <Hit*>&);
-
-  void getThresholds(int, int, int, float[]);
+  
+  void addThresholds(int, int, int, SEC_TYPE, double, double);
+  void getThresholds(int, int, int, SEC_TYPE, double[]);
   char transcodeLayer(Hit *);
-  float binning(float, int);
-  void alignScore(Hit& , Hit& , Hit& , float [] , int);
+  double binning(double, int);
+  void alignScore(Hit& , Hit& , Hit& , double []);
 
   void fit();
   void fit(vector<Hit*> hits);

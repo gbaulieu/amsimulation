@@ -13,130 +13,183 @@ TCBuilder::TCBuilder():TrackFitter(0){
 TCBuilder::TCBuilder(int nb):TrackFitter(nb)
 {
 
-  //Layer infos
-  m_nLayer = 6;
+  cout <<"Begin TC builder init"<<endl;
 
-  //
-  // Initialisation of the matching windows
-  //
+  m_nMissingHits = 1;           //Maximum number of missing layers in a TC (from the number of layers in the pattern)
+  m_nFractionnalPartWidth = 0;  //Binning
 
-  for (int i=0;i<3;++i)
+  //If m_nFractionnalPartWidth != 10 bits, the floating point thresholds are used
+
+  if (m_nFractionnalPartWidth == 10)
   {
-    for (int j=0;j<6;++j)
-    {
-      fenetre_b_z[i][j]=-1;
-      fenetre_b_phi[i][j]=-1;
-    }    
+  /* 10 bits fractionnal part Thresholds */
+  
+  //Barrel
+  addThresholds( 0,  1,  2, SEC_BARREL, 0.031250, 3.665039);
+  addThresholds( 0,  1,  8, SEC_BARREL, 0.074219, 38.231445);
+  addThresholds( 0,  1,  9, SEC_BARREL, 0.118164, 39.138672);
+  addThresholds( 0,  1, 10, SEC_BARREL, 0.160156, 42.259766);
+  addThresholds( 0,  2,  8, SEC_BARREL, 0.065430, 74.090820);
+  addThresholds( 0,  2,  9, SEC_BARREL, 0.145508, 74.028320);
+  addThresholds( 0,  2, 10, SEC_BARREL, 0.223633, 79.116211);
+  addThresholds( 1,  2,  8, SEC_BARREL, 0.031250, 41.812500);
+  addThresholds( 1,  2,  9, SEC_BARREL, 0.079102, 43.343750);
+  addThresholds( 1,  2, 10, SEC_BARREL, 0.096680, 45.228516);
 
-    for (int j=0;j<15;++j)
-    {
-      fenetre_e_r[i][j]=-1;
-      fenetre_e_phi[i][j]=-1;
-    } 
+  //Hybrid
+  addThresholds( 0,  1,  2, SEC_HYBRID, 0.038086, 4.089844);
+  addThresholds( 0,  1,  8, SEC_HYBRID, 0.061523, 36.709961);
+  addThresholds( 0,  1,  9, SEC_HYBRID, 0.125000, 38.314453);
+  addThresholds( 0,  1, 10, SEC_HYBRID, 0.125000, 42.623047);
+  addThresholds( 0,  1, 11, SEC_HYBRID, 0.134766, 62.708984);
+  addThresholds( 0,  1, 12, SEC_HYBRID, 0.126953, 67.507812);
+  addThresholds( 0,  1, 13, SEC_HYBRID, 0.172852, 70.373047);
+  addThresholds( 0,  2,  8, SEC_HYBRID, 0.093750, 74.268555);
+  addThresholds( 0,  2,  9, SEC_HYBRID, 0.129883, 76.775391);
+  addThresholds( 0,  2, 10, SEC_HYBRID, 0.125977, 79.952148);
+  addThresholds( 0,  2, 11, SEC_HYBRID, 0.180664, 144.421875);
+  addThresholds( 0,  2, 12, SEC_HYBRID, 0.205078, 140.078125);
+  addThresholds( 0,  2, 13, SEC_HYBRID, 0.201172, 146.367188);
+  addThresholds( 1,  2,  8, SEC_HYBRID, 0.042969, 41.355469);
+  addThresholds( 1,  2,  9, SEC_HYBRID, 0.084961, 39.357422);
+  addThresholds( 1,  2, 10, SEC_HYBRID, 0.093750, 46.836914);
+  addThresholds( 1,  2, 11, SEC_HYBRID, 0.106445, 87.046875);
+  addThresholds( 1,  2, 12, SEC_HYBRID, 0.117188, 79.388672);
+  addThresholds( 1,  2, 13, SEC_HYBRID, 0.097656, 81.233398);
+
+  //Endcap
+  addThresholds( 0,  1,  3, SEC_ENDCAP, 0.040039, 5.756836);
+  addThresholds( 0,  1,  4, SEC_ENDCAP, 0.082031, 6.778320);
+  addThresholds( 0,  1,  5, SEC_ENDCAP, 0.045898, 6.506836);
+  addThresholds( 0,  1, 11, SEC_ENDCAP, 0.078125, 64.822266);
+  addThresholds( 0,  1, 12, SEC_ENDCAP, 0.116211, 81.608398);
+  addThresholds( 0,  1, 13, SEC_ENDCAP, 0.143555, 92.575195);
+  addThresholds( 0,  1, 14, SEC_ENDCAP, 0.203125, 97.450195);
+  addThresholds( 0,  1, 15, SEC_ENDCAP, 0.309570, 96.867188);
+  addThresholds( 0,  3,  4, SEC_ENDCAP, 0.056641, 10.769531);
+  addThresholds( 0,  3,  5, SEC_ENDCAP, 0.053711, 19.661133);
+  addThresholds( 0,  3,  6, SEC_ENDCAP, 0.049805, 13.232422);
+  addThresholds( 0,  3,  7, SEC_ENDCAP, 0.051758, 11.861328);
+  addThresholds( 0,  3, 11, SEC_ENDCAP, 0.148438, 190.636719);
+  addThresholds( 0,  3, 12, SEC_ENDCAP, 0.167969, 195.087891);
+  addThresholds( 0,  3, 13, SEC_ENDCAP, 0.219727, 193.606445);
+  addThresholds( 0,  3, 14, SEC_ENDCAP, 0.246094, 208.910156);
+  addThresholds( 0,  3, 15, SEC_ENDCAP, 0.405273, 210.363281);
+  addThresholds( 0,  4,  5, SEC_ENDCAP, 0.040039, 18.907227);
+  addThresholds( 0,  4,  6, SEC_ENDCAP, 0.052734, 13.366211);
+  addThresholds( 0,  4,  7, SEC_ENDCAP, 0.050781, 12.603516);
+  addThresholds( 0,  4, 12, SEC_ENDCAP, 0.228516, 220.043945);
+  addThresholds( 0,  4, 13, SEC_ENDCAP, 0.137695, 227.261719);
+  addThresholds( 0,  4, 14, SEC_ENDCAP, 0.236328, 229.281250);
+  addThresholds( 0,  4, 15, SEC_ENDCAP, 0.365234, 200.322266);
+  addThresholds( 1,  3,  4, SEC_ENDCAP, 0.019531, 7.486328);
+  addThresholds( 1,  3,  5, SEC_ENDCAP, 0.020508, 6.088867);
+  addThresholds( 1,  3, 11, SEC_ENDCAP, 0.102539, 128.959961);
+  addThresholds( 1,  3, 12, SEC_ENDCAP, 0.096680, 118.861328);
+  addThresholds( 1,  3, 13, SEC_ENDCAP, 0.118164, 122.890625);
+  addThresholds( 1,  3, 14, SEC_ENDCAP, 0.106445, 130.061523);
+  addThresholds( 1,  3, 15, SEC_ENDCAP, 0.131836, 124.733398);
+  addThresholds( 1,  4,  5, SEC_ENDCAP, 0.014648, 6.622070);
+  addThresholds( 1,  4, 12, SEC_ENDCAP, 0.107422, 150.178711);
+  addThresholds( 1,  4, 13, SEC_ENDCAP, 0.096680, 141.776367);
+  addThresholds( 1,  4, 14, SEC_ENDCAP, 0.148438, 156.682617);
+  addThresholds( 1,  4, 15, SEC_ENDCAP, 0.196289, 137.015625);
+  addThresholds( 3,  4,  5, SEC_ENDCAP, 0.012695, 7.040039);
+  addThresholds( 3,  4,  6, SEC_ENDCAP, 0.021484, 10.887695);
+  addThresholds( 3,  4,  7, SEC_ENDCAP, 0.022461, 15.625977);
+  addThresholds( 3,  4, 12, SEC_ENDCAP, 0.056641, 60.820312);
+  addThresholds( 3,  4, 13, SEC_ENDCAP, 0.044922, 61.541016);
+  addThresholds( 3,  4, 14, SEC_ENDCAP, 0.053711, 63.903320);
+  addThresholds( 3,  4, 15, SEC_ENDCAP, 0.069336, 76.256836);
+
+  /* End of 10 bits fractionnal part Thresholds */
+
+  }
+  else
+  {
+  /* Floating point Thresholds */
+
+  //Barrel
+  addThresholds( 0,  1,  2, SEC_BARREL, 0.025571, 3.656240);
+  addThresholds( 0,  1,  8, SEC_BARREL, 0.075301, 38.258154);
+  addThresholds( 0,  1,  9, SEC_BARREL, 0.124700, 39.175377);
+  addThresholds( 0,  1, 10, SEC_BARREL, 0.155787, 42.231133);
+  addThresholds( 0,  2,  8, SEC_BARREL, 0.056070, 74.100319);
+  addThresholds( 0,  2,  9, SEC_BARREL, 0.132452, 74.038652);
+  addThresholds( 0,  2, 10, SEC_BARREL, 0.210517, 79.126298);
+  addThresholds( 1,  2,  8, SEC_BARREL, 0.017905, 41.821861);
+  addThresholds( 1,  2,  9, SEC_BARREL, 0.059329, 43.340059);
+  addThresholds( 1,  2, 10, SEC_BARREL, 0.089593, 45.167844);
+
+  //Hybrid
+  addThresholds( 0,  1,  2, SEC_HYBRID, 0.030079, 4.083949);
+  addThresholds( 0,  1,  8, SEC_HYBRID, 0.059964, 36.661217);
+  addThresholds( 0,  1,  9, SEC_HYBRID, 0.124758, 38.346169);
+  addThresholds( 0,  1, 10, SEC_HYBRID, 0.129082, 42.516624);
+  addThresholds( 0,  1, 11, SEC_HYBRID, 0.121676, 62.673522);
+  addThresholds( 0,  1, 12, SEC_HYBRID, 0.122195, 67.448446);
+  addThresholds( 0,  1, 13, SEC_HYBRID, 0.193056, 70.364759);
+  addThresholds( 0,  2,  8, SEC_HYBRID, 0.069076, 74.257499);
+  addThresholds( 0,  2,  9, SEC_HYBRID, 0.117036, 76.740289);
+  addThresholds( 0,  2, 10, SEC_HYBRID, 0.134230, 79.913063);
+  addThresholds( 0,  2, 11, SEC_HYBRID, 0.179327, 144.488991);
+  addThresholds( 0,  2, 12, SEC_HYBRID, 0.194377, 140.078556);
+  addThresholds( 0,  2, 13, SEC_HYBRID, 0.243792, 146.363807);
+  addThresholds( 1,  2,  8, SEC_HYBRID, 0.036669, 41.356791);
+  addThresholds( 1,  2,  9, SEC_HYBRID, 0.102266, 39.336151);
+  addThresholds( 1,  2, 10, SEC_HYBRID, 0.046263, 46.853872);
+  addThresholds( 1,  2, 11, SEC_HYBRID, 0.092028, 87.089641);
+  addThresholds( 1,  2, 12, SEC_HYBRID, 0.096336, 79.450331);
+  addThresholds( 1,  2, 13, SEC_HYBRID, 0.091826, 81.263897);
+
+  //Endcap
+  addThresholds( 0,  1,  3, SEC_ENDCAP, 0.049016, 5.789638);
+  addThresholds( 0,  1,  4, SEC_ENDCAP, 0.098305, 6.791889);
+  addThresholds( 0,  1,  5, SEC_ENDCAP, 0.025410, 6.441114);
+  addThresholds( 0,  1, 11, SEC_ENDCAP, 0.075897, 64.845979);
+  addThresholds( 0,  1, 12, SEC_ENDCAP, 0.094022, 81.627829);
+  addThresholds( 0,  1, 13, SEC_ENDCAP, 0.149944, 92.453032);
+  addThresholds( 0,  1, 14, SEC_ENDCAP, 0.213731, 97.360846);
+  addThresholds( 0,  1, 15, SEC_ENDCAP, 0.334518, 96.698723);
+  addThresholds( 0,  3,  4, SEC_ENDCAP, 0.056367, 10.747764);
+  addThresholds( 0,  3,  5, SEC_ENDCAP, 0.048138, 19.651452);
+  addThresholds( 0,  3,  6, SEC_ENDCAP, 0.032072, 13.317437);
+  addThresholds( 0,  3,  7, SEC_ENDCAP, 0.037592, 11.832096);
+  addThresholds( 0,  3, 11, SEC_ENDCAP, 0.157577, 190.592070);
+  addThresholds( 0,  3, 12, SEC_ENDCAP, 0.163619, 195.157998);
+  addThresholds( 0,  3, 13, SEC_ENDCAP, 0.196538, 193.688462);
+  addThresholds( 0,  3, 14, SEC_ENDCAP, 0.226246, 208.811893);
+  addThresholds( 0,  3, 15, SEC_ENDCAP, 0.368564, 210.417263);
+  addThresholds( 0,  4,  5, SEC_ENDCAP, 0.033095, 18.907360);
+  addThresholds( 0,  4,  6, SEC_ENDCAP, 0.030136, 13.398305);
+  addThresholds( 0,  4,  7, SEC_ENDCAP, 0.044999, 12.633459);
+  addThresholds( 0,  4, 12, SEC_ENDCAP, 0.195552, 220.013405);
+  addThresholds( 0,  4, 13, SEC_ENDCAP, 0.134733, 227.209487);
+  addThresholds( 0,  4, 14, SEC_ENDCAP, 0.231035, 229.285057);
+  addThresholds( 0,  4, 15, SEC_ENDCAP, 0.342347, 200.509661);
+  addThresholds( 1,  3,  4, SEC_ENDCAP, 0.011823, 7.458285);
+  addThresholds( 1,  3,  5, SEC_ENDCAP, 0.007385, 6.078510);
+  addThresholds( 1,  3, 11, SEC_ENDCAP, 0.109007, 128.931298);
+  addThresholds( 1,  3, 12, SEC_ENDCAP, 0.103831, 118.932845);
+  addThresholds( 1,  3, 13, SEC_ENDCAP, 0.112873, 122.867231);
+  addThresholds( 1,  3, 14, SEC_ENDCAP, 0.124153, 130.008205);
+  addThresholds( 1,  3, 15, SEC_ENDCAP, 0.101961, 124.808447);
+  addThresholds( 1,  4,  5, SEC_ENDCAP, 0.007987, 6.613035);
+  addThresholds( 1,  4, 12, SEC_ENDCAP, 0.107208, 150.096417);
+  addThresholds( 1,  4, 13, SEC_ENDCAP, 0.093686, 141.718773);
+  addThresholds( 1,  4, 14, SEC_ENDCAP, 0.158431, 156.732945);
+  addThresholds( 1,  4, 15, SEC_ENDCAP, 0.151566, 137.073274);
+  addThresholds( 3,  4,  5, SEC_ENDCAP, 0.007473, 7.082068);
+  addThresholds( 3,  4,  6, SEC_ENDCAP, 0.010956, 10.968808);
+  addThresholds( 3,  4,  7, SEC_ENDCAP, 0.021753, 15.601805);
+  addThresholds( 3,  4, 12, SEC_ENDCAP, 0.048389, 60.788335);
+  addThresholds( 3,  4, 13, SEC_ENDCAP, 0.036618, 61.534191);
+  addThresholds( 3,  4, 14, SEC_ENDCAP, 0.045263, 63.905185);
+  addThresholds( 3,  4, 15, SEC_ENDCAP, 0.050656, 76.211291);
+
+  /* End of Floating point Thresholds */
   }
 
-  // Windows for the barrel towers
-  // 1 z window per layer (in cm)
-  // 1 phi window per layer (in rad)
-
-  fenetre_b_z[2][0]  = 0.28;  
-  fenetre_b_z[2][1]  = 0.14;  
-  fenetre_b_z[2][2]  = 0.34;  
-  fenetre_b_z[2][3]  = 2.8;  
-  fenetre_b_z[2][4]  = 3.0;  
-  fenetre_b_z[2][5]  = 3.2;  
-  fenetre_b_phi[2][0]= 0.0026;  
-  fenetre_b_phi[2][1]= 0.0013;  
-  fenetre_b_phi[2][2]= 0.003;  
-  fenetre_b_phi[2][3]= 0.0065;  
-  fenetre_b_phi[2][4]= 0.0115;  
-  fenetre_b_phi[2][5]= 0.016;  
-   
-  // Windows for the endcap towers
-  // For barrel layers
-  // 1 z window per layer (in cm)
-  // 1 phi window per layer (in rad)
-
-  fenetre_b_z[0][0]  = 1.6;  
-  fenetre_b_z[0][1]  = 0.9;  
-  fenetre_b_phi[0][0]= 0.0038;  
-  fenetre_b_phi[0][1]= 0.0016;  
- 
-  // For disks
-  // 1 r window per ring (in cm)
-  // 1 phi window per ring (in rad)
-  fenetre_e_r[0][0]  = 0.1;  
-  fenetre_e_r[0][1]  = 0.25;  
-  fenetre_e_r[0][2]  = 0.33;  
-  fenetre_e_r[0][3]  = 0.38;  
-  fenetre_e_r[0][4]  = 0.46;  
-  fenetre_e_r[0][5]  = 0.5;  
-  fenetre_e_r[0][6]  = 0.65;  
-  fenetre_e_r[0][7]  = 0.7;  
-  fenetre_e_r[0][8]  = 0.75;
-  fenetre_e_r[0][9]  = 2.9;
-  fenetre_e_r[0][10] = 2.8;
-  fenetre_e_r[0][11] = 3.0;
-  fenetre_e_r[0][12] = 3.0;
-  fenetre_e_r[0][13] = 3.1;
-  fenetre_e_r[0][14] = 3.2;
-  fenetre_e_phi[0][0]= 0.0006;  
-  fenetre_e_phi[0][1]= 0.0018;  
-  fenetre_e_phi[0][2]= 0.0025;  
-  fenetre_e_phi[0][3]= 0.0038;  
-  fenetre_e_phi[0][4]= 0.005;  
-  fenetre_e_phi[0][5]= 0.0055;  
-  fenetre_e_phi[0][6]= 0.007;  
-  fenetre_e_phi[0][7]= 0.008;  
-  fenetre_e_phi[0][8]= 0.008; 
-  fenetre_e_phi[0][9]= 0.010; 
-  fenetre_e_phi[0][10]= 0.010; 
-  fenetre_e_phi[0][11]= 0.012; 
-  fenetre_e_phi[0][12]= 0.012; 
-  fenetre_e_phi[0][13]= 0.015; 
-  fenetre_e_phi[0][14]= 0.017; 
-
- // Windows for the hybrid towers
-
-  fenetre_b_z[1][0]  = 0.28;  
-  fenetre_b_z[1][1]  = 0.14;  
-  fenetre_b_z[1][2]  = 0.34;  
-  fenetre_b_z[1][3]  = 2.8;  
-  fenetre_b_z[1][4]  = 3.0;  
-  fenetre_b_z[1][5]  = 3.2;  
-  fenetre_b_phi[1][0]= 0.0026;  
-  fenetre_b_phi[1][1]= 0.0013;  
-  fenetre_b_phi[1][2]= 0.003;  
-  fenetre_b_phi[1][3]= 0.0065;  
-  fenetre_b_phi[1][4]= 0.0115;  
-  fenetre_b_phi[1][5]= 0.016; 
-  
-  fenetre_e_r[1][3]  = 0.08;  
-  fenetre_e_r[1][4]  = 0.09;  
-  fenetre_e_r[1][5]  = 0.11;  
-  fenetre_e_r[1][6]  = 0.12;  
-  fenetre_e_r[1][7]  = 0.14;  
-  fenetre_e_r[1][8]  = 0.16;
-  fenetre_e_r[1][9]  = 2.45;
-  fenetre_e_r[1][10] = 2.6;
-  fenetre_e_r[1][11] = 2.65;
-  fenetre_e_r[1][12] = 2.7;
-  fenetre_e_r[1][13] = 2.8;
-  fenetre_e_r[1][14] = 3.0;
-  fenetre_e_phi[1][3]= 0.00065;  
-  fenetre_e_phi[1][4]= 0.00095;  
-  fenetre_e_phi[1][5]= 0.0018;  
-  fenetre_e_phi[1][6]= 0.0022;  
-  fenetre_e_phi[1][7]= 0.0033;  
-  fenetre_e_phi[1][8]= 0.0036; 
-  fenetre_e_phi[1][9]= 0.007; 
-  fenetre_e_phi[1][10]= 0.0095; 
-  fenetre_e_phi[1][11]= 0.012; 
-  fenetre_e_phi[1][12]= 0.012; 
-  fenetre_e_phi[1][13]= 0.014; 
-  fenetre_e_phi[1][14]= 0.016; 
-
-  // cout<<"TC builder init done"<<endl;
 }
 
 TCBuilder::~TCBuilder()
@@ -185,6 +238,7 @@ void TCBuilder::mergeTracks(){
   cout<<"We have "<<tracks.size()<<" tracks after merging..."<<endl;
 }
 
+/* From the hits of the best TC, process the track parameters, create and fill a Track object and return its pointer */
 Track* TCBuilder::createFittedTrack(vector <Hit*> &bestTC)
 {
   int lay;
@@ -399,81 +453,121 @@ Track* TCBuilder::createFittedTrack(vector <Hit*> &bestTC)
   return fit_track;
 }
 
-float TCBuilder::binning(float fNumber, int nFractionnalPartWidth)
+/* Function which apply a binning on a float number to simulate the Hardware fixed point representation */
+double TCBuilder::binning(double fNumber, int nFractionnalPartWidth)
 {
-  if (nFractionnalPartWidth == 0)
-		//If this parameter is set to zero, no binning is applied
-		return fNumber;
-		
-	//The number is divided by the power of 2 corresponding to the fractionnal part width
-	float divRes = fNumber / pow(2 , -nFractionnalPartWidth);
+  double fDivRes;
+  double fBinnedNumber;
 
-	//The result is rounded to the nearest integer and then multiplied by the power of 2
-	float fBinnedNumber = round(divRes) * pow(2 , -nFractionnalPartWidth);
-	
+  if (nFractionnalPartWidth == 0)
+  {
+		//If this parameter is set to zero, no binning is applied
+		fBinnedNumber = fNumber;
+  }
+  else
+  {
+	  //The number is divided by the power of 2 corresponding to the fractionnal part width
+	  fDivRes = fNumber / pow(2 , -nFractionnalPartWidth);
+
+	  //The result is rounded to the nearest integer and then multiplied by the power of 2
+	  fBinnedNumber = round(fDivRes) * pow(2 , -nFractionnalPartWidth);
+  }
+
 	return fBinnedNumber;
 }
 
-void TCBuilder::alignScore(Hit& hSeed1, Hit& hSeed2, Hit& hTestStub, float tScores[], int nFractionnalPartWidth)
+/* Process the alignment scores (on RPHI and on RZ plan) between the 2 seeds and an other stub */
+void TCBuilder::alignScore(Hit& hSeed1, Hit& hSeed2, Hit& hTestStub, double tScores[])
 {
-  float fRPHI_Score , fRZ_Score;
+  double fRPHI_Score , fRZ_Score;
 
-  float X1, Y1, Z1, R1, PHI1;
-  float X2, Y2, Z2, R2, PHI2;
-  float X3, Y3, Z3, R3, PHI3;
+  double X1, Y1, Z1, R1, PHI1;
+  double X2, Y2, Z2, R2, PHI2;
+  double X3, Y3, Z3, R3, PHI3;
 
-  float RPHI_S1, RPHI_S2, RZ_S1, RZ_S2;
+  double RPHI_S1, RPHI_S2, RZ_S1, RZ_S2;
 
-  X1 = binning(hSeed1.getX(), nFractionnalPartWidth);
-	Y1 = binning(hSeed1.getY(), nFractionnalPartWidth);
-  Z1 = binning(hSeed1.getZ(), nFractionnalPartWidth);
+  //Coordinates X, Y, Z are already binned
+  X1 = hSeed1.getX();
+	Y1 = hSeed1.getY();
+  Z1 = hSeed1.getZ();
 	
-	X2 = binning(hSeed2.getX(), nFractionnalPartWidth);
-	Y2 = binning(hSeed2.getY(), nFractionnalPartWidth);
-	Z2 = binning(hSeed2.getZ(), nFractionnalPartWidth);
+	X2 = hSeed2.getX();
+	Y2 = hSeed2.getY();
+	Z2 = hSeed2.getZ();
 
-	X3 = binning(hTestStub.getX(), nFractionnalPartWidth);
-	Y3 = binning(hTestStub.getY(), nFractionnalPartWidth);
-  Z3 = binning(hTestStub.getZ(), nFractionnalPartWidth);
+	X3 = hTestStub.getX();
+	Y3 = hTestStub.getY();
+  Z3 = hTestStub.getZ();
 	
-	R1 = binning(sqrt(X1*X1 + Y1*Y1), nFractionnalPartWidth);
-	R2 = binning(sqrt(X2*X2 + Y2*Y2), nFractionnalPartWidth);
-	R3 = binning(sqrt(X3*X3 + Y3*Y3), nFractionnalPartWidth);
+	R1 = binning(sqrt(X1*X1 + Y1*Y1), m_nFractionnalPartWidth);
+	R2 = binning(sqrt(X2*X2 + Y2*Y2), m_nFractionnalPartWidth);
+	R3 = binning(sqrt(X3*X3 + Y3*Y3), m_nFractionnalPartWidth);
 
 	//RPHI plan
-  PHI1 = binning(atan(Y1/X1), nFractionnalPartWidth);
-  PHI2 = binning(atan(Y2/X2), nFractionnalPartWidth);
-  PHI3 = binning(atan(Y3/X3), nFractionnalPartWidth);
+  PHI1 = binning(atan(Y1/X1), m_nFractionnalPartWidth);
+  PHI2 = binning(atan(Y2/X2), m_nFractionnalPartWidth);
+  PHI3 = binning(atan(Y3/X3), m_nFractionnalPartWidth);
 
-  RPHI_S1 = binning((PHI2 - PHI1) * (R3 - R2), nFractionnalPartWidth);
-  RPHI_S2 = binning((PHI2 - PHI3) * (R2 - R1), nFractionnalPartWidth);
+  RPHI_S1 = binning((PHI2 - PHI1) * (R3 - R2), m_nFractionnalPartWidth);
+  RPHI_S2 = binning((PHI2 - PHI3) * (R2 - R1), m_nFractionnalPartWidth);
 
-  fRPHI_Score = binning(RPHI_S1 + RPHI_S2, nFractionnalPartWidth);
+  fRPHI_Score = binning(RPHI_S1 + RPHI_S2, m_nFractionnalPartWidth);
 
   //RZ plan
+  RZ_S1 = binning((Z2 - Z1) * (R3 - R2), m_nFractionnalPartWidth);
+  RZ_S2 = binning((Z2 - Z3) * (R2 - R1), m_nFractionnalPartWidth);
 
-  RZ_S1 = binning((Z2 - Z1) * (R3 - R2), nFractionnalPartWidth);
-  RZ_S2 = binning((Z2 - Z3) * (R2 - R1), nFractionnalPartWidth);
-
-  fRZ_Score = binning(RZ_S1 + RZ_S2, nFractionnalPartWidth);
+  fRZ_Score = binning(RZ_S1 + RZ_S2, m_nFractionnalPartWidth);
 
   tScores[0] = fRPHI_Score;
   tScores[1] = fRZ_Score;
 }
 
-void TCBuilder::getThresholds(int nLaySeed1, int nLaySeed2, int nLayTestStub, float tabThresh[])
+
+/* Fill thresholds data with new thresholds */
+void TCBuilder::addThresholds(int nLaySeed1, int nLaySeed2, int nLayTestStub, SEC_TYPE secType, double fRPHI_Thresh, double fRZ_Thresh)
 {
-  tabThresh[0] = 25.0;
-  tabThresh[1] = 25.0;
+
+  //Fill the tab corresponding to the sector type with the pair of thresholds
+  switch (secType)
+  {
+    case SEC_BARREL : m_tabBarrelThresholds[nLaySeed1][nLaySeed2][nLayTestStub][0] = fRPHI_Thresh;
+                      m_tabBarrelThresholds[nLaySeed1][nLaySeed2][nLayTestStub][1] = fRZ_Thresh;
+                      break;
+    case SEC_HYBRID : m_tabHybridThresholds[nLaySeed1][nLaySeed2][nLayTestStub][0] = fRPHI_Thresh;
+                      m_tabHybridThresholds[nLaySeed1][nLaySeed2][nLayTestStub][1] = fRZ_Thresh;
+                      break;
+    case SEC_ENDCAP : m_tabEndcapThresholds[nLaySeed1][nLaySeed2][nLayTestStub][0] = fRPHI_Thresh;
+                      m_tabEndcapThresholds[nLaySeed1][nLaySeed2][nLayTestStub][1] = fRZ_Thresh;
+  }
 }
 
+/* Get the thresholds corresponding to the 3 layerID for a given sector type */
+void TCBuilder::getThresholds(int nLaySeed1, int nLaySeed2, int nLayTestStub, SEC_TYPE secType, double tabThresh[])
+{
+  switch (secType)
+  {
+    case SEC_BARREL : tabThresh[0] = m_tabBarrelThresholds[nLaySeed1][nLaySeed2][nLayTestStub][0];
+                      tabThresh[1] = m_tabBarrelThresholds[nLaySeed1][nLaySeed2][nLayTestStub][1];
+                      break;
+    case SEC_HYBRID : tabThresh[0] = m_tabHybridThresholds[nLaySeed1][nLaySeed2][nLayTestStub][0];
+                      tabThresh[1] = m_tabHybridThresholds[nLaySeed1][nLaySeed2][nLayTestStub][1];
+                      break;
+    case SEC_ENDCAP : tabThresh[0] = m_tabEndcapThresholds[nLaySeed1][nLaySeed2][nLayTestStub][0];
+                      tabThresh[1] = m_tabEndcapThresholds[nLaySeed1][nLaySeed2][nLayTestStub][1];
+  }
+}
+
+
+/* Operate the layerID transcoding (to get the layerID 4bits Hardawre representation) */
 char TCBuilder::transcodeLayer(Hit * pHit)
 {
   int nOrigLayer = pHit->getLayer();
 
   //layer transcoding of the disks is based on the radius, it can be optimized by using the ladder_ID
-  int X = pHit->getX();
-  int Y = pHit->getY();
+  double X = pHit->getX();
+  double Y = pHit->getY();
 
   int nTransLayer;
 		
@@ -527,26 +621,33 @@ char TCBuilder::transcodeLayer(Hit * pHit)
 }
 
 // TC builder module
-//
-// Take as input the list of stubs contained in a matched road
+/* Take as input the list of stubs contained in a matched road */
 
 void TCBuilder::fit(vector<Hit*> originalHits)
 {
-  int nFractionnalPartWidth = 0;
-  int nMissingHits = 1;
 
   cout<<"trying to fit "<<originalHits.size()<<" points"<<endl;
 
   int tow = sector_id; // The tower ID, necessary to get the phi shift
-  
+
+  SEC_TYPE currentSec;
+
+  //Get the sec_type from the sector_id
+  if (tow >= 16 && tow <= 31)
+    currentSec = SEC_BARREL; 
+  else if (tow >=8 && tow <=39)
+    currentSec = SEC_HYBRID;
+  else
+    currentSec = SEC_ENDCAP;
+
   //Process the starting phi of the tower
-  float sec_phi = (tow%8) * M_PI / 4 - 0.4;
+  double sec_phi = (tow%8) * M_PI / 4.0 - 0.4;
 
   //cos and sin values for a rotation of an angle -sec_phi
-  float ci = cos(-sec_phi);
-  float si = sin(-sec_phi);
+  double ci = cos(-sec_phi);
+  double si = sin(-sec_phi);
 
-  float rotatedX, rotatedY;
+  double rotatedX, rotatedY;
 
   //Create a new vector to store the custom hits parameters
   vector <Hit> hits;
@@ -561,7 +662,7 @@ void TCBuilder::fit(vector<Hit*> originalHits)
     //Process the rotated coordinnates
     rotatedX = pOrigHit->getX() * ci - pOrigHit->getY() * si;
     rotatedY = pOrigHit->getX() * si + pOrigHit->getY() * ci;
-    
+
     //Add the modified hit to the hits vector
     hits.push_back( Hit(transcodeLayer(pOrigHit),
                         pOrigHit->getLadder(),
@@ -574,9 +675,9 @@ void TCBuilder::fit(vector<Hit*> originalHits)
                         pOrigHit->getParticuleIP(),
                         pOrigHit->getParticuleETA(),
                         pOrigHit->getParticulePHI0(),
-                        binning(rotatedX, nFractionnalPartWidth),
-                        binning(rotatedY, nFractionnalPartWidth),
-                        binning(pOrigHit->getZ(), nFractionnalPartWidth),
+                        binning(rotatedX, m_nFractionnalPartWidth),
+                        binning(rotatedY, m_nFractionnalPartWidth),
+                        binning(pOrigHit->getZ(), m_nFractionnalPartWidth),
                         pOrigHit->getX0(),
                         pOrigHit->getY0(),
                         pOrigHit->getZ0(),
@@ -589,7 +690,7 @@ void TCBuilder::fit(vector<Hit*> originalHits)
   //(using a lambda definition of the sorting criteria which return a boolean)
   sort(hits.begin(), hits.end(), [ ]( const Hit& lhs, const Hit& rhs ) { return lhs.getLayer() < rhs.getLayer(); });
 
-  
+
   int nLayersCurrentPattern = 0;
   int lastAddedLayer = -1;
   //Count the number of layers present in the pattern
@@ -604,10 +705,10 @@ void TCBuilder::fit(vector<Hit*> originalHits)
 
 
   vector <Hit*> vecCurrentCandidateHits;
-  vector <float> vecCurrentCandidateScore;
+  vector <double> vecCurrentCandidateScore;
 
   vector <Hit*> vecBestCandidateHits;
-  float fBestCandidateScore = 0.0;
+  double fBestCandidateScore = 0.0;
 
   for (unsigned int seed1Index=0; seed1Index<hits.size(); seed1Index++)
   {
@@ -649,14 +750,14 @@ void TCBuilder::fit(vector<Hit*> originalHits)
 
         
         //Score processing of the Seed1/Seed2/testStub combination
-        float tabScore[2];
-        alignScore(hSeed1, hSeed2, hTestStub, tabScore, nFractionnalPartWidth);
+        double tabScore[2];
+        alignScore(hSeed1, hSeed2, hTestStub, tabScore);
         
         //cout<< "Score RPHI = "<<tabScore[0]<<"   Score RZ = "<<tabScore[1]<<endl;
 
         //Get the thresholds corresponding to the current layer combination
-        float tabThresh[2];
-        getThresholds(nLaySeed1, nLaySeed2, nLayTestStub, tabThresh);
+        double tabThresh[2];
+        getThresholds(nLaySeed1, nLaySeed2, nLayTestStub, currentSec, tabThresh);
 
         if (tabScore[0] <= tabThresh[0] && tabScore[1] <= tabThresh[1])
         {
@@ -686,12 +787,12 @@ void TCBuilder::fit(vector<Hit*> originalHits)
 
       //All the stubs have been tested for the current Seeds combination
 
-      if (int(vecCurrentCandidateHits.size()) >= nLayersCurrentPattern - nMissingHits)
+      if (int(vecCurrentCandidateHits.size()) >= nLayersCurrentPattern - m_nMissingHits)
       {
         //The current candidate has enough stubs to be a candidate
  
         //Process the score of the track candidate
-        float fCurrentCandidateScore = 0.0;
+        double fCurrentCandidateScore = 0.0;
         while (vecCurrentCandidateScore.empty() == false)
         {
           fCurrentCandidateScore += abs(vecCurrentCandidateScore.back());  //TODO norm?
@@ -721,7 +822,6 @@ void TCBuilder::fit(vector<Hit*> originalHits)
     cout<<"adding one track..."<<endl;
     tracks.push_back(fit_track);
   }
-
 }
 
 void TCBuilder::fit(){
