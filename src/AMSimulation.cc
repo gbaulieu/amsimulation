@@ -1438,7 +1438,6 @@ int main(int av, char** ac){
       vector<int> layers = mySector->getLayersID();
       int expected_active_layers = -1;
       bool hybrid_sector = layers.size()>8;//we have more layers than input buses
-      bool first_pass=true;
 
       int biggestID = -1;//last layer of the sector
       int biggestBarrelID = -1;//last barrel layer of the sector
@@ -1505,67 +1504,60 @@ int main(int av, char** ac){
       cout<<"** LOCAL LAYER/LADDER -> Superstrip Size "<<endl;
       displaySuperstripSizesWithLocalID(st);
       cout<<"**"<<endl;
-      while(true){
-	cout<<"** The 8 input buses are used for the following layers (CMS IDs) : ";
-	for(unsigned int j=0;j<layers.size();j++){
-	  if(hybrid_sector && first_pass && layers[j]==biggestID)
-	    continue;
-	  if(hybrid_sector && !first_pass && layers[j]==biggestBarrelID)
-	    continue;
-	  cout<<layers[j]<<" - ";
-	}
-	for(unsigned int j=layers.size();j<8;j++){
-	  cout<<"Unused - ";
-	}
-	cout<<endl;
-	cout<<"**"<<endl;
-
-	if(sector_id!=-1)
-	  cout<<"********* PATTERNS FOR SECTOR "<<sector_id<<" **********"<<endl;
+      cout<<"** The 8 input buses are used for the following layers (CMS IDs) : ";
+      for(unsigned int j=0;j<layers.size();j++){
+	if(hybrid_sector && layers[j]==biggestBarrelID)
+	  continue;
+	if(hybrid_sector && layers[j]==biggestID)
+	  cout<<biggestBarrelID<<"/"<<biggestID;
 	else
-	  cout<<"********** PATTERNS **********"<<endl;
-	cout<<endl;
-
-	for(unsigned int j=0;j<patterns.size();j++){
-	  Pattern* p = patterns[j];
-	  cout<<"# "<<*p;
-
-	  int nb_active_layers = p->getNbLayers()-p->getNbFakeSuperstrips();
-	  if(expected_active_layers!=-1 && expected_active_layers!=nb_active_layers) // the pattern does not have the expected number of active layers
-	    continue;
-
-	  if(hybrid_sector && first_pass && !p->getLayerStrip(8)->isFake())
-	    continue;
-
-	  if(hybrid_sector && !first_pass && p->getLayerStrip(8)->isFake())
-	    continue;
-
-	  for(int k=0;k<p->getNbLayers();k++){
-
-	    if(hybrid_sector && first_pass && k==8)
-	      continue;
-	    if(hybrid_sector && !first_pass && k==biggestBarrelIndex)
-	      continue;
-
-	    PatternLayer* mp = p->getLayerStrip(k);
-	    cout<<((CMSPatternLayer*)mp)->toAM05Format()<<endl;
-	  }
-	  //unused layers set to 0x01e05 (fake stub value)
-	  //We want a threshold at 5/6 but we have 8 buses and the threshold can not go below 6
-	  // -> unused layers are set to 0x01E05 and will be activated by this superstrip sent on all buses for all events
-	  // -> the threshold is set to 7 (5 used layers + 2 unused layers forced to active)
-	  for(int k=p->getNbLayers();k<8;k++){
-	    cout<<"0x01e05 2"<<endl;
-	  }
-	  cout<<endl;
-	}
-	cout<<"********** END OF PATTERNS **********"<<endl;
-	if(!hybrid_sector)
-	  break;
-	else if(!first_pass)
-	  break;
-	first_pass=false;
+	  cout<<layers[j]<<" - ";
       }
+      for(unsigned int j=layers.size();j<8;j++){
+	cout<<"Unused - ";
+      }
+      cout<<endl;
+      cout<<"**"<<endl;
+      
+      if(sector_id!=-1)
+	cout<<"********* PATTERNS FOR SECTOR "<<sector_id<<" **********"<<endl;
+      else
+	cout<<"********** PATTERNS **********"<<endl;
+      cout<<endl;
+      
+      for(unsigned int j=0;j<patterns.size();j++){
+	Pattern* p = patterns[j];
+	cout<<"# "<<*p;
+	
+	int nb_active_layers = p->getNbLayers()-p->getNbFakeSuperstrips();
+	if(expected_active_layers!=-1 && expected_active_layers!=nb_active_layers) // the pattern does not have the expected number of active layers
+	  continue;
+	
+	for(int k=0;k<p->getNbLayers();k++){
+	  if(hybrid_sector && k==biggestBarrelIndex){ // this is layer 10 -> we set it on bus 7
+	    continue;
+	  }
+	  
+	  PatternLayer* mp = p->getLayerStrip(k);
+	  
+	  if(hybrid_sector && k==p->getNbLayers()-1){ // this is the last layer -> set its data on last bus along with data from last barrel layer
+	    if(mp->isFake()){ // if we have a fake superstrip this layer -> we use the value of last barrel layer
+	      mp = p->getLayerStrip(biggestBarrelIndex);
+	    }
+	  }
+	  
+	  cout<<((CMSPatternLayer*)mp)->toAM05Format()<<endl;
+	}
+	//unused layers set to 0x01e05 (fake stub value)
+	//We want a threshold at 5/6 but we have 8 buses and the threshold can not go below 6
+	// -> unused layers are set to 0x01E05 and will be activated by this superstrip sent on all buses for all events
+	// -> the threshold is set to 7 (5 used layers + 2 unused layers forced to active)
+	for(int k=p->getNbLayers();k<8;k++){
+	  cout<<"0x01e05 2"<<endl;
+	}
+	cout<<endl;
+      }
+      cout<<"********** END OF PATTERNS **********"<<endl;
     }
   }
   else if(vm.count("alterBank")) {
