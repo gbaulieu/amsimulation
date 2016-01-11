@@ -149,7 +149,22 @@ public:
 	  cout<<endl;
 	}
       }
+      if(nb_tracks>0){
+	cout<<m_trk_links.size()<<" track(s) found : "<<endl;
+	cout<<endl;
+	for(unsigned int k=0;k<m_trk_links.size();k++){
+	  cout<<m_trk_links[k].size()<<" selected stubs :"<<endl;
+	  for(unsigned int l=0;l<m_trk_links[k].size();l++){
+	    int index = m_trk_links[k][l];
+	    float pt = sqrt(m_stub_px_gen[index]*m_stub_px_gen[index]+m_stub_py_gen[index]*m_stub_py_gen[index]);
+	    cout<<"Layer "<<m_stub_layer[index]<<" Ladder "<<m_stub_ladder[index]<<" Module "<<m_stub_module[index]<<" Seg "<<m_stub_seg[index]<<" Strip "<<int(m_stub_strip[index])<<" (TP="<<m_stub_tp[index]<<" PT="<<pt<<" GeV ETA="<<m_stub_eta_gen[index]<<" PHI="<<m_stub_phi0[index]<<")"<<endl;
+	  }
+	  cout<<"Parameters estimation : PT="<<m_trk_pt[k]<<" GeV - ETA="<<m_trk_eta[k]<<" - PHI="<<m_trk_phi[k]<<" - Z0="<<m_trk_z[k]<<endl;
+	  cout<<endl;
+	}
+      }
       m_patt=0;
+      nb_tracks=0;
     }
 
   delete TT;

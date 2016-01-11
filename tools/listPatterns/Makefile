@@ -2,9 +2,17 @@ UNAME := $(shell uname)
 
 SRC=src
 
-FLAG=-O3 -Wall -std=c++11 -Werror=type-limits
-INC =-I `root-config --incdir` -I `scram tool tag boost INCLUDE` -I ${SRC}
-LIBS =-L ${ROOTSYS}/lib -L `scram tool tag boost LIBDIR`
+CMSSW_ENABLED=true
+
+ifeq ($(CMSSW_ENABLED),true)
+	FLAG=-O3 -Wall -std=c++11 -Werror=type-limits
+	INC =-I `root-config --incdir` -I `scram tool tag boost INCLUDE` -I ${SRC}
+	LIBS =-L ${ROOTSYS}/lib -L `scram tool tag boost LIBDIR`
+else
+	FLAG=-O3 -Wall -std=c++11 -Werror=type-limits
+	INC =-I `root-config --incdir` -I ${SRC}
+	LIBS =-L ${ROOTSYS}/lib
+endif
 BOOSTLIBS = -lboost_serialization -lboost_program_options -lboost_iostreams
 
 listPatterns: listPatterns.o

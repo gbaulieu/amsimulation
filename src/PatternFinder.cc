@@ -1,5 +1,4 @@
 #include "PatternFinder.h"
-#include "TROOT.h"
 
 PatternFinder::PatternFinder(int at, SectorTree* st, string f, string of){
   active_threshold = at;
@@ -561,7 +560,7 @@ void PatternFinder::find(int start, int& stop){
       for(unsigned int j=0;j<pl.size();j++){
 	//sector of the pattern
 	m_patt_secid->push_back(sector_id);
-	cout<<pl[j]->getOrderInChip()<<endl;
+	//cout<<pl[j]->getOrderInChip()<<endl;
 	//stubs of the patterns
 	vector<Hit*> active_hits = pl[j]->getHits();
 	vector<int> stub_index;
@@ -937,7 +936,7 @@ void PatternFinder::findCuda(int start, int& stop, deviceStubs* d_stubs){
 	cuda_hits[cuda_idx+1]=ladder;
 	cuda_hits[cuda_idx+2]=module;
 	cuda_hits[cuda_idx+3]=segment;
-	cuda_hits[cuda_idx+4]=(char)(strip/sectors->getSuperStripSize(layer));
+	//cuda_hits[cuda_idx+4]=(char)(strip/sectors->getSuperStripSize(layer));
 	cuda_nb_hits++;
 
       }
