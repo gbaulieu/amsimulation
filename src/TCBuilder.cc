@@ -211,34 +211,6 @@ void TCBuilder::mergePatterns(){
 // Not used for the moment
 
 void TCBuilder::mergeTracks(){
-  cout<<"We have "<<tracks.size()<<" tracks before merging..."<<endl;
-  unsigned int index = 0;
-  vector<Track*>::iterator it = tracks.begin();
-  while(it!=tracks.end()){
-    Track* newTrack = *it;
-    bool found = false;
-    for(unsigned int i=0;i<index;i++){
-      Track* ref = tracks[i];
-      float dpt,dphi,dz,deta;
-      dpt = fabs(newTrack->getCurve()-ref->getCurve());
-      dphi = fabs(newTrack->getPhi0()-ref->getPhi0());
-      dz = fabs(newTrack->getZ0()-ref->getZ0());
-      deta = fabs(newTrack->getEta0()-ref->getEta0());
-      found = (deta<0.02) &&
-	(dphi<0.005) &&
-	(dpt<0.1) &&
-	(dz<0.3);
-      if(found)
-	break;
-    }
-    if(found)
-      tracks.erase(it);
-    else{
-      index++;
-      it++;
-    }
-  }
-  cout<<"We have "<<tracks.size()<<" tracks after merging..."<<endl;
 }
 
 /* From the hits of the best TC, process the track parameters, create and fill a Track object and return its pointer */
@@ -636,7 +608,7 @@ char TCBuilder::transcodeLayer(Hit * pHit)
 void TCBuilder::fit(vector<Hit*> originalHits)
 {
 
-  cout<<"trying to fit "<<originalHits.size()<<" points"<<endl;
+  //cout<<"trying to fit "<<originalHits.size()<<" points"<<endl;
 
   int tow = sector_id; // The tower ID, necessary to get the phi shift
 
@@ -829,7 +801,7 @@ void TCBuilder::fit(vector<Hit*> originalHits)
       Track * fit_track;
       fit_track = createFittedTrack(vecBestCandidateHits);
     
-      cout<<"adding one track..."<<endl;
+      //cout<<"adding one track..."<<endl;
       tracks.push_back(fit_track);
     }
 }

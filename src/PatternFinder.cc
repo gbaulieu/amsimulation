@@ -561,7 +561,7 @@ void PatternFinder::find(int start, int& stop){
       for(unsigned int j=0;j<pl.size();j++){
 	//sector of the pattern
 	m_patt_secid->push_back(sector_id);
-	cout<<pl[j]->getOrderInChip()<<endl;
+	//cout<<pl[j]->getOrderInChip()<<endl;
 	//stubs of the patterns
 	vector<Hit*> active_hits = pl[j]->getHits();
 	vector<int> stub_index;
