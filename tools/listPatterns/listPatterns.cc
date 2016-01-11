@@ -150,7 +150,7 @@ public:
 	}
       }
       if(nb_tracks>0){
-	cout<<m_patt<<" track(s) found : "<<endl;
+	cout<<m_trk_links.size()<<" track(s) found : "<<endl;
 	cout<<endl;
 	for(unsigned int k=0;k<m_trk_links.size();k++){
 	  cout<<m_trk_links[k].size()<<" selected stubs :"<<endl;
