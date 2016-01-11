@@ -30,10 +30,8 @@ class TCBuilder:public TrackFitter{
   
   template<class Archive> void load(Archive & ar, const unsigned int version)
     {
-      cout<<"loading TCBuilder..."<<endl;
       ar >> boost::serialization::base_object<TrackFitter>(*this);
       ar >> sec_phi;
-      cout<<"done!"<<endl;
     }
   
   BOOST_SERIALIZATION_SPLIT_MEMBER()
@@ -44,6 +42,16 @@ class TCBuilder:public TrackFitter{
 
   int m_nFractionnalPartWidth;
   int m_nMissingHits;
+
+  /**
+     \brief Updates the Thresholds with respect to the fractionnal part width
+   **/
+  void updateThresholds();
+  void addThresholds(int, int, int, SEC_TYPE, double, double);
+  void getThresholds(int, int, int, SEC_TYPE, double[]);
+  char transcodeLayer(Hit *);
+  double binning(double, int);
+  void alignScore(Hit& , Hit& , Hit& , double []);
 
  public:
 
@@ -63,12 +71,12 @@ class TCBuilder:public TrackFitter{
   void mergeTracks();
 
   Track* createFittedTrack(vector <Hit*>&);
-  
-  void addThresholds(int, int, int, SEC_TYPE, double, double);
-  void getThresholds(int, int, int, SEC_TYPE, double[]);
-  char transcodeLayer(Hit *);
-  double binning(double, int);
-  void alignScore(Hit& , Hit& , Hit& , double []);
+ 
+  /**
+     \brief Set the fractionnal part width value
+     \param nbFloatingPoint The number of bits used for the decimal part (0 for floating point computing)
+   **/
+  void setFractionnalPartWidth(int nbFloatingPoint);
 
   void fit();
   void fit(vector<Hit*> hits);

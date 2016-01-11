@@ -12,184 +12,9 @@ TCBuilder::TCBuilder():TrackFitter(0){
 
 TCBuilder::TCBuilder(int nb):TrackFitter(nb)
 {
-
-  cout <<"Begin TC builder init"<<endl;
-
   m_nMissingHits = 1;           //Maximum number of missing layers in a TC (from the number of layers in the pattern)
   m_nFractionnalPartWidth = 0;  //Binning
-
-  //If m_nFractionnalPartWidth != 10 bits, the floating point thresholds are used
-
-  if (m_nFractionnalPartWidth == 10)
-    {
-      /* 10 bits fractionnal part Thresholds */
-  
-      //Barrel
-      addThresholds( 0,  1,  2, SEC_BARREL, 0.031250, 3.665039);
-      addThresholds( 0,  1,  8, SEC_BARREL, 0.074219, 38.231445);
-      addThresholds( 0,  1,  9, SEC_BARREL, 0.118164, 39.138672);
-      addThresholds( 0,  1, 10, SEC_BARREL, 0.160156, 42.259766);
-      addThresholds( 0,  2,  8, SEC_BARREL, 0.065430, 74.090820);
-      addThresholds( 0,  2,  9, SEC_BARREL, 0.145508, 74.028320);
-      addThresholds( 0,  2, 10, SEC_BARREL, 0.223633, 79.116211);
-      addThresholds( 1,  2,  8, SEC_BARREL, 0.031250, 41.812500);
-      addThresholds( 1,  2,  9, SEC_BARREL, 0.079102, 43.343750);
-      addThresholds( 1,  2, 10, SEC_BARREL, 0.096680, 45.228516);
-
-      //Hybrid
-      addThresholds( 0,  1,  2, SEC_HYBRID, 0.038086, 4.089844);
-      addThresholds( 0,  1,  8, SEC_HYBRID, 0.061523, 36.709961);
-      addThresholds( 0,  1,  9, SEC_HYBRID, 0.125000, 38.314453);
-      addThresholds( 0,  1, 10, SEC_HYBRID, 0.125000, 42.623047);
-      addThresholds( 0,  1, 11, SEC_HYBRID, 0.134766, 62.708984);
-      addThresholds( 0,  1, 12, SEC_HYBRID, 0.126953, 67.507812);
-      addThresholds( 0,  1, 13, SEC_HYBRID, 0.172852, 70.373047);
-      addThresholds( 0,  2,  8, SEC_HYBRID, 0.093750, 74.268555);
-      addThresholds( 0,  2,  9, SEC_HYBRID, 0.129883, 76.775391);
-      addThresholds( 0,  2, 10, SEC_HYBRID, 0.125977, 79.952148);
-      addThresholds( 0,  2, 11, SEC_HYBRID, 0.180664, 144.421875);
-      addThresholds( 0,  2, 12, SEC_HYBRID, 0.205078, 140.078125);
-      addThresholds( 0,  2, 13, SEC_HYBRID, 0.201172, 146.367188);
-      addThresholds( 1,  2,  8, SEC_HYBRID, 0.042969, 41.355469);
-      addThresholds( 1,  2,  9, SEC_HYBRID, 0.084961, 39.357422);
-      addThresholds( 1,  2, 10, SEC_HYBRID, 0.093750, 46.836914);
-      addThresholds( 1,  2, 11, SEC_HYBRID, 0.106445, 87.046875);
-      addThresholds( 1,  2, 12, SEC_HYBRID, 0.117188, 79.388672);
-      addThresholds( 1,  2, 13, SEC_HYBRID, 0.097656, 81.233398);
-
-      //Endcap
-      addThresholds( 0,  1,  3, SEC_ENDCAP, 0.040039, 5.756836);
-      addThresholds( 0,  1,  4, SEC_ENDCAP, 0.082031, 6.778320);
-      addThresholds( 0,  1,  5, SEC_ENDCAP, 0.045898, 6.506836);
-      addThresholds( 0,  1, 11, SEC_ENDCAP, 0.078125, 64.822266);
-      addThresholds( 0,  1, 12, SEC_ENDCAP, 0.116211, 81.608398);
-      addThresholds( 0,  1, 13, SEC_ENDCAP, 0.143555, 92.575195);
-      addThresholds( 0,  1, 14, SEC_ENDCAP, 0.203125, 97.450195);
-      addThresholds( 0,  1, 15, SEC_ENDCAP, 0.309570, 96.867188);
-      addThresholds( 0,  3,  4, SEC_ENDCAP, 0.056641, 10.769531);
-      addThresholds( 0,  3,  5, SEC_ENDCAP, 0.053711, 19.661133);
-      addThresholds( 0,  3,  6, SEC_ENDCAP, 0.049805, 13.232422);
-      addThresholds( 0,  3,  7, SEC_ENDCAP, 0.051758, 11.861328);
-      addThresholds( 0,  3, 11, SEC_ENDCAP, 0.148438, 190.636719);
-      addThresholds( 0,  3, 12, SEC_ENDCAP, 0.167969, 195.087891);
-      addThresholds( 0,  3, 13, SEC_ENDCAP, 0.219727, 193.606445);
-      addThresholds( 0,  3, 14, SEC_ENDCAP, 0.246094, 208.910156);
-      addThresholds( 0,  3, 15, SEC_ENDCAP, 0.405273, 210.363281);
-      addThresholds( 0,  4,  5, SEC_ENDCAP, 0.040039, 18.907227);
-      addThresholds( 0,  4,  6, SEC_ENDCAP, 0.052734, 13.366211);
-      addThresholds( 0,  4,  7, SEC_ENDCAP, 0.050781, 12.603516);
-      addThresholds( 0,  4, 12, SEC_ENDCAP, 0.228516, 220.043945);
-      addThresholds( 0,  4, 13, SEC_ENDCAP, 0.137695, 227.261719);
-      addThresholds( 0,  4, 14, SEC_ENDCAP, 0.236328, 229.281250);
-      addThresholds( 0,  4, 15, SEC_ENDCAP, 0.365234, 200.322266);
-      addThresholds( 1,  3,  4, SEC_ENDCAP, 0.019531, 7.486328);
-      addThresholds( 1,  3,  5, SEC_ENDCAP, 0.020508, 6.088867);
-      addThresholds( 1,  3, 11, SEC_ENDCAP, 0.102539, 128.959961);
-      addThresholds( 1,  3, 12, SEC_ENDCAP, 0.096680, 118.861328);
-      addThresholds( 1,  3, 13, SEC_ENDCAP, 0.118164, 122.890625);
-      addThresholds( 1,  3, 14, SEC_ENDCAP, 0.106445, 130.061523);
-      addThresholds( 1,  3, 15, SEC_ENDCAP, 0.131836, 124.733398);
-      addThresholds( 1,  4,  5, SEC_ENDCAP, 0.014648, 6.622070);
-      addThresholds( 1,  4, 12, SEC_ENDCAP, 0.107422, 150.178711);
-      addThresholds( 1,  4, 13, SEC_ENDCAP, 0.096680, 141.776367);
-      addThresholds( 1,  4, 14, SEC_ENDCAP, 0.148438, 156.682617);
-      addThresholds( 1,  4, 15, SEC_ENDCAP, 0.196289, 137.015625);
-      addThresholds( 3,  4,  5, SEC_ENDCAP, 0.012695, 7.040039);
-      addThresholds( 3,  4,  6, SEC_ENDCAP, 0.021484, 10.887695);
-      addThresholds( 3,  4,  7, SEC_ENDCAP, 0.022461, 15.625977);
-      addThresholds( 3,  4, 12, SEC_ENDCAP, 0.056641, 60.820312);
-      addThresholds( 3,  4, 13, SEC_ENDCAP, 0.044922, 61.541016);
-      addThresholds( 3,  4, 14, SEC_ENDCAP, 0.053711, 63.903320);
-      addThresholds( 3,  4, 15, SEC_ENDCAP, 0.069336, 76.256836);
-
-      /* End of 10 bits fractionnal part Thresholds */
-
-    }
-  else
-    {
-      /* Floating point Thresholds */
-
-      //Barrel
-      addThresholds( 0,  1,  2, SEC_BARREL, 0.025571, 3.656240);
-      addThresholds( 0,  1,  8, SEC_BARREL, 0.075301, 38.258154);
-      addThresholds( 0,  1,  9, SEC_BARREL, 0.124700, 39.175377);
-      addThresholds( 0,  1, 10, SEC_BARREL, 0.155787, 42.231133);
-      addThresholds( 0,  2,  8, SEC_BARREL, 0.056070, 74.100319);
-      addThresholds( 0,  2,  9, SEC_BARREL, 0.132452, 74.038652);
-      addThresholds( 0,  2, 10, SEC_BARREL, 0.210517, 79.126298);
-      addThresholds( 1,  2,  8, SEC_BARREL, 0.017905, 41.821861);
-      addThresholds( 1,  2,  9, SEC_BARREL, 0.059329, 43.340059);
-      addThresholds( 1,  2, 10, SEC_BARREL, 0.089593, 45.167844);
-
-      //Hybrid
-      addThresholds( 0,  1,  2, SEC_HYBRID, 0.030079, 4.083949);
-      addThresholds( 0,  1,  8, SEC_HYBRID, 0.059964, 36.661217);
-      addThresholds( 0,  1,  9, SEC_HYBRID, 0.124758, 38.346169);
-      addThresholds( 0,  1, 10, SEC_HYBRID, 0.129082, 42.516624);
-      addThresholds( 0,  1, 11, SEC_HYBRID, 0.121676, 62.673522);
-      addThresholds( 0,  1, 12, SEC_HYBRID, 0.122195, 67.448446);
-      addThresholds( 0,  1, 13, SEC_HYBRID, 0.193056, 70.364759);
-      addThresholds( 0,  2,  8, SEC_HYBRID, 0.069076, 74.257499);
-      addThresholds( 0,  2,  9, SEC_HYBRID, 0.117036, 76.740289);
-      addThresholds( 0,  2, 10, SEC_HYBRID, 0.134230, 79.913063);
-      addThresholds( 0,  2, 11, SEC_HYBRID, 0.179327, 144.488991);
-      addThresholds( 0,  2, 12, SEC_HYBRID, 0.194377, 140.078556);
-      addThresholds( 0,  2, 13, SEC_HYBRID, 0.243792, 146.363807);
-      addThresholds( 1,  2,  8, SEC_HYBRID, 0.036669, 41.356791);
-      addThresholds( 1,  2,  9, SEC_HYBRID, 0.102266, 39.336151);
-      addThresholds( 1,  2, 10, SEC_HYBRID, 0.046263, 46.853872);
-      addThresholds( 1,  2, 11, SEC_HYBRID, 0.092028, 87.089641);
-      addThresholds( 1,  2, 12, SEC_HYBRID, 0.096336, 79.450331);
-      addThresholds( 1,  2, 13, SEC_HYBRID, 0.091826, 81.263897);
-
-      //Endcap
-      addThresholds( 0,  1,  3, SEC_ENDCAP, 0.049016, 5.789638);
-      addThresholds( 0,  1,  4, SEC_ENDCAP, 0.098305, 6.791889);
-      addThresholds( 0,  1,  5, SEC_ENDCAP, 0.025410, 6.441114);
-      addThresholds( 0,  1, 11, SEC_ENDCAP, 0.075897, 64.845979);
-      addThresholds( 0,  1, 12, SEC_ENDCAP, 0.094022, 81.627829);
-      addThresholds( 0,  1, 13, SEC_ENDCAP, 0.149944, 92.453032);
-      addThresholds( 0,  1, 14, SEC_ENDCAP, 0.213731, 97.360846);
-      addThresholds( 0,  1, 15, SEC_ENDCAP, 0.334518, 96.698723);
-      addThresholds( 0,  3,  4, SEC_ENDCAP, 0.056367, 10.747764);
-      addThresholds( 0,  3,  5, SEC_ENDCAP, 0.048138, 19.651452);
-      addThresholds( 0,  3,  6, SEC_ENDCAP, 0.032072, 13.317437);
-      addThresholds( 0,  3,  7, SEC_ENDCAP, 0.037592, 11.832096);
-      addThresholds( 0,  3, 11, SEC_ENDCAP, 0.157577, 190.592070);
-      addThresholds( 0,  3, 12, SEC_ENDCAP, 0.163619, 195.157998);
-      addThresholds( 0,  3, 13, SEC_ENDCAP, 0.196538, 193.688462);
-      addThresholds( 0,  3, 14, SEC_ENDCAP, 0.226246, 208.811893);
-      addThresholds( 0,  3, 15, SEC_ENDCAP, 0.368564, 210.417263);
-      addThresholds( 0,  4,  5, SEC_ENDCAP, 0.033095, 18.907360);
-      addThresholds( 0,  4,  6, SEC_ENDCAP, 0.030136, 13.398305);
-      addThresholds( 0,  4,  7, SEC_ENDCAP, 0.044999, 12.633459);
-      addThresholds( 0,  4, 12, SEC_ENDCAP, 0.195552, 220.013405);
-      addThresholds( 0,  4, 13, SEC_ENDCAP, 0.134733, 227.209487);
-      addThresholds( 0,  4, 14, SEC_ENDCAP, 0.231035, 229.285057);
-      addThresholds( 0,  4, 15, SEC_ENDCAP, 0.342347, 200.509661);
-      addThresholds( 1,  3,  4, SEC_ENDCAP, 0.011823, 7.458285);
-      addThresholds( 1,  3,  5, SEC_ENDCAP, 0.007385, 6.078510);
-      addThresholds( 1,  3, 11, SEC_ENDCAP, 0.109007, 128.931298);
-      addThresholds( 1,  3, 12, SEC_ENDCAP, 0.103831, 118.932845);
-      addThresholds( 1,  3, 13, SEC_ENDCAP, 0.112873, 122.867231);
-      addThresholds( 1,  3, 14, SEC_ENDCAP, 0.124153, 130.008205);
-      addThresholds( 1,  3, 15, SEC_ENDCAP, 0.101961, 124.808447);
-      addThresholds( 1,  4,  5, SEC_ENDCAP, 0.007987, 6.613035);
-      addThresholds( 1,  4, 12, SEC_ENDCAP, 0.107208, 150.096417);
-      addThresholds( 1,  4, 13, SEC_ENDCAP, 0.093686, 141.718773);
-      addThresholds( 1,  4, 14, SEC_ENDCAP, 0.158431, 156.732945);
-      addThresholds( 1,  4, 15, SEC_ENDCAP, 0.151566, 137.073274);
-      addThresholds( 3,  4,  5, SEC_ENDCAP, 0.007473, 7.082068);
-      addThresholds( 3,  4,  6, SEC_ENDCAP, 0.010956, 10.968808);
-      addThresholds( 3,  4,  7, SEC_ENDCAP, 0.021753, 15.601805);
-      addThresholds( 3,  4, 12, SEC_ENDCAP, 0.048389, 60.788335);
-      addThresholds( 3,  4, 13, SEC_ENDCAP, 0.036618, 61.534191);
-      addThresholds( 3,  4, 14, SEC_ENDCAP, 0.045263, 63.905185);
-      addThresholds( 3,  4, 15, SEC_ENDCAP, 0.050656, 76.211291);
-
-      /* End of Floating point Thresholds */
-    }
-
+  updateThresholds();
 }
 
 TCBuilder::~TCBuilder()
@@ -198,6 +23,184 @@ TCBuilder::~TCBuilder()
 
 void TCBuilder::initialize(){
 
+}
+
+void TCBuilder::setFractionnalPartWidth(int nbFloatingPoint){
+  if(nbFloatingPoint>=0){
+    m_nFractionnalPartWidth = nbFloatingPoint;
+    updateThresholds();
+  }
+}
+
+void TCBuilder::updateThresholds(){
+  //If m_nFractionnalPartWidth != 10 bits, the floating point thresholds are used
+  if (m_nFractionnalPartWidth == 10){
+    /* 10 bits fractionnal part Thresholds */
+  
+    //Barrel
+    addThresholds( 0,  1,  2, SEC_BARREL, 0.031250, 3.665039);
+    addThresholds( 0,  1,  8, SEC_BARREL, 0.074219, 38.231445);
+    addThresholds( 0,  1,  9, SEC_BARREL, 0.118164, 39.138672);
+    addThresholds( 0,  1, 10, SEC_BARREL, 0.160156, 42.259766);
+    addThresholds( 0,  2,  8, SEC_BARREL, 0.065430, 74.090820);
+    addThresholds( 0,  2,  9, SEC_BARREL, 0.145508, 74.028320);
+    addThresholds( 0,  2, 10, SEC_BARREL, 0.223633, 79.116211);
+    addThresholds( 1,  2,  8, SEC_BARREL, 0.031250, 41.812500);
+    addThresholds( 1,  2,  9, SEC_BARREL, 0.079102, 43.343750);
+    addThresholds( 1,  2, 10, SEC_BARREL, 0.096680, 45.228516);
+
+    //Hybrid
+    addThresholds( 0,  1,  2, SEC_HYBRID, 0.038086, 4.089844);
+    addThresholds( 0,  1,  8, SEC_HYBRID, 0.061523, 36.709961);
+    addThresholds( 0,  1,  9, SEC_HYBRID, 0.125000, 38.314453);
+    addThresholds( 0,  1, 10, SEC_HYBRID, 0.125000, 42.623047);
+    addThresholds( 0,  1, 11, SEC_HYBRID, 0.134766, 62.708984);
+    addThresholds( 0,  1, 12, SEC_HYBRID, 0.126953, 67.507812);
+    addThresholds( 0,  1, 13, SEC_HYBRID, 0.172852, 70.373047);
+    addThresholds( 0,  2,  8, SEC_HYBRID, 0.093750, 74.268555);
+    addThresholds( 0,  2,  9, SEC_HYBRID, 0.129883, 76.775391);
+    addThresholds( 0,  2, 10, SEC_HYBRID, 0.125977, 79.952148);
+    addThresholds( 0,  2, 11, SEC_HYBRID, 0.180664, 144.421875);
+    addThresholds( 0,  2, 12, SEC_HYBRID, 0.205078, 140.078125);
+    addThresholds( 0,  2, 13, SEC_HYBRID, 0.201172, 146.367188);
+    addThresholds( 1,  2,  8, SEC_HYBRID, 0.042969, 41.355469);
+    addThresholds( 1,  2,  9, SEC_HYBRID, 0.084961, 39.357422);
+    addThresholds( 1,  2, 10, SEC_HYBRID, 0.093750, 46.836914);
+    addThresholds( 1,  2, 11, SEC_HYBRID, 0.106445, 87.046875);
+    addThresholds( 1,  2, 12, SEC_HYBRID, 0.117188, 79.388672);
+    addThresholds( 1,  2, 13, SEC_HYBRID, 0.097656, 81.233398);
+
+    //Endcap
+    addThresholds( 0,  1,  3, SEC_ENDCAP, 0.040039, 5.756836);
+    addThresholds( 0,  1,  4, SEC_ENDCAP, 0.082031, 6.778320);
+    addThresholds( 0,  1,  5, SEC_ENDCAP, 0.045898, 6.506836);
+    addThresholds( 0,  1, 11, SEC_ENDCAP, 0.078125, 64.822266);
+    addThresholds( 0,  1, 12, SEC_ENDCAP, 0.116211, 81.608398);
+    addThresholds( 0,  1, 13, SEC_ENDCAP, 0.143555, 92.575195);
+    addThresholds( 0,  1, 14, SEC_ENDCAP, 0.203125, 97.450195);
+    addThresholds( 0,  1, 15, SEC_ENDCAP, 0.309570, 96.867188);
+    addThresholds( 0,  3,  4, SEC_ENDCAP, 0.056641, 10.769531);
+    addThresholds( 0,  3,  5, SEC_ENDCAP, 0.053711, 19.661133);
+    addThresholds( 0,  3,  6, SEC_ENDCAP, 0.049805, 13.232422);
+    addThresholds( 0,  3,  7, SEC_ENDCAP, 0.051758, 11.861328);
+    addThresholds( 0,  3, 11, SEC_ENDCAP, 0.148438, 190.636719);
+    addThresholds( 0,  3, 12, SEC_ENDCAP, 0.167969, 195.087891);
+    addThresholds( 0,  3, 13, SEC_ENDCAP, 0.219727, 193.606445);
+    addThresholds( 0,  3, 14, SEC_ENDCAP, 0.246094, 208.910156);
+    addThresholds( 0,  3, 15, SEC_ENDCAP, 0.405273, 210.363281);
+    addThresholds( 0,  4,  5, SEC_ENDCAP, 0.040039, 18.907227);
+    addThresholds( 0,  4,  6, SEC_ENDCAP, 0.052734, 13.366211);
+    addThresholds( 0,  4,  7, SEC_ENDCAP, 0.050781, 12.603516);
+    addThresholds( 0,  4, 12, SEC_ENDCAP, 0.228516, 220.043945);
+    addThresholds( 0,  4, 13, SEC_ENDCAP, 0.137695, 227.261719);
+    addThresholds( 0,  4, 14, SEC_ENDCAP, 0.236328, 229.281250);
+    addThresholds( 0,  4, 15, SEC_ENDCAP, 0.365234, 200.322266);
+    addThresholds( 1,  3,  4, SEC_ENDCAP, 0.019531, 7.486328);
+    addThresholds( 1,  3,  5, SEC_ENDCAP, 0.020508, 6.088867);
+    addThresholds( 1,  3, 11, SEC_ENDCAP, 0.102539, 128.959961);
+    addThresholds( 1,  3, 12, SEC_ENDCAP, 0.096680, 118.861328);
+    addThresholds( 1,  3, 13, SEC_ENDCAP, 0.118164, 122.890625);
+    addThresholds( 1,  3, 14, SEC_ENDCAP, 0.106445, 130.061523);
+    addThresholds( 1,  3, 15, SEC_ENDCAP, 0.131836, 124.733398);
+    addThresholds( 1,  4,  5, SEC_ENDCAP, 0.014648, 6.622070);
+    addThresholds( 1,  4, 12, SEC_ENDCAP, 0.107422, 150.178711);
+    addThresholds( 1,  4, 13, SEC_ENDCAP, 0.096680, 141.776367);
+    addThresholds( 1,  4, 14, SEC_ENDCAP, 0.148438, 156.682617);
+    addThresholds( 1,  4, 15, SEC_ENDCAP, 0.196289, 137.015625);
+    addThresholds( 3,  4,  5, SEC_ENDCAP, 0.012695, 7.040039);
+    addThresholds( 3,  4,  6, SEC_ENDCAP, 0.021484, 10.887695);
+    addThresholds( 3,  4,  7, SEC_ENDCAP, 0.022461, 15.625977);
+    addThresholds( 3,  4, 12, SEC_ENDCAP, 0.056641, 60.820312);
+    addThresholds( 3,  4, 13, SEC_ENDCAP, 0.044922, 61.541016);
+    addThresholds( 3,  4, 14, SEC_ENDCAP, 0.053711, 63.903320);
+    addThresholds( 3,  4, 15, SEC_ENDCAP, 0.069336, 76.256836);
+
+    /* End of 10 bits fractionnal part Thresholds */
+
+  }
+  else{
+    /* Floating point Thresholds */
+
+    //Barrel
+    addThresholds( 0,  1,  2, SEC_BARREL, 0.025571, 3.656240);
+    addThresholds( 0,  1,  8, SEC_BARREL, 0.075301, 38.258154);
+    addThresholds( 0,  1,  9, SEC_BARREL, 0.124700, 39.175377);
+    addThresholds( 0,  1, 10, SEC_BARREL, 0.155787, 42.231133);
+    addThresholds( 0,  2,  8, SEC_BARREL, 0.056070, 74.100319);
+    addThresholds( 0,  2,  9, SEC_BARREL, 0.132452, 74.038652);
+    addThresholds( 0,  2, 10, SEC_BARREL, 0.210517, 79.126298);
+    addThresholds( 1,  2,  8, SEC_BARREL, 0.017905, 41.821861);
+    addThresholds( 1,  2,  9, SEC_BARREL, 0.059329, 43.340059);
+    addThresholds( 1,  2, 10, SEC_BARREL, 0.089593, 45.167844);
+
+    //Hybrid
+    addThresholds( 0,  1,  2, SEC_HYBRID, 0.030079, 4.083949);
+    addThresholds( 0,  1,  8, SEC_HYBRID, 0.059964, 36.661217);
+    addThresholds( 0,  1,  9, SEC_HYBRID, 0.124758, 38.346169);
+    addThresholds( 0,  1, 10, SEC_HYBRID, 0.129082, 42.516624);
+    addThresholds( 0,  1, 11, SEC_HYBRID, 0.121676, 62.673522);
+    addThresholds( 0,  1, 12, SEC_HYBRID, 0.122195, 67.448446);
+    addThresholds( 0,  1, 13, SEC_HYBRID, 0.193056, 70.364759);
+    addThresholds( 0,  2,  8, SEC_HYBRID, 0.069076, 74.257499);
+    addThresholds( 0,  2,  9, SEC_HYBRID, 0.117036, 76.740289);
+    addThresholds( 0,  2, 10, SEC_HYBRID, 0.134230, 79.913063);
+    addThresholds( 0,  2, 11, SEC_HYBRID, 0.179327, 144.488991);
+    addThresholds( 0,  2, 12, SEC_HYBRID, 0.194377, 140.078556);
+    addThresholds( 0,  2, 13, SEC_HYBRID, 0.243792, 146.363807);
+    addThresholds( 1,  2,  8, SEC_HYBRID, 0.036669, 41.356791);
+    addThresholds( 1,  2,  9, SEC_HYBRID, 0.102266, 39.336151);
+    addThresholds( 1,  2, 10, SEC_HYBRID, 0.046263, 46.853872);
+    addThresholds( 1,  2, 11, SEC_HYBRID, 0.092028, 87.089641);
+    addThresholds( 1,  2, 12, SEC_HYBRID, 0.096336, 79.450331);
+    addThresholds( 1,  2, 13, SEC_HYBRID, 0.091826, 81.263897);
+
+    //Endcap
+    addThresholds( 0,  1,  3, SEC_ENDCAP, 0.049016, 5.789638);
+    addThresholds( 0,  1,  4, SEC_ENDCAP, 0.098305, 6.791889);
+    addThresholds( 0,  1,  5, SEC_ENDCAP, 0.025410, 6.441114);
+    addThresholds( 0,  1, 11, SEC_ENDCAP, 0.075897, 64.845979);
+    addThresholds( 0,  1, 12, SEC_ENDCAP, 0.094022, 81.627829);
+    addThresholds( 0,  1, 13, SEC_ENDCAP, 0.149944, 92.453032);
+    addThresholds( 0,  1, 14, SEC_ENDCAP, 0.213731, 97.360846);
+    addThresholds( 0,  1, 15, SEC_ENDCAP, 0.334518, 96.698723);
+    addThresholds( 0,  3,  4, SEC_ENDCAP, 0.056367, 10.747764);
+    addThresholds( 0,  3,  5, SEC_ENDCAP, 0.048138, 19.651452);
+    addThresholds( 0,  3,  6, SEC_ENDCAP, 0.032072, 13.317437);
+    addThresholds( 0,  3,  7, SEC_ENDCAP, 0.037592, 11.832096);
+    addThresholds( 0,  3, 11, SEC_ENDCAP, 0.157577, 190.592070);
+    addThresholds( 0,  3, 12, SEC_ENDCAP, 0.163619, 195.157998);
+    addThresholds( 0,  3, 13, SEC_ENDCAP, 0.196538, 193.688462);
+    addThresholds( 0,  3, 14, SEC_ENDCAP, 0.226246, 208.811893);
+    addThresholds( 0,  3, 15, SEC_ENDCAP, 0.368564, 210.417263);
+    addThresholds( 0,  4,  5, SEC_ENDCAP, 0.033095, 18.907360);
+    addThresholds( 0,  4,  6, SEC_ENDCAP, 0.030136, 13.398305);
+    addThresholds( 0,  4,  7, SEC_ENDCAP, 0.044999, 12.633459);
+    addThresholds( 0,  4, 12, SEC_ENDCAP, 0.195552, 220.013405);
+    addThresholds( 0,  4, 13, SEC_ENDCAP, 0.134733, 227.209487);
+    addThresholds( 0,  4, 14, SEC_ENDCAP, 0.231035, 229.285057);
+    addThresholds( 0,  4, 15, SEC_ENDCAP, 0.342347, 200.509661);
+    addThresholds( 1,  3,  4, SEC_ENDCAP, 0.011823, 7.458285);
+    addThresholds( 1,  3,  5, SEC_ENDCAP, 0.007385, 6.078510);
+    addThresholds( 1,  3, 11, SEC_ENDCAP, 0.109007, 128.931298);
+    addThresholds( 1,  3, 12, SEC_ENDCAP, 0.103831, 118.932845);
+    addThresholds( 1,  3, 13, SEC_ENDCAP, 0.112873, 122.867231);
+    addThresholds( 1,  3, 14, SEC_ENDCAP, 0.124153, 130.008205);
+    addThresholds( 1,  3, 15, SEC_ENDCAP, 0.101961, 124.808447);
+    addThresholds( 1,  4,  5, SEC_ENDCAP, 0.007987, 6.613035);
+    addThresholds( 1,  4, 12, SEC_ENDCAP, 0.107208, 150.096417);
+    addThresholds( 1,  4, 13, SEC_ENDCAP, 0.093686, 141.718773);
+    addThresholds( 1,  4, 14, SEC_ENDCAP, 0.158431, 156.732945);
+    addThresholds( 1,  4, 15, SEC_ENDCAP, 0.151566, 137.073274);
+    addThresholds( 3,  4,  5, SEC_ENDCAP, 0.007473, 7.082068);
+    addThresholds( 3,  4,  6, SEC_ENDCAP, 0.010956, 10.968808);
+    addThresholds( 3,  4,  7, SEC_ENDCAP, 0.021753, 15.601805);
+    addThresholds( 3,  4, 12, SEC_ENDCAP, 0.048389, 60.788335);
+    addThresholds( 3,  4, 13, SEC_ENDCAP, 0.036618, 61.534191);
+    addThresholds( 3,  4, 14, SEC_ENDCAP, 0.045263, 63.905185);
+    addThresholds( 3,  4, 15, SEC_ENDCAP, 0.050656, 76.211291);
+
+    /* End of Floating point Thresholds */
+  }
 }
 
 void TCBuilder::mergePatterns(){
