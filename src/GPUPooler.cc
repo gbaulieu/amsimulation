@@ -25,7 +25,7 @@ GPUPooler::GPUPooler(string sectorFilename, string inputDirectory, string output
   pattern_ibuf=( int32_t*) pattern_buf;
   pattern_vbuf=( float*) pattern_buf;
 
-  pf = new PatternFinder(sectors.getSuperStripSize(), patternThreshold, &sectors, "","", &d_pb, &d_detector,&d_param);
+  //pf = new PatternFinder(sectors.getSuperStripSize(), patternThreshold, &sectors, "","", &d_pb, &d_detector,&d_param);
 
   cudaMallocHost((void**)&cuda_nb_hits,2*sizeof(int));
 
@@ -121,7 +121,7 @@ void GPUPooler::loadEvent(string fileName, int stream){
       cuda_hits[stream][cuda_idx+1]=ladder;
       cuda_hits[stream][cuda_idx+2]=module;
       cuda_hits[stream][cuda_idx+3]=seg;
-      cuda_hits[stream][cuda_idx+4]=(char)(strip/sectors.getSuperStripSize());
+      //cuda_hits[stream][cuda_idx+4]=(char)(strip/sectors.getSuperStripSize());
       cuda_nb_hits[stream]++;
       
     }
