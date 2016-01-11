@@ -1,5 +1,4 @@
 #include "PatternFinder.h"
-#include "TROOT.h"
 
 PatternFinder::PatternFinder(int at, SectorTree* st, string f, string of){
   active_threshold = at;

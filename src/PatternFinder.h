@@ -5,6 +5,7 @@
 #include <fstream>
 #include <TChain.h>
 #include <TFile.h>
+#include <TROOT.h>
 #include "SectorTree.h"
 
 #ifdef USE_CUDA
