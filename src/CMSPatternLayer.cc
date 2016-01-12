@@ -605,7 +605,5 @@ int CMSPatternLayer::cmssw_layer_to_prbf2_layer(int cms_layer, bool isPS){
 void CMSPatternLayer::tagBarrelLayerForAM05(){
   if(isFake())//this is a fake superstrip, no need to tag it
     return;
-  int s = getStripCode();
-  int val = (s>>6)&0x1;
-  bits |= 0x40;
+  bits |= 0x40;// bit 6 is set to 1
 }
