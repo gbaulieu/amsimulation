@@ -243,6 +243,13 @@ string CMSPatternLayer::toAM05Format(){
   **/
   int nb_dc_bits = 0;
   int used_dc_bits = getDCBitsNumber();
+
+  if(isFake()){//fake superstrips are always encoded the same way
+    used_dc_bits = 2;
+    dc_bits[0]=0;
+    dc_bits[1]=0;
+  }
+
   if(used_dc_bits<3)
     nb_dc_bits=2;
   else
@@ -593,4 +600,12 @@ int CMSPatternLayer::cmssw_layer_to_prbf2_layer(int cms_layer, bool isPS){
     }
   }
   return layer_code;
+}
+
+void CMSPatternLayer::tagBarrelLayerForAM05(){
+  if(isFake())//this is a fake superstrip, no need to tag it
+    return;
+  int s = getStripCode();
+  int val = (s>>6)&0x1;
+  bits |= 0x40;
 }

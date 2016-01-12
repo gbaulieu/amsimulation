@@ -1541,8 +1541,9 @@ int main(int av, char** ac){
 	  PatternLayer* mp = p->getLayerStrip(k);
 	  
 	  if(hybrid_sector && k==p->getNbLayers()-1){ // this is the last layer -> set its data on last bus along with data from last barrel layer
-	    if(mp->isFake()){ // if we have a fake superstrip this layer -> we use the value of last barrel layer
+	    if(mp->isFake()){ // if we have a fake superstrip on this layer -> we use the value of last barrel layer
 	      mp = p->getLayerStrip(biggestBarrelIndex);
+	      ((CMSPatternLayer*)mp)->tagBarrelLayerForAM05();
 	    }
 	  }
 	  
