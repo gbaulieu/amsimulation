@@ -234,7 +234,7 @@ string CMSPatternLayer::toStringBinary(){
   return oss.str();
 }
 
-string CMSPatternLayer::toAM05Format(){
+string CMSPatternLayer::toAM05Format(bool tagLayer){
 
   /**
      The input superstrip is 16 bits long
@@ -244,10 +244,10 @@ string CMSPatternLayer::toAM05Format(){
   int nb_dc_bits = 0;
   int used_dc_bits = getDCBitsNumber();
 
-  if(isFake()){//fake superstrips are always encoded the same way
-    used_dc_bits = 2;
+  if(isFake()){
     dc_bits[0]=0;
     dc_bits[1]=0;
+    dc_bits[2]=0;
   }
 
   if(used_dc_bits<3)
@@ -438,6 +438,14 @@ string CMSPatternLayer::toAM05Format(){
       (dcbit1_val&AM05_STRIP_DC1_MASK)<<AM05_STRIP_DC1_BIT |
       (dcbit2_val&AM05_STRIP_DC2_MASK)<<AM05_STRIP_DC2_BIT;
   }
+
+  if(tagLayer){
+    if(used_dc_bits==3)
+      am_format |= 0x200;
+    else
+      am_format |= 0x100;
+  }
+
   ostringstream oss;
   oss<<hex<<"0x"<<std::setfill ('0') << std::setw (5)<<am_format<<" "<<nb_dc_bits;
   return oss.str();
@@ -600,10 +608,4 @@ int CMSPatternLayer::cmssw_layer_to_prbf2_layer(int cms_layer, bool isPS){
     }
   }
   return layer_code;
-}
-
-void CMSPatternLayer::tagBarrelLayerForAM05(){
-  if(isFake())//this is a fake superstrip, no need to tag it
-    return;
-  bits |= 0x40;// bit 6 is set to 1
 }

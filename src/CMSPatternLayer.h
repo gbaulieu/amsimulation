@@ -125,9 +125,10 @@ class CMSPatternLayer : public PatternLayer{
   string toStringBinary();
   /**
      \brief Returns a string representation of the PatternLayer, using the encoding needed for a AM05 chip
+     \param tagLayer If true, set the bit 6 to 1 (used to distinguish layers in case of 2 layers on 1 bus)
      \return A string describing the PatternLayer
   **/
-  string toAM05Format();
+  string toAM05Format(bool tagLayer=false);
   /**
      \brief Returns the module's Z position
      \return The module's Z position
@@ -223,11 +224,6 @@ class CMSPatternLayer : public PatternLayer{
      \return True if the PatternLayer is a placeholder
   **/  
   bool isFake();
-
-  /**
-     \brief This function is used to be able to send 2 layers to the same AM input bus. We need to distinguish superstrips coming from the barrel layer (ie CMS layer 10) and the endcap layer (ie CMS layer 13). As we are not using the full range of superstrips on layer 10 and 13 (the superstrip size is bigger than 8), we can use the MSB of the superstrip position. This function set the bit 6 to 1 and should only be used on layer 10. 
-   **/
-  void tagBarrelLayerForAM05();
 
   vector<int> getHDSuperstrips();  
 

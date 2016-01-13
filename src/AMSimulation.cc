@@ -1440,15 +1440,7 @@ int main(int av, char** ac){
       bool hybrid_sector = layers.size()>8;//we have more layers than input buses
 
       int biggestID = -1;//last layer of the sector
-      int biggestBarrelID = -1;//last barrel layer of the sector
-      int biggestBarrelIndex = -1;//index of last barrel layer of the sector
-      for(unsigned int j=0;j<layers.size();j++){
-	biggestID=layers[j];
-	if(layers[j]<11){
-	  biggestBarrelID=layers[j];
-	  biggestBarrelIndex=j;
-	}
-      }
+      biggestID=layers[layers.size()-1];
 
       int maxDC=-1;      
       int nbDC = 0;
@@ -1506,10 +1498,10 @@ int main(int av, char** ac){
       cout<<"**"<<endl;
       cout<<"** The 8 input buses are used for the following layers (CMS IDs) : ";
       for(unsigned int j=0;j<layers.size();j++){
-	if(hybrid_sector && layers[j]==biggestBarrelID)
+	if(hybrid_sector && layers[j]==9)
 	  continue;
 	if(hybrid_sector && layers[j]==biggestID)
-	  cout<<biggestBarrelID<<"/"<<biggestID;
+	  cout<<9<<"/"<<biggestID;
 	else
 	  cout<<layers[j]<<" - ";
       }
@@ -1534,20 +1526,22 @@ int main(int av, char** ac){
 	  continue;
 	
 	for(int k=0;k<p->getNbLayers();k++){
-	  if(hybrid_sector && k==biggestBarrelIndex){ // this is layer 10 -> we set it on bus 7
+	  if(hybrid_sector && k==4){ // this is layer 9 -> we set it on bus 7
 	    continue;
 	  }
 	  
 	  PatternLayer* mp = p->getLayerStrip(k);
 	  
-	  if(hybrid_sector && k==p->getNbLayers()-1){ // this is the last layer -> set its data on last bus along with data from last barrel layer
-	    if(mp->isFake()){ // if we have a fake superstrip on this layer -> we use the value of last barrel layer
-	      mp = p->getLayerStrip(biggestBarrelIndex);
-	      ((CMSPatternLayer*)mp)->tagBarrelLayerForAM05();
+	  bool tagLayer = false;
+	  if(hybrid_sector && k==p->getNbLayers()-1){ // this is the last layer -> set its data on last bus along with data from layer 9
+	    if(mp->isFake()){ // if we have a fake superstrip on this layer -> we use the value of layer 9
+	      mp = p->getLayerStrip(4);
+	      if (!mp->isFake())
+		tagLayer = true;//we need to tag the layer to distinguish layer 9 from the endcap layer sharing the same bus
 	    }
 	  }
 	  
-	  cout<<((CMSPatternLayer*)mp)->toAM05Format()<<endl;
+	  cout<<((CMSPatternLayer*)mp)->toAM05Format(tagLayer)<<endl;
 	}
 	//unused layers set to 0x01e05 (fake stub value)
 	//We want a threshold at 5/6 but we have 8 buses and the threshold can not go below 6
