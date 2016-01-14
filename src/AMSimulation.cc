@@ -1442,6 +1442,10 @@ int main(int av, char** ac){
       int biggestID = -1;//last layer of the sector
       biggestID=layers[layers.size()-1];
 
+      bool endcap_sector = false;
+      if(biggestID>10 && !hybrid_sector)
+	endcap_sector = true;
+
       int maxDC=-1;      
       int nbDC = 0;
       for(unsigned int j=0;j<patterns.size();j++){
@@ -1526,13 +1530,17 @@ int main(int av, char** ac){
 	  continue;
 	
 	for(int k=0;k<p->getNbLayers();k++){
-	  if(hybrid_sector && k==4){ // this is layer 9 -> we set it on bus 7
+
+	  bool tagLayer = false;
+	  if(hybrid_sector && k==4){ // this is layer 9 -> in hybrid sector we set it on bus 7
 	    continue;
 	  }
-	  
+
 	  PatternLayer* mp = p->getLayerStrip(k);
+
+	  if(k==4 && !endcap_sector && !mp->isFake()) // this is layer 9 and not a fake superstrip -> we tag it
+	    tagLayer = true;
 	  
-	  bool tagLayer = false;
 	  if(hybrid_sector && k==p->getNbLayers()-1){ // this is the last layer -> set its data on last bus along with data from layer 9
 	    if(mp->isFake()){ // if we have a fake superstrip on this layer -> we use the value of layer 9
 	      mp = p->getLayerStrip(4);
