@@ -875,7 +875,6 @@ int main(int av, char** ac){
     ("help", "produce help message")
     ("generateBank", "Generates a pattern bank from root simulation file (needs --ss_size_file --dc_bits --pt_min --pt_max --eta_min --eta_max --coverage --input_directory --bank_name --sector_file --sector_id --active_layers)")
     ("testSectors", "Get the tracks sectors")
-    ("MergeSectors", "Merge 2 root files having same events but different sectors (needs --inputFile --secondFile and --outputFile)")
     ("MergeBanks", "Merge 2 bank files having only 1 sector (needs --inputFile --secondFile and --outputFile)")
     ("buildFitParams", "Computes the Fit parameters for the given bank using tracks from the given directory (needs --bankFile, --input_directory and --outputFile)")
     ("findPatterns", "Search for patterns in an event file (needs --ss_threshold --inputFile, --bankFile, --startEvent and --stopEvent)")
@@ -1652,9 +1651,6 @@ int main(int av, char** ac){
       boost::archive::text_oarchive oa(f);
       oa << ref;
     }
-  }
-  else if(vm.count("MergeSectors")) {
-    PatternFinder::mergeFiles(vm["outputFile"].as<string>().c_str(), vm["inputFile"].as<string>().c_str(), vm["secondFile"].as<string>().c_str());
   }
   else if(vm.count("MergeBanks")) {
     SectorTree st1;
