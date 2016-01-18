@@ -242,14 +242,40 @@ public:
     delete f;
     
   }
+
+  void removeSectorTrees(std::string filename)
+  {
+    TFile* f = new TFile(filename.c_str(),"update");  
+    TIter next(f->GetListOfKeys());
+    TKey *key;
+    while ((key=(TKey*)next())) {
+      string name(key->GetName());
+      if(name.find("L1tracks_sec")!=std::string::npos){
+	name = name+";*";
+	cout<<"removing "<<name<<endl;
+	f->Delete(name.c_str());  
+      }
+    }
+    f->Write();
+    f->Close();
+  }
+
 };
 
 int main(int argv, char* args[]){
   if(argv>1){
-    cout<<args[1]<<endl;
     string f(args[1]);
     mergeSectors a;
-    a.do_ana(f);
+    if(argv>2 && strcmp(args[2],"--clean")==0){
+      a.removeSectorTrees(f);      
+    }
+    else{
+      a.do_ana(f);
+    }
+  }
+  else{
+    cout<<"mergeSectors <ROOT File> : Merge all L1tracks_sec* TTrees into one single L1tracks TTree."<<endl;
+    cout<<"mergeSectors <ROOT File> --clean : Remove all L1tracks_sec* TTrees from the file (NO MERGING DONE)."<<endl;
   }
   return 0;
 }
