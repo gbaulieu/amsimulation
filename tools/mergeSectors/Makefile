@@ -2,7 +2,7 @@ UNAME := $(shell uname)
 
 SRC=src
 
-CMSSW_ENABLED=false
+CMSSW_ENABLED=true
 
 ifeq ($(CMSSW_ENABLED),true)
 	FLAG=-O3 -Wall -std=c++11 -Werror=type-limits

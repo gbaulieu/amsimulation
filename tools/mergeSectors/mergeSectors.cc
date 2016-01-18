@@ -13,6 +13,11 @@
 
 using namespace std;
 
+/**
+   After AMPR analysis using the AMSimulation standalone package or the AMTestBench.py script, the ROOT output file contains one TTree per sector.
+   This script allows to merge all the L1tracks_sec* TTree to one single L1tracks TTree.
+ **/
+
 class mergeSectors{
 
 private:
@@ -110,7 +115,6 @@ public:
     while ((key=(TKey*)next())) {
       string name(key->GetName());
       if(name.find("L1tracks_sec")!=std::string::npos){
-	cout<<"creation du tree "<<name<<endl;
 	SectorTree* s = new SectorTree((TTree*)(f->Get(key->GetName())));
 	int nb = s->getNbEntries();
 	if(nb_records==-1)
@@ -237,96 +241,6 @@ public:
     f->Close();
     delete f;
     
-
-/*
-    TChain* PATT = new TChain("L1tracks");
-    PATT->Add(filename.c_str());
-  
-    int event_id;
-    int m_patt=0;
-    std::vector< std::vector<int> > m_patt_links;
-    std::vector<int> m_patt_secid;
-    std::vector<int> m_patt_miss;
-    
-    int nb_tracks=0;
-    std::vector<float> m_trk_pt;
-    std::vector<float> m_trk_eta;
-    std::vector<float> m_trk_phi;
-    std::vector<float> m_trk_z;
-    std::vector< std::vector<int> > m_trk_links;
-    std::vector<int> m_trk_secid;
-
-    std::vector< std::vector<int> > *p_m_patt_links = &m_patt_links;
-    std::vector<int> *p_m_patt_secid = &m_patt_secid;
-    std::vector<int> *p_m_patt_miss = &m_patt_miss;
-    
-    std::vector<float> *p_m_trk_pt = &m_trk_pt;
-    std::vector<float> *p_m_trk_eta = &m_trk_eta;
-    std::vector<float> *p_m_trk_phi = &m_trk_phi;
-    std::vector<float> *p_m_trk_z = &m_trk_z;
-    std::vector< std::vector<int> > *p_m_trk_links = &m_trk_links;
-    std::vector<int> *p_m_trk_secid = &m_trk_secid;
-
-    /////////////////////////////////////////
-    
-    // Branches definition
-    
-    PATT->SetBranchAddress("L1evt", &event_id); // Simple evt number or event ID
-    
-    PATT->SetBranchAddress("L1PATT_n",           &m_patt);
-    PATT->SetBranchAddress("L1PATT_links",       &p_m_patt_links);
-    PATT->SetBranchAddress("L1PATT_secid",       &p_m_patt_secid);
-    PATT->SetBranchAddress("L1PATT_nmiss",       &p_m_patt_miss);
-    
-    PATT->SetBranchAddress("L1TRK_n",            &nb_tracks);
-    PATT->SetBranchAddress("L1TRK_links",        &p_m_trk_links);
-    PATT->SetBranchAddress("L1TRK_secid",        &p_m_trk_secid);
-    PATT->SetBranchAddress("L1TRK_pt",           &p_m_trk_pt);
-    PATT->SetBranchAddress("L1TRK_phi",          &p_m_trk_phi);
-    PATT->SetBranchAddress("L1TRK_z",            &p_m_trk_z);
-    PATT->SetBranchAddress("L1TRK_eta",          &p_m_trk_eta);
-
-    int n_entries_MC = TT->GetEntries();
-    cout<<n_entries_MC<<" events found"<<endl<<endl;
-
-    // Loop on events
-    for (int j=0;j<n_entries_MC;++j){
-      TT->GetEntry(j); // Load entries
-      PATT->GetEntry(j); // Load entries
-      cout<<"event "<<n_evt<<" (index "<<j<<")"<<endl;
-      if(m_patt>0){
-	cout<<m_patt<<" pattern(s) found : "<<endl;
-	cout<<endl;
-	for(unsigned int k=0;k<m_patt_links.size();k++){
-	  for(unsigned int l=0;l<m_patt_links[k].size();l++){
-	    int index = m_patt_links[k][l];
-	    float pt = sqrt(m_stub_px_gen[index]*m_stub_px_gen[index]+m_stub_py_gen[index]*m_stub_py_gen[index]);
-	    cout<<"Layer "<<m_stub_layer[index]<<" Ladder "<<m_stub_ladder[index]<<" Module "<<m_stub_module[index]<<" Seg "<<m_stub_seg[index]<<" Strip "<<int(m_stub_strip[index])<<" (TP="<<m_stub_tp[index]<<" PT="<<pt<<" GeV ETA="<<m_stub_eta_gen[index]<<" PHI="<<m_stub_phi0[index]<<")"<<endl;
-	  }
-	  cout<<endl;
-	}
-      }
-      if(nb_tracks>0){
-	cout<<m_trk_links.size()<<" track(s) found : "<<endl;
-	cout<<endl;
-	for(unsigned int k=0;k<m_trk_links.size();k++){
-	  cout<<m_trk_links[k].size()<<" selected stubs :"<<endl;
-	  for(unsigned int l=0;l<m_trk_links[k].size();l++){
-	    int index = m_trk_links[k][l];
-	    float pt = sqrt(m_stub_px_gen[index]*m_stub_px_gen[index]+m_stub_py_gen[index]*m_stub_py_gen[index]);
-	    cout<<"Layer "<<m_stub_layer[index]<<" Ladder "<<m_stub_ladder[index]<<" Module "<<m_stub_module[index]<<" Seg "<<m_stub_seg[index]<<" Strip "<<int(m_stub_strip[index])<<" (TP="<<m_stub_tp[index]<<" PT="<<pt<<" GeV ETA="<<m_stub_eta_gen[index]<<" PHI="<<m_stub_phi0[index]<<")"<<endl;
-	  }
-	  cout<<"Parameters estimation : PT="<<m_trk_pt[k]<<" GeV - ETA="<<m_trk_eta[k]<<" - PHI="<<m_trk_phi[k]<<" - Z0="<<m_trk_z[k]<<endl;
-	  cout<<endl;
-	}
-      }
-      m_patt=0;
-      nb_tracks=0;
-    }
-
-  delete TT;
-  delete PATT;
-*/
   }
 };
 
