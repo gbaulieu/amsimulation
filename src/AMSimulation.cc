@@ -43,7 +43,7 @@ using namespace std;
 
    If everything goes fine, you should get a binary file called "AMSimulation".
  
-   \subsection CUDA
+   \subsection CUDA (No more supported)
    Some features of the program (pattern recognition) can use a GPU card to accelarate the computing. If you want to use this feature you will need:
    - Root (http://root.cern.ch) installed and configured ($ROOTSYS must be pointing on the installation directory and $ROOTSYS/bin must be in the PATH)
    - Boost (http://www.boost.org/) libraries and header files
@@ -83,8 +83,8 @@ using namespace std;
    \endcode
    All options can be stored in a file called amsimulation.cfg, here is an example :
    \code
-   # Number of strips in a superstrip {16,32,64,128,256,512,1024}, either one value for all layers or one value per layer
-   ss_size=32
+   # File containing the number of strips in a superstrip. On value per layer in barrel, one value per ladder in endcap disks.
+   ss_size_file=ss_size.txt
    # Number of DC bits to use [0-3]
    dc_bits=3
    # Minimal PT of tracks used to generate a pattern
@@ -113,23 +113,17 @@ using namespace std;
 
    Each option contained in the configuration file can be overwritten via the command line, for example :
    \code
-   ./AMSimulation --generateBank --ss_size=64
+   ./AMSimulation --generateBank --pt_min=3
    \endcode
-   will set the value of the ss_size option to 64, whatever is contained in the configuration file. If --ss_size is a unique value it will be used for all layers. If you want to use a different values you have to set a value per layer (same format than --active_layers).
+   will set the minimum PT value to 3, whatever is contained in the configuration file.
 
-   If you have created 2 banks for the same trigger tower with 2 different PT range (2-10 GeV and 10-50 GeV for example), you can merge the 2 files into a single one using the command :
-   \code
-   ./AMSimulation --MergeBanks --inputFile testPT2-10.pbk --secondFile testPT10-50.pbk --outputFile testPT2-10-50.pbk
-   \endcode
    \subsection find Finding patterns in events
-   To search for patterns in events (a branch will be added to the input file), enter :
+   To search for patterns in events (a branch L1tracks_sec<ID> will be added for each sector to the input file), enter :
    \code
    ./AMSimulation --findPatterns --inputFile <path to Root File containing events (local or RFIO)> --bankFile <path to your pattern bank file> --ss_threshold <minimum number of stubs to activate the pattern> --startEvent <Index of first event to analyse> --stopEvent <Index of last event to analyse>
    \endcode
 
    If you add the option --verbose to the previous command, for each stub in the trigger tower the program will display the stub's informations along with the corresponding superstrip value. The format is one line per stub + one line per superstrip (the first value is the layer's ID, the second value is the superstrip value in hexadecimal). 
-
-If you compiled the program using the cuda libraries, you can add the --useGPU flag to use the GPU device to perform the pattern recognition.
 
    \subsection merge Merging banks
    If you have created 2 banks for the same trigger tower but with different PT range (for example 2 to 10 GeV and 10 to 100 GeV) you can merge the 2 files into a single one by using the command :   
@@ -875,7 +869,6 @@ int main(int av, char** ac){
     ("help", "produce help message")
     ("generateBank", "Generates a pattern bank from root simulation file (needs --ss_size_file --dc_bits --pt_min --pt_max --eta_min --eta_max --coverage --input_directory --bank_name --sector_file --sector_id --active_layers)")
     ("testSectors", "Get the tracks sectors")
-    ("MergeSectors", "Merge 2 root files having same events but different sectors (needs --inputFile --secondFile and --outputFile)")
     ("MergeBanks", "Merge 2 bank files having only 1 sector (needs --inputFile --secondFile and --outputFile)")
     ("buildFitParams", "Computes the Fit parameters for the given bank using tracks from the given directory (needs --bankFile, --input_directory and --outputFile)")
     ("findPatterns", "Search for patterns in an event file (needs --ss_threshold --inputFile, --bankFile, --startEvent and --stopEvent)")
@@ -1652,9 +1645,6 @@ int main(int av, char** ac){
       boost::archive::text_oarchive oa(f);
       oa << ref;
     }
-  }
-  else if(vm.count("MergeSectors")) {
-    PatternFinder::mergeFiles(vm["outputFile"].as<string>().c_str(), vm["inputFile"].as<string>().c_str(), vm["secondFile"].as<string>().c_str());
   }
   else if(vm.count("MergeBanks")) {
     SectorTree st1;
