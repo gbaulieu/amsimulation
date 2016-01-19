@@ -502,8 +502,8 @@ void TCBuilder::alignScore(Hit& hSeed1, Hit& hSeed2, Hit& hTestStub, double tSco
 
   fRZ_Score = binning(RZ_S1 + RZ_S2, m_nFractionnalPartWidth);
 
-  tScores[0] = fRPHI_Score;
-  tScores[1] = fRZ_Score;
+  tScores[0] = fabs(fRPHI_Score);
+  tScores[1] = fabs(fRZ_Score);
 }
 
 
@@ -777,7 +777,7 @@ void TCBuilder::fit(vector<Hit*> originalHits)
 	      double fCurrentCandidateScore = 0.0;
 	      while (vecCurrentCandidateScore.empty() == false)
 		{
-		  fCurrentCandidateScore += abs(vecCurrentCandidateScore.back());  //TODO norm?
+		  fCurrentCandidateScore += vecCurrentCandidateScore.back();
 		  vecCurrentCandidateScore.pop_back();
 		}
 
