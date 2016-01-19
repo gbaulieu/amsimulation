@@ -43,7 +43,7 @@ using namespace std;
 
    If everything goes fine, you should get a binary file called "AMSimulation".
  
-   \subsection CUDA (No more supported)
+   \subsection cuda CUDA (No more supported)
    Some features of the program (pattern recognition) can use a GPU card to accelarate the computing. If you want to use this feature you will need:
    - Root (http://root.cern.ch) installed and configured ($ROOTSYS must be pointing on the installation directory and $ROOTSYS/bin must be in the PATH)
    - Boost (http://www.boost.org/) libraries and header files
@@ -124,6 +124,19 @@ using namespace std;
    \endcode
 
    If you add the option --verbose to the previous command, for each stub in the trigger tower the program will display the stub's informations along with the corresponding superstrip value. The format is one line per stub + one line per superstrip (the first value is the layer's ID, the second value is the superstrip value in hexadecimal). 
+
+   \subsection output Using the output
+   If you run the pattern recognition on the same events using different sectors, you will end up with several L1tracks_secX TTree in your input file. You can then use the mergeSectors utility to merge these TTrees into a single L1tracks TTree containing all the informations from the different sectors. The utility is located in the ./tools/mergeSectors/ folder of the AMSimulation package. 
+   \code
+   ./mergeSectors <your Root file>
+   \endcode
+
+   If you add the --clean option at the end, no merge will be performed but all the L1tracks_secX TTrees will be removed from your file.
+   \code
+   ./mergeSectors <your Root file> --clean
+   \endcode
+
+   You can list the content of the final file using the listPatterns utility in ./tools/listPatterns : it will give you for each event the list of patterns and stubs selected. A more in depth analysis can be done using the AM_ana tool from S. Viret (https://indico.cern.ch/event/325924/session/2/contribution/7/attachments/632549/870536/10_AM_analysis_tools.pdf).
 
    \subsection merge Merging banks
    If you have created 2 banks for the same trigger tower but with different PT range (for example 2 to 10 GeV and 10 to 100 GeV) you can merge the 2 files into a single one by using the command :   
