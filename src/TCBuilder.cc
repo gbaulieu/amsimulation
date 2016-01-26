@@ -484,12 +484,19 @@ double TCBuilder::binning(double fNumber, int nMSBpowOfTwo, int nBits, HW_SIGN_T
 	else
     {
 		  //If the number is in SIGNED representation (2's complement)
-      double fTempResult = fNumber - pow(2, nMSBpowOfTwo+1);
+      
+      double fTempResult = fNumber - pow(2, nMSBpowOfTwo+1); //substract the possible range to the number
 
-      if (fTempResult >= 0)		  
-        fNumber = fmod(fTempResult, pow(2, nMSBpowOfTwo+2)) - pow(2, nMSBpowOfTwo+1);
+      if (fTempResult >= 0)
+        {
+          //If there is an overflow, it's a positive one
+          fNumber = fmod(fTempResult, pow(2, nMSBpowOfTwo+2)) - pow(2, nMSBpowOfTwo+1);
+        }
       else
-        fNumber = fmod(fTempResult, pow(2, nMSBpowOfTwo+2)) + pow(2, nMSBpowOfTwo+1);
+        {
+          //If there is an overflow, it's a negative one (2's complement format has an asymetric range for positive and negative values)
+          fNumber = fmod(fTempResult + pow(2, nLSBpowOfTwo), pow(2, nMSBpowOfTwo+2)) - pow(2, nLSBpowOfTwo) + pow(2, nMSBpowOfTwo+1);
+        }
 		}
 
   //If the new number is different from the previous one, an HW overflow occured
