@@ -313,12 +313,6 @@ Track* TCBuilder::createFittedTrack(vector <Hit*> &bestTC)
 
   int nc=0;
 
-  float xtemp1,ytemp1;
-  float xtemp2,ytemp2;
-
-  xtemp1=0.;
-  ytemp1=0.;
-
   // Loop 2 over stubs in the TC
   // In order to determine the point with the second largest radius 
 
@@ -348,22 +342,32 @@ Track* TCBuilder::createFittedTrack(vector <Hit*> &bestTC)
 
   // Now get the coordinates in the conformal space.
 
-  xtemp1 = (x1-x0)/((x1-x0)*(x1-x0)+(y1-y0)*(y1-y0));
-  ytemp1 = (y1-y0)/((x1-x0)*(x1-x0)+(y1-y0)*(y1-y0));
+  double sqR1  = binning((x1-x0)*(x1-x0)+(y1-y0)*(y1-y0), 13, 18, UNSIGNED);
+  double sqR2  = binning((x2-x0)*(x2-x0)+(y2-y0)*(y2-y0), 13, 18, UNSIGNED);
 
-  xtemp2 = (x2-x0)/((x2-x0)*(x2-x0)+(y2-y0)*(y2-y0));
-  ytemp2 = (y2-y0)/((x2-x0)*(x2-x0)+(y2-y0)*(y2-y0));
+  x1 = binning((x1-x0)/sqR1, -3, 18, SIGNED);
+  y1 = binning((y1-y0)/sqR1, -3, 18, SIGNED);
 
-  x1=xtemp1;
-  y1=ytemp1;
-  x2=xtemp2;
-  y2=ytemp2;
+  x2 = binning((x2-x0)/sqR2, -3, 18, SIGNED);
+  y2 = binning((y2-y0)/sqR2, -3, 18, SIGNED);
 
+
+  double mult_x1_y2 = binning(x1*y2, -8, 18, SIGNED);
+  double mult_x2_y1 = binning(x2*y1, -8, 18, SIGNED);
 
   // Now we got everything for the r/phi plane   
 
-  double a = x0-0.5*(y1-y2)/(y2*x1-y1*x2);
-  double b = y0-0.5*(x1-x2)/(y1*x2-y2*x1);
+  double sub_of_mult = binning(mult_x1_y2 - mult_x2_y1, -11, 18, SIGNED);
+
+  double divA = binning((y1-y2)/sub_of_mult, 17, 18, SIGNED);
+  double divB = binning((x2-x1)/sub_of_mult, 17, 18, SIGNED);
+
+  double a = binning(x0-0.5*divA, 17, 18, SIGNED);
+  double b = binning(y0-0.5*divB, 17, 18, SIGNED);
+
+  double a2_b2 = binning(a*a + b*b, 29, 18, UNSIGNED);
+
+  pt_est  = 0.003*3.833*sqrt(a2_b2);
 
   int charge =-b/fabs(b);
 
@@ -374,8 +378,6 @@ Track* TCBuilder::createFittedTrack(vector <Hit*> &bestTC)
 
   //Set the value betweend -Pi and Pi
   phi_est = fmod(phi_est + M_PI, 2 * M_PI) - M_PI;
-
-  pt_est  = 0.003*3.833*sqrt(a*a+b*b);
 
   // Then we do the RZ fit (LS)
 
