@@ -74,10 +74,10 @@ class TCBuilder:public TrackFitter{
   Track* createFittedTrack(vector <Hit*>&);
  
   /**
-     \brief Set the fractionnal part width value
-     \param nbFloatingPoint The number of bits used for the decimal part (0 for floating point computing)
+     \brief Configure the way the computing is done
+     \param hardwareEmulation If true the computing will be done using the hardware precision. If false, float computing is used.
    **/
-  void setFractionnalPartWidth(int nbFloatingPoint);
+  void setHardwareEmulation(bool hardwareEmulation);
 
   void fit();
   void fit(vector<Hit*> hits);
