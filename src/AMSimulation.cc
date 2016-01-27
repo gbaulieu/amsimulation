@@ -43,7 +43,7 @@ using namespace std;
 
    If everything goes fine, you should get a binary file called "AMSimulation".
  
-   \subsection CUDA (No more supported)
+   \subsection cuda CUDA (No more supported)
    Some features of the program (pattern recognition) can use a GPU card to accelarate the computing. If you want to use this feature you will need:
    - Root (http://root.cern.ch) installed and configured ($ROOTSYS must be pointing on the installation directory and $ROOTSYS/bin must be in the PATH)
    - Boost (http://www.boost.org/) libraries and header files
@@ -124,6 +124,19 @@ using namespace std;
    \endcode
 
    If you add the option --verbose to the previous command, for each stub in the trigger tower the program will display the stub's informations along with the corresponding superstrip value. The format is one line per stub + one line per superstrip (the first value is the layer's ID, the second value is the superstrip value in hexadecimal). 
+
+   \subsection output Using the output
+   If you run the pattern recognition on the same events using different sectors, you will end up with several L1tracks_secX TTree in your input file. You can then use the mergeSectors utility to merge these TTrees into a single L1tracks TTree containing all the informations from the different sectors. The utility is located in the ./tools/mergeSectors/ folder of the AMSimulation package. 
+   \code
+   ./mergeSectors <your Root file>
+   \endcode
+
+   If you add the --clean option at the end, no merge will be performed but all the L1tracks_secX TTrees will be removed from your file.
+   \code
+   ./mergeSectors <your Root file> --clean
+   \endcode
+
+   You can list the content of the final file using the listPatterns utility in ./tools/listPatterns : it will give you for each event the list of patterns and stubs selected. A more in depth analysis can be done using the AM_ana tool from S. Viret (https://indico.cern.ch/event/325924/session/2/contribution/7/attachments/632549/870536/10_AM_analysis_tools.pdf).
 
    \subsection merge Merging banks
    If you have created 2 banks for the same trigger tower but with different PT range (for example 2 to 10 GeV and 10 to 100 GeV) you can merge the 2 files into a single one by using the command :   
@@ -1431,18 +1444,13 @@ int main(int av, char** ac){
       vector<int> layers = mySector->getLayersID();
       int expected_active_layers = -1;
       bool hybrid_sector = layers.size()>8;//we have more layers than input buses
-      bool first_pass=true;
 
       int biggestID = -1;//last layer of the sector
-      int biggestBarrelID = -1;//last barrel layer of the sector
-      int biggestBarrelIndex = -1;//index of last barrel layer of the sector
-      for(unsigned int j=0;j<layers.size();j++){
-	biggestID=layers[j];
-	if(layers[j]<11){
-	  biggestBarrelID=layers[j];
-	  biggestBarrelIndex=j;
-	}
-      }
+      biggestID=layers[layers.size()-1];
+
+      bool endcap_sector = false;
+      if(biggestID>10 && !hybrid_sector)
+	endcap_sector = true;
 
       int maxDC=-1;      
       int nbDC = 0;
@@ -1498,67 +1506,67 @@ int main(int av, char** ac){
       cout<<"** LOCAL LAYER/LADDER -> Superstrip Size "<<endl;
       displaySuperstripSizesWithLocalID(st);
       cout<<"**"<<endl;
-      while(true){
-	cout<<"** The 8 input buses are used for the following layers (CMS IDs) : ";
-	for(unsigned int j=0;j<layers.size();j++){
-	  if(hybrid_sector && first_pass && layers[j]==biggestID)
-	    continue;
-	  if(hybrid_sector && !first_pass && layers[j]==biggestBarrelID)
-	    continue;
-	  cout<<layers[j]<<" - ";
-	}
-	for(unsigned int j=layers.size();j<8;j++){
-	  cout<<"Unused - ";
-	}
-	cout<<endl;
-	cout<<"**"<<endl;
-
-	if(sector_id!=-1)
-	  cout<<"********* PATTERNS FOR SECTOR "<<sector_id<<" **********"<<endl;
+      cout<<"** The 8 input buses are used for the following layers (CMS IDs) : ";
+      for(unsigned int j=0;j<layers.size();j++){
+	if(hybrid_sector && layers[j]==9)
+	  continue;
+	if(hybrid_sector && layers[j]==biggestID)
+	  cout<<9<<"/"<<biggestID;
 	else
-	  cout<<"********** PATTERNS **********"<<endl;
-	cout<<endl;
-
-	for(unsigned int j=0;j<patterns.size();j++){
-	  Pattern* p = patterns[j];
-	  cout<<"# "<<*p;
-
-	  int nb_active_layers = p->getNbLayers()-p->getNbFakeSuperstrips();
-	  if(expected_active_layers!=-1 && expected_active_layers!=nb_active_layers) // the pattern does not have the expected number of active layers
-	    continue;
-
-	  if(hybrid_sector && first_pass && !p->getLayerStrip(8)->isFake())
-	    continue;
-
-	  if(hybrid_sector && !first_pass && p->getLayerStrip(8)->isFake())
-	    continue;
-
-	  for(int k=0;k<p->getNbLayers();k++){
-
-	    if(hybrid_sector && first_pass && k==8)
-	      continue;
-	    if(hybrid_sector && !first_pass && k==biggestBarrelIndex)
-	      continue;
-
-	    PatternLayer* mp = p->getLayerStrip(k);
-	    cout<<((CMSPatternLayer*)mp)->toAM05Format()<<endl;
-	  }
-	  //unused layers set to 0 (2 DC with "don't care" value)
-	  //We want a threshold at 5/6 but we have 8 buses and the threshold can not go below 6
-	  // -> unused layers are set to 0 and will be activated with a superstrip from 0 to 3
-	  // -> the threshold is set to 7 (5 used layers + 2 unused layers forced to active)
-	  for(int k=p->getNbLayers();k<8;k++){
-	    cout<<hex<<"0x"<<std::setfill ('0') << std::setw (5)<<0<<" "<<2<<endl;
-	  }
-	  cout<<endl;
-	}
-	cout<<"********** END OF PATTERNS **********"<<endl;
-	if(!hybrid_sector)
-	  break;
-	else if(!first_pass)
-	  break;
-	first_pass=false;
+	  cout<<layers[j]<<" - ";
       }
+      for(unsigned int j=layers.size();j<8;j++){
+	cout<<"Unused - ";
+      }
+      cout<<endl;
+      cout<<"**"<<endl;
+      
+      if(sector_id!=-1)
+	cout<<"********* PATTERNS FOR SECTOR "<<sector_id<<" **********"<<endl;
+      else
+	cout<<"********** PATTERNS **********"<<endl;
+      cout<<endl;
+      
+      for(unsigned int j=0;j<patterns.size();j++){
+	Pattern* p = patterns[j];
+	cout<<"# "<<*p;
+	
+	int nb_active_layers = p->getNbLayers()-p->getNbFakeSuperstrips();
+	if(expected_active_layers!=-1 && expected_active_layers!=nb_active_layers) // the pattern does not have the expected number of active layers
+	  continue;
+	
+	for(int k=0;k<p->getNbLayers();k++){
+
+	  bool tagLayer = false;
+	  if(hybrid_sector && k==4){ // this is layer 9 -> in hybrid sector we set it on bus 7
+	    continue;
+	  }
+
+	  PatternLayer* mp = p->getLayerStrip(k);
+
+	  if(k==4 && !endcap_sector && !mp->isFake()) // this is layer 9 and not a fake superstrip -> we tag it
+	    tagLayer = true;
+	  
+	  if(hybrid_sector && k==p->getNbLayers()-1){ // this is the last layer -> set its data on last bus along with data from layer 9
+	    if(mp->isFake()){ // if we have a fake superstrip on this layer -> we use the value of layer 9
+	      mp = p->getLayerStrip(4);
+	      if (!mp->isFake())
+		tagLayer = true;//we need to tag the layer to distinguish layer 9 from the endcap layer sharing the same bus
+	    }
+	  }
+	  
+	  cout<<((CMSPatternLayer*)mp)->toAM05Format(tagLayer)<<endl;
+	}
+	//unused layers set to 0x01e05 (fake stub value)
+	//We want a threshold at 5/6 but we have 8 buses and the threshold can not go below 6
+	// -> unused layers are set to 0x01E05 and will be activated by this superstrip sent on all buses for all events
+	// -> the threshold is set to 7 (5 used layers + 2 unused layers forced to active)
+	for(int k=p->getNbLayers();k<8;k++){
+	  cout<<"0x01e05 2"<<endl;
+	}
+	cout<<endl;
+      }
+      cout<<"********** END OF PATTERNS **********"<<endl;
     }
   }
   else if(vm.count("alterBank")) {
