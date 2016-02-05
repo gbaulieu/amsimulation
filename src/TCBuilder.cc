@@ -25,9 +25,9 @@ void TCBuilder::initialize(){
 
 }
 
-void TCBuilder::setFractionnalPartWidth(int nbFloatingPoint)
+void TCBuilder::setHardwareEmulation(bool hardwareEmulation)
 {
-  m_bHardwareSimulation = (nbFloatingPoint!=0);
+  m_bHardwareSimulation = hardwareEmulation;
   updateThresholds();
 }
 
