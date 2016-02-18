@@ -902,6 +902,7 @@ int main(int av, char** ac){
     ("outputFile", po::value<string>(), "The root output file")
     ("ss_threshold", po::value<int>(), "The minimum number of hit superstrips to activate a pattern")
     ("ss_missingHits", po::value<int>(), "The maximum number of non activated layers to activate a pattern. --ss_threshold is used as a mandatory minimum value.")
+    ("max_output_roads", po::value<int>(), "Limit the number of output roads from the chips : keep only the first max_output_roads.")
     ("startEvent", po::value<int>(), "The first event index")
     ("stopEvent", po::value<int>(), "The last event index")
     ("verbose", "During pattern recognition, display each stub of an event as a superstrip (format is Layer_ID SUPERSTRIP_IN_HEXA)")
@@ -1272,6 +1273,7 @@ int main(int av, char** ac){
 #endif
       int nbMissingHit=0;
       int threshold=0;
+      int max_output_roads = -1;
       if(vm.count("ss_missingHits")){
 	  nbMissingHit=vm["ss_missingHits"].as<int>();
 	  threshold=vm["ss_threshold"].as<int>();
@@ -1279,6 +1281,9 @@ int main(int av, char** ac){
       else{
 	nbMissingHit=-1;
 	threshold=vm["ss_threshold"].as<int>();
+      }
+      if(vm.count("max_output_roads")){
+	max_output_roads=vm["max_output_roads"].as<int>();
       }
       PatternFinder pf(threshold, &st,  vm["inputFile"].as<string>().c_str(),  vm["inputFile"].as<string>().c_str());
       {
@@ -1288,6 +1293,9 @@ int main(int av, char** ac){
 
 	if(vm.count("ss_missingHits")){
 	    pf.useMissingHitThreshold(nbMissingHit);
+	}
+	if(max_output_roads>=0){
+	  pf.setMaxRoadNumber((unsigned int)max_output_roads);
 	}
 	if(vm.count("verbose")){
 	    pf.setVerboseMode(true);
