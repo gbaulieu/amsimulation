@@ -480,16 +480,32 @@ void createAnalysis(SectorTree &st){
   int patt_layer;
   int patt_z;
   int patt_sstrip;
+
+  float patt_pt;
+  int patt_order;
+  int patt_grade;
+
   TTree *OUT2    = new TTree("PatternGeom", "Geometry of patterns");
   OUT2->Branch("id",    &patt_id);
   OUT2->Branch("ssid",  &patt_ssid);
   OUT2->Branch("layer", &patt_layer);
   OUT2->Branch("z",     &patt_z);
   OUT2->Branch("phi",   &patt_sstrip);
+
+  TTree *OUT3    = new TTree("PatternData", "Informations about patterns");
+  OUT3->Branch("order",    &patt_order);
+  OUT3->Branch("AveragePT",  &patt_pt);
+  OUT3->Branch("Popularity", &patt_grade);
   
   for(unsigned int i=0;i<allPatterns.size();i++){
     GradedPattern* p = allPatterns[i];
+
     patt_id=i;
+    patt_order = p->getOrderInChip();
+    patt_pt = p->getAveragePt();
+    patt_grade = p->getGrade();
+    OUT3->Fill();
+
     for(int j=0;j<p->getNbLayers();j++){
       patt_layer = j;
       CMSPatternLayer* pl = (CMSPatternLayer*)p->getLayerStrip(j);
@@ -504,6 +520,8 @@ void createAnalysis(SectorTree &st){
   }
   OUT2->Write("", TObject::kOverwrite);
   delete OUT2;
+  OUT3->Write("", TObject::kOverwrite);
+  delete OUT3;
 
   for(int i=0;i<nbLayers;i++){
     modulesPlot[i]->Write();
