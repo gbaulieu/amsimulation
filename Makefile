@@ -29,14 +29,14 @@ ifeq ($(CUDA_ENABLED),true)
 	OBJECTS=SuperStrip.o Hit.o Pattern.o PatternLayer.o GradedPattern.o PatternTrunk.o PatternTree.o \
 	PatternGenerator.o Sector.o SectorTree.o CMSPatternLayer.o Segment.o Module.o Ladder.o Layer.o \
 	Detector.o PatternFinder.o Track.o TrackFitter.o FitParams.o PrincipalTrackFitter.o \
-	PrincipalFitGenerator.o MultiDimFitData.o KarimakiTrackFitter.o TCBuilder.o HoughFitter.o SeedClusteringFitter.o \
+	PrincipalFitGenerator.o MultiDimFitData.o KarimakiTrackFitter.o TCBuilder.o PCATrackFitter.o HoughFitter.o SeedClusteringFitter.o \
 	ComputerHough.o	Retina.o RetinaTrackFitter.o libhoughCPU.o FileEventProxy.o GPUPooler.o gpu.o
 else
 	OBJECTS=SuperStrip.o Hit.o Pattern.o PatternLayer.o GradedPattern.o PatternTrunk.o PatternTree.o \
 	PatternGenerator.o Sector.o SectorTree.o CMSPatternLayer.o Segment.o Module.o \
 	Ladder.o Layer.o Detector.o PatternFinder.o Track.o TrackFitter.o FitParams.o \
 	PrincipalTrackFitter.o PrincipalFitGenerator.o MultiDimFitData.o \
-	Retina.o RetinaTrackFitter.o KarimakiTrackFitter.o TCBuilder.o HoughFitter.o SeedClusteringFitter.o \
+	Retina.o RetinaTrackFitter.o KarimakiTrackFitter.o TCBuilder.o PCATrackFitter.o HoughFitter.o SeedClusteringFitter.o \
 	ComputerHough.o libhoughCPU.o
 endif
 
@@ -123,6 +123,9 @@ HoughFitter.o:${SRC}/HoughFitter.h ${SRC}/HoughFitter.cc
 
 TCBuilder.o:${SRC}/TCBuilder.h ${SRC}/TCBuilder.cc
 	g++ -c ${FLAG} ${INC} ${SRC}/TCBuilder.cc
+
+PCATrackFitter.o:${SRC}/PCATrackFitter.h ${SRC}/PCATrackFitter.cc ${SRC}/PCATrackFitter.cc ${SRC}/pcaconst.h
+	g++ -c ${FLAG} ${INC} ${SRC}/PCATrackFitter.cc
 
 SeedClusteringFitter.o:${SRC}/SeedClusteringFitter.h ${SRC}/SeedClusteringFitter.cc
 	g++ -c ${FLAG} ${INC} ${SRC}/SeedClusteringFitter.cc
