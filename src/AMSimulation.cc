@@ -772,6 +772,72 @@ void getOrderDataForModules(vector<int> list, int maxNbModules, int* first, int*
   }
 }
 
+vector<unsigned int> loadDefectiveAddresses(string name){
+  string line;
+  ifstream myfile (name.c_str());
+  vector< unsigned int > addresses;
+  set<unsigned int> addr_set;
+  if (myfile.is_open()){
+    while ( myfile.good() ){
+      getline (myfile,line);
+      if(line.length()>0 && line.find("#")!=0){//the line does not start with # and is not empty
+	stringstream ss(line);
+	std::string item;
+	vector<string> items;
+	while (getline(ss, item, ' ')) {//split with the space character
+	  std::string::iterator end_pos = std::remove(item.begin(), item.end(), ' ');
+	  item.erase(end_pos, item.end());
+	  if(item.find("-")!=std::string::npos){//there is a - character
+	    stringstream ss2(item);
+	    std::string val;
+	    unsigned int start=0;
+	    unsigned int stop=0;
+	    bool second = false;
+	    while (getline(ss2, val, '-')) {//split with the - character
+	      std::string::iterator end = std::remove(val.begin(), val.end(), ' ');
+	      val.erase(end, val.end());
+	      
+	      istringstream buffer(val);
+	      unsigned int v;
+	      buffer >> v;
+
+	      if(second){
+		stop=v;
+		if(stop<start){
+		  unsigned int tmp = start;
+		  start=stop;
+		  stop=tmp;
+		}
+		for(unsigned int i=start;i<=stop;i++){
+		  addr_set.insert(i);
+		}
+		second=false;
+	      }
+	      else
+		start=v;
+		second=true;
+	    }
+	  }
+	  else{
+	    istringstream buffer(item);
+	    unsigned int v;
+	    buffer >> v;
+	    addr_set.insert(v);
+	  }
+	}
+      }
+    }
+    myfile.close();
+  }
+  else{
+    cout << "Can not find file "<<name<<" to load the list of defective addresses of the chip!"<<endl;
+    exit(-1);
+  }
+  std::copy(addr_set.begin(), addr_set.end(), std::back_inserter(addresses));
+  sort(addresses.begin(),addresses.end());
+  return addresses;
+}
+
 void createSectorFromRootFile(SectorTree* st, string fileName, vector<int> layers, int sector_id){
 
   Sector s(layers);
@@ -940,7 +1006,8 @@ int main(int av, char** ac){
     ("bank_name", po::value<string>(), "The bank file name")    
     ("minFS", po::value<int>(), "Used with --alterBank : only patterns with at least minFS fake stubs will be kept in the new bank")
     ("maxFS", po::value<int>(), "Used with --alterBank : only patterns with at most maxFS fake stubs will be kept in the new bank")
-    ("truncate", po::value<int>(), "Used with --alterBank : gives the number of patterns to keep in the new bank, starting with the most used ones.")
+    ("truncate", po::value<int>(), "Used with --alterBank : gives the number of patterns to keep in the new bank, starting with the most used ones. Can be used with --defectiveAddressesFile to manage non working pattern addresses in the chip.")
+    ("defectiveAddressesFile", po::value<string>(), "The file containing the list of defective pattern addresses in the chip (separeted with spaces or - for ranges)")    
     ("nbActiveLayers", po::value<int>(), "Used with --printBankAM05 : only patterns with this exact number of active layers will be printed")
     ;
      
@@ -1601,13 +1668,16 @@ int main(int av, char** ac){
     int minFS=-1;
     int maxFS=-1;
     int newNbPatterns = -1;
+    vector<unsigned int> defectiveAddresses;
     if(vm.count("minFS"))
       minFS = vm["minFS"].as<int>();
     if(vm.count("maxFS"))
       maxFS = vm["maxFS"].as<int>();
     if(vm.count("truncate"))
       newNbPatterns = vm["truncate"].as<int>();
-
+    if(vm.count("defectiveAddressesFile"))
+      defectiveAddresses=loadDefectiveAddresses(vm["defectiveAddressesFile"].as<string>());
+      
     if(minFS<0 && maxFS<0 && newNbPatterns<0){
       cout<<"Missing parameter : you need to set minFS, maxFS or truncate!"<<endl;
       return -1;
@@ -1661,7 +1731,7 @@ int main(int av, char** ac){
 	    }
 	  }
 	}
-	newSector->getPatternTree()->truncate(newNbPatterns);
+	newSector->getPatternTree()->truncate(newNbPatterns,defectiveAddresses);
 	cout<<"Sector "<<mySector->getOfficialID()<<" :\n\tinput bank : "<<mySector->getPatternTree()->getLDPatternNumber()<<" patterns\n\toutput bank : "<<newSector->getPatternTree()->getLDPatternNumber()<<" patterns."<<endl;
       }
       save=&st2;
