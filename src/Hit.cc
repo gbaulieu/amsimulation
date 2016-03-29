@@ -114,6 +114,14 @@ float Hit::getBend() const{
   return bend;
 }
 
+float Hit::getPolarPhi() const{
+  return atan(y/x);
+}
+
+float Hit::getPolarDistance() const{
+  return sqrt(x*x+y*y);
+}
+
 ostream& operator<<(ostream& out, const Hit& h){
   double d0=(h.getY0()-(tan(h.getParticulePHI0())*h.getX0()))*cos(h.getParticulePHI0());
 

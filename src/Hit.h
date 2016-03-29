@@ -147,6 +147,16 @@ class Hit{
      \return The value as a float (may be half a strip)
   **/
   float getBend() const;
+  /**
+     \brief Get the polar angle of the hit
+     \return The polar angle value (in radian)
+  **/
+  float getPolarPhi() const;
+  /**
+     \brief Get the polar distance of the hit
+     \return The polar distance value
+  **/
+  float getPolarDistance() const;
 
 
   /**
