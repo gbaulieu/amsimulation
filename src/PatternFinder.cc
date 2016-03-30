@@ -188,6 +188,14 @@ void PatternFinder::find(int start, int& stop){
   std::vector<int> *m_patt_secid   = new  std::vector<int>;
   std::vector<int> *m_patt_miss    = new  std::vector<int>;
   
+  int nb_tc=0;
+  std::vector<float> *m_tc_pt       = new  std::vector<float>;
+  std::vector<float> *m_tc_eta      = new  std::vector<float>;
+  std::vector<float> *m_tc_phi      = new  std::vector<float>;
+  std::vector<float> *m_tc_z        = new  std::vector<float>;
+  std::vector< std::vector<int> > *m_tc_links    = new  std::vector< std::vector<int> >;
+  std::vector<int> *m_tc_secid    = new  std::vector<int>;
+
   int nb_tracks=0;
   std::vector<float> *m_trk_pt       = new  std::vector<float>;
   std::vector<float> *m_trk_eta      = new  std::vector<float>;
@@ -195,6 +203,7 @@ void PatternFinder::find(int start, int& stop){
   std::vector<float> *m_trk_z        = new  std::vector<float>;
   std::vector< std::vector<int> > *m_trk_links    = new  std::vector< std::vector<int> >;
   std::vector<int> *m_trk_secid    = new  std::vector<int>;
+  std::vector<float> *m_trk_chi2        = new  std::vector<float>;
   /////////////////////////////////////////
 
   // Branches definition
@@ -206,6 +215,14 @@ void PatternFinder::find(int start, int& stop){
   Out->Branch("L1PATT_secid",       &m_patt_secid);
   Out->Branch("L1PATT_nmiss",       &m_patt_miss);
   
+  Out->Branch("L1TC_n",            &nb_tc);
+  Out->Branch("L1TC_links",        &m_tc_links);
+  Out->Branch("L1TC_secid",        &m_tc_secid);
+  Out->Branch("L1TC_pt",           &m_tc_pt);
+  Out->Branch("L1TC_phi",          &m_tc_phi);
+  Out->Branch("L1TC_z",            &m_tc_z);
+  Out->Branch("L1TC_eta",          &m_tc_eta);
+
   Out->Branch("L1TRK_n",            &nb_tracks);
   Out->Branch("L1TRK_links",        &m_trk_links);
   Out->Branch("L1TRK_secid",        &m_trk_secid);
@@ -213,6 +230,7 @@ void PatternFinder::find(int start, int& stop){
   Out->Branch("L1TRK_phi",          &m_trk_phi);
   Out->Branch("L1TRK_z",            &m_trk_z);
   Out->Branch("L1TRK_eta",          &m_trk_eta);
+  Out->Branch("L1TRK_chi2",          &m_trk_chi2);
 
 
   int n_entries_TT = TT->GetEntries();
@@ -230,12 +248,19 @@ void PatternFinder::find(int start, int& stop){
     m_patt_links->clear();
     m_patt_secid->clear();
     m_patt_miss->clear();
+    m_tc_pt->clear();
+    m_tc_eta->clear();
+    m_tc_phi->clear();
+    m_tc_z->clear();
+    m_tc_links->clear();
+    m_tc_secid->clear();
     m_trk_pt->clear();
     m_trk_eta->clear();
     m_trk_phi->clear();
     m_trk_z->clear();
     m_trk_links->clear();
     m_trk_secid->clear();
+    m_trk_chi2->clear();
 
     vector<Hit*> hits;
 
@@ -350,16 +375,16 @@ void PatternFinder::find(int start, int& stop){
       }
 
       // loop over tracks
-      nb_tracks = (int)tracks.size();
+      nb_tc = (int)tracks.size();
       for(unsigned int k=0;k<tracks.size();k++){
-	m_trk_pt->push_back(tracks[k]->getCurve());
-	m_trk_phi->push_back(tracks[k]->getPhi0());
-	m_trk_eta->push_back(tracks[k]->getEta0());
-	m_trk_z->push_back(tracks[k]->getZ0());
+	m_tc_pt->push_back(tracks[k]->getCurve());
+	m_tc_phi->push_back(tracks[k]->getPhi0());
+	m_tc_eta->push_back(tracks[k]->getEta0());
+	m_tc_z->push_back(tracks[k]->getZ0());
 	
 	vector<int> stubsInTrack = tracks[k]->getStubs();
-	m_trk_links->push_back(stubsInTrack);
-	m_trk_secid->push_back(sector_id);
+	m_tc_links->push_back(stubsInTrack);
+	m_tc_secid->push_back(sector_id);
 
 	delete tracks[k];
       }
@@ -391,12 +416,20 @@ void PatternFinder::find(int start, int& stop){
   delete m_patt_secid;
   delete m_patt_miss;
 
+  delete m_tc_pt;
+  delete m_tc_eta;
+  delete m_tc_phi;
+  delete m_tc_z;
+  delete m_tc_links;
+  delete m_tc_secid;  
+
   delete m_trk_pt;
   delete m_trk_eta;
   delete m_trk_phi;
   delete m_trk_z;
   delete m_trk_links;
   delete m_trk_secid;  
+  delete m_trk_chi2;
 }
 
 #ifdef USE_CUDA
@@ -417,7 +450,7 @@ void PatternFinder::findCuda(int start, int& stop, deviceStubs* d_stubs){
   int nb_patterns=0;
   int ori_nb_stubs=0;
   int sel_nb_stubs=0;
-  int nb_tracks=0;
+  int nb_tc=0;
   int event_id;
   int superStrip_layer_0[MAX_NB_PATTERNS];
   int superStrip_layer_1[MAX_NB_PATTERNS];
@@ -515,7 +548,7 @@ void PatternFinder::findCuda(int start, int& stop, deviceStubs* d_stubs){
   Out->Branch("nbStubsInEvt",        &ori_nb_stubs);
   Out->Branch("nbStubsInPat",        &sel_nb_stubs);
 
-  Out->Branch("nbTracks",            &nb_tracks);
+  Out->Branch("nbTracks",            &nb_tc);
 
   Out->Branch("eventID",             &event_id);
   Out->Branch("sectorID",            pattern_sector_id, "sectorID[nbPatterns]/I");
@@ -739,7 +772,7 @@ void PatternFinder::findCuda(int start, int& stop, deviceStubs* d_stubs){
     event_id=num_evt;//we use the index in the file as event_id (most of our input files do not have a valid event_id)
     ori_nb_stubs = (int)hits.size();
     
-    nb_tracks = 0;
+    nb_tc = 0;
     for(int i=0;i<nb_layers;i++){
       memset(superStrips[i],0,MAX_NB_PATTERNS*sizeof(int));
     }
