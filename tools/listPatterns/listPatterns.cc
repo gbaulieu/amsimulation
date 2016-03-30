@@ -91,9 +91,18 @@ public:
     std::vector<int> m_patt_secid;
     std::vector<int> m_patt_miss;
     
+    int nb_tc=0;
+    std::vector<float> m_tc_pt;
+    std::vector<float> m_tc_eta;
+    std::vector<float> m_tc_phi;
+    std::vector<float> m_tc_z;
+    std::vector< std::vector<int> > m_tc_links;
+    std::vector<int> m_tc_secid;
+
     int nb_tracks=0;
     std::vector<float> m_trk_pt;
     std::vector<float> m_trk_eta;
+    std::vector<float> m_trk_chi2;
     std::vector<float> m_trk_phi;
     std::vector<float> m_trk_z;
     std::vector< std::vector<int> > m_trk_links;
@@ -103,8 +112,16 @@ public:
     std::vector<int> *p_m_patt_secid = &m_patt_secid;
     std::vector<int> *p_m_patt_miss = &m_patt_miss;
     
+    std::vector<float> *p_m_tc_pt = &m_tc_pt;
+    std::vector<float> *p_m_tc_eta = &m_tc_eta;
+    std::vector<float> *p_m_tc_phi = &m_tc_phi;
+    std::vector<float> *p_m_tc_z = &m_tc_z;
+    std::vector< std::vector<int> > *p_m_tc_links = &m_tc_links;
+    std::vector<int> *p_m_tc_secid = &m_tc_secid;
+
     std::vector<float> *p_m_trk_pt = &m_trk_pt;
     std::vector<float> *p_m_trk_eta = &m_trk_eta;
+    std::vector<float> *p_m_trk_chi2 = &m_trk_chi2;
     std::vector<float> *p_m_trk_phi = &m_trk_phi;
     std::vector<float> *p_m_trk_z = &m_trk_z;
     std::vector< std::vector<int> > *p_m_trk_links = &m_trk_links;
@@ -121,6 +138,14 @@ public:
     PATT->SetBranchAddress("L1PATT_secid",       &p_m_patt_secid);
     PATT->SetBranchAddress("L1PATT_nmiss",       &p_m_patt_miss);
     
+    PATT->SetBranchAddress("L1TC_n",            &nb_tc);
+    PATT->SetBranchAddress("L1TC_links",        &p_m_tc_links);
+    PATT->SetBranchAddress("L1TC_secid",        &p_m_tc_secid);
+    PATT->SetBranchAddress("L1TC_pt",           &p_m_tc_pt);
+    PATT->SetBranchAddress("L1TC_phi",          &p_m_tc_phi);
+    PATT->SetBranchAddress("L1TC_z",            &p_m_tc_z);
+    PATT->SetBranchAddress("L1TC_eta",          &p_m_tc_eta);
+
     PATT->SetBranchAddress("L1TRK_n",            &nb_tracks);
     PATT->SetBranchAddress("L1TRK_links",        &p_m_trk_links);
     PATT->SetBranchAddress("L1TRK_secid",        &p_m_trk_secid);
@@ -128,6 +153,7 @@ public:
     PATT->SetBranchAddress("L1TRK_phi",          &p_m_trk_phi);
     PATT->SetBranchAddress("L1TRK_z",            &p_m_trk_z);
     PATT->SetBranchAddress("L1TRK_eta",          &p_m_trk_eta);
+    PATT->SetBranchAddress("L1TRK_chi2",         &p_m_trk_chi2);
 
     int n_entries_MC = TT->GetEntries();
     cout<<n_entries_MC<<" events found"<<endl<<endl;
@@ -149,8 +175,22 @@ public:
 	  cout<<endl;
 	}
       }
+      if(nb_tc>0){
+	cout<<m_tc_links.size()<<" TC(s) found : "<<endl;
+	cout<<endl;
+	for(unsigned int k=0;k<m_tc_links.size();k++){
+	  cout<<m_tc_links[k].size()<<" selected stubs :"<<endl;
+	  for(unsigned int l=0;l<m_tc_links[k].size();l++){
+	    int index = m_tc_links[k][l];
+	    float pt = sqrt(m_stub_px_gen[index]*m_stub_px_gen[index]+m_stub_py_gen[index]*m_stub_py_gen[index]);
+	    cout<<"Layer "<<m_stub_layer[index]<<" Ladder "<<m_stub_ladder[index]<<" Module "<<m_stub_module[index]<<" Seg "<<m_stub_seg[index]<<" Strip "<<int(m_stub_strip[index])<<" (TP="<<m_stub_tp[index]<<" PT="<<pt<<" GeV ETA="<<m_stub_eta_gen[index]<<" PHI="<<m_stub_phi0[index]<<")"<<endl;
+	  }
+	  cout<<"Parameters estimation : PT="<<m_tc_pt[k]<<" GeV - ETA="<<m_tc_eta[k]<<" - PHI="<<m_tc_phi[k]<<" - Z0="<<m_tc_z[k]<<endl;
+	  cout<<endl;
+	}
+      }
       if(nb_tracks>0){
-	cout<<m_trk_links.size()<<" track(s) found : "<<endl;
+	cout<<m_trk_links.size()<<" tracks(s) found : "<<endl;
 	cout<<endl;
 	for(unsigned int k=0;k<m_trk_links.size();k++){
 	  cout<<m_trk_links[k].size()<<" selected stubs :"<<endl;
@@ -159,11 +199,12 @@ public:
 	    float pt = sqrt(m_stub_px_gen[index]*m_stub_px_gen[index]+m_stub_py_gen[index]*m_stub_py_gen[index]);
 	    cout<<"Layer "<<m_stub_layer[index]<<" Ladder "<<m_stub_ladder[index]<<" Module "<<m_stub_module[index]<<" Seg "<<m_stub_seg[index]<<" Strip "<<int(m_stub_strip[index])<<" (TP="<<m_stub_tp[index]<<" PT="<<pt<<" GeV ETA="<<m_stub_eta_gen[index]<<" PHI="<<m_stub_phi0[index]<<")"<<endl;
 	  }
-	  cout<<"Parameters estimation : PT="<<m_trk_pt[k]<<" GeV - ETA="<<m_trk_eta[k]<<" - PHI="<<m_trk_phi[k]<<" - Z0="<<m_trk_z[k]<<endl;
+	  cout<<"Parameters : CHI2="<<m_trk_chi2[k]<<" PT="<<m_trk_pt[k]<<" GeV - ETA="<<m_trk_eta[k]<<" - PHI="<<m_trk_phi[k]<<" - Z0="<<m_trk_z[k]<<endl;
 	  cout<<endl;
 	}
       }
       m_patt=0;
+      nb_tc=0;
       nb_tracks=0;
     }
 
