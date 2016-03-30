@@ -33,10 +33,16 @@ PatternFinder::PatternFinder(int at, SectorTree* st, string f, string of){
 
   tracker.setSectorMaps(sector_list[0]->getLadderCodeMap(),sector_list[0]->getModuleCodeMap());
 
+  converter = new LocalToGlobalConverter(*(sector_list[0]),"./modules_position.txt");
+
   //Link the patterns with the tracker representation
   cout<<"linking..."<<endl;
   sectors->link(tracker);
   cout<<"done."<<endl;
+}
+
+PatternFinder::~PatternFinder(){
+  delete converter;
 }
 
 #ifdef USE_CUDA
@@ -242,7 +248,7 @@ void PatternFinder::find(int start, int& stop){
       int ladder = CMSPatternLayer::getLadderCode(layer, m_stub_ladder[i]);
       int segment =  CMSPatternLayer::getSegmentCode(layer, ladder, m_stub_seg[i]);
 
-      int strip = m_stub_strip[i];
+      float strip = m_stub_strip[i];
       int tp = m_stub_tp[i];
       float eta = m_stub_eta_gen[i];
       float phi0 = m_stub_phi0[i];
@@ -310,6 +316,32 @@ void PatternFinder::find(int start, int& stop){
 	for(unsigned k=0;k<active_hits.size();k++){
 	  stub_layers.insert(active_hits[k]->getLayer());
 	  stub_index.push_back(active_hits[k]->getID());
+
+	  /***** TEST OF LocalToGlobalConverter *********
+	  try{
+	    int hit_layer = active_hits[k]->getLayer();
+	    int hit_ladder = active_hits[k]->getLadder();
+	    int hit_module = active_hits[k]->getModule();
+	    
+	    bool isPSModule = false;
+	    if((hit_layer>=5 && hit_layer<=7) || (hit_layer>10 && hit_ladder<=8)){
+	      isPSModule=true;
+	    }
+	    int prbf2_layer = CMSPatternLayer::cmssw_layer_to_prbf2_layer(hit_layer,isPSModule);
+	    int prbf2_ladder = pattern_list[i]->getLadderCode(hit_layer, hit_ladder);
+	    int prbf2_module = pattern_list[i]->getModuleCode(hit_layer, hit_ladder, hit_module);
+	    
+	    vector<float> coords = converter->toGlobal(prbf2_layer, prbf2_ladder, prbf2_module, active_hits[k]->getSegment(), active_hits[k]->getHDStripNumber());
+	    cout<<*active_hits[k]<<endl;
+	    Hit global_hit(0,0,0,0,0,0,0,0,0,0,0,coords[0],coords[1],coords[2],0,0,0,0);
+	    cout<<"Cartesian coordinates : ("<<global_hit.getX()<<","<<global_hit.getY()<<","<<global_hit.getZ()<<")"<<endl;
+	    cout<<"Polar coordinates : PHI="<<global_hit.getPolarPhi()<<", R="<<global_hit.getPolarDistance()<<", Z="<<global_hit.getZ()<<endl;
+	  }
+	  catch(const std::runtime_error& e){
+	    cout<<e.what()<<endl;
+	  }
+
+	  *************************************************/
 	}
 	m_patt_links->push_back(stub_index);
 	m_patt_miss->push_back(stub_layers.size());

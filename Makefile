@@ -27,13 +27,13 @@ endif
 
 ifeq ($(CUDA_ENABLED),true)
 	OBJECTS=SuperStrip.o Hit.o Pattern.o PatternLayer.o GradedPattern.o PatternTrunk.o PatternTree.o \
-	PatternGenerator.o Sector.o SectorTree.o CMSPatternLayer.o Segment.o Module.o Ladder.o Layer.o \
+	PatternGenerator.o Sector.o LocalToGlobalConverter.o SectorTree.o CMSPatternLayer.o Segment.o Module.o Ladder.o Layer.o \
 	Detector.o PatternFinder.o Track.o TrackFitter.o FitParams.o PrincipalTrackFitter.o \
 	PrincipalFitGenerator.o MultiDimFitData.o KarimakiTrackFitter.o TCBuilder.o PCATrackFitter.o HoughFitter.o SeedClusteringFitter.o \
 	ComputerHough.o	Retina.o RetinaTrackFitter.o libhoughCPU.o FileEventProxy.o GPUPooler.o gpu.o
 else
 	OBJECTS=SuperStrip.o Hit.o Pattern.o PatternLayer.o GradedPattern.o PatternTrunk.o PatternTree.o \
-	PatternGenerator.o Sector.o SectorTree.o CMSPatternLayer.o Segment.o Module.o \
+	PatternGenerator.o Sector.o LocalToGlobalConverter.o SectorTree.o CMSPatternLayer.o Segment.o Module.o \
 	Ladder.o Layer.o Detector.o PatternFinder.o Track.o TrackFitter.o FitParams.o \
 	PrincipalTrackFitter.o PrincipalFitGenerator.o MultiDimFitData.o \
 	Retina.o RetinaTrackFitter.o KarimakiTrackFitter.o TCBuilder.o PCATrackFitter.o HoughFitter.o SeedClusteringFitter.o \
@@ -75,6 +75,9 @@ CMSPatternLayer.o:${SRC}/PatternLayer.h ${SRC}/CMSPatternLayer.h ${SRC}/CMSPatte
 
 Sector.o:${SRC}/Sector.h ${SRC}/Sector.cc
 	g++ -c ${FLAG} ${INC} ${SRC}/Sector.cc
+
+LocalToGlobalConverter.o:${SRC}/LocalToGlobalConverter.h ${SRC}/LocalToGlobalConverter.cc
+	g++ -c ${FLAG} ${INC} ${SRC}/LocalToGlobalConverter.cc
 
 SectorTree.o:${SRC}/SectorTree.h ${SRC}/SectorTree.cc
 	g++ -c ${FLAG} ${INC} ${SRC}/SectorTree.cc
