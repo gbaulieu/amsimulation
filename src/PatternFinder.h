@@ -6,8 +6,10 @@
 #include <TChain.h>
 #include <TFile.h>
 #include <TROOT.h>
+#include <memory>
 #include "SectorTree.h"
 #include "LocalToGlobalConverter.h"
+#include "TAMU_PCA/interface/LinearizedTrackFitter.h"
 
 #ifdef USE_CUDA
 #include "gpu.h"

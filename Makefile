@@ -19,7 +19,7 @@ ifeq ($(CUDA_ENABLED),true)
 	LIBS =-L ${ROOTSYS}/lib -L${CUDA_ROOTDIR}/lib64 -lcuda -lcudart
 else
 	FLAG=-O3 -Wall -std=c++11 -Werror=type-limits
-	INC =-I `root-config --incdir` -I `scram tool tag boost INCLUDE` -I ${SRC}
+	INC =-I `root-config --incdir` -I `scram tool tag boost INCLUDE` -I`scram tool tag eigen INCLUDE` -I ${SRC}
 	LIBS =-L ${ROOTSYS}/lib -L `scram tool tag boost LIBDIR`
 endif
    BOOSTLIBS = -lboost_serialization -lboost_program_options -lboost_iostreams
@@ -30,14 +30,18 @@ ifeq ($(CUDA_ENABLED),true)
 	PatternGenerator.o Sector.o LocalToGlobalConverter.o SectorTree.o CMSPatternLayer.o Segment.o Module.o Ladder.o Layer.o \
 	Detector.o PatternFinder.o Track.o TrackFitter.o FitParams.o PrincipalTrackFitter.o \
 	PrincipalFitGenerator.o MultiDimFitData.o KarimakiTrackFitter.o TCBuilder.o PCATrackFitter.o HoughFitter.o SeedClusteringFitter.o \
-	ComputerHough.o	Retina.o RetinaTrackFitter.o libhoughCPU.o FileEventProxy.o GPUPooler.o gpu.o
+	ComputerHough.o	Retina.o RetinaTrackFitter.o libhoughCPU.o FileEventProxy.o GPUPooler.o gpu.o \
+	LinearizedTrackFitter.o BuildTestFunctions.o CombinationIndexListBuilder.o L1TrackTriggerTree.o MatrixReader.o \
+	CombinationIndex.o GetVariables.o StubsCombination.o
 else
 	OBJECTS=SuperStrip.o Hit.o Pattern.o PatternLayer.o GradedPattern.o PatternTrunk.o PatternTree.o \
 	PatternGenerator.o Sector.o LocalToGlobalConverter.o SectorTree.o CMSPatternLayer.o Segment.o Module.o \
 	Ladder.o Layer.o Detector.o PatternFinder.o Track.o TrackFitter.o FitParams.o \
 	PrincipalTrackFitter.o PrincipalFitGenerator.o MultiDimFitData.o \
 	Retina.o RetinaTrackFitter.o KarimakiTrackFitter.o TCBuilder.o PCATrackFitter.o HoughFitter.o SeedClusteringFitter.o \
-	ComputerHough.o libhoughCPU.o
+	ComputerHough.o libhoughCPU.o \
+	LinearizedTrackFitter.o BuildTestFunctions.o CombinationIndexListBuilder.o L1TrackTriggerTree.o MatrixReader.o \
+	CombinationIndex.o GetVariables.o StubsCombination.o
 endif
 
 AMSimulation:$(OBJECTS) AMSimulation.o
@@ -169,3 +173,27 @@ AnalysePatternsPU:Analysis/AnalysePatternsPU.cc
 
 ExtractTTree:Analysis/ExtractTTree.cc
 	g++ -c ${FLAG} ${INC} Analysis/ExtractTTree.cc;g++ -o ExtractTTree ExtractTTree.o ${LIBS} `root-config --libs`
+
+LinearizedTrackFitter.o:${SRC}/TAMU_PCA/src/LinearizedTrackFitter.cc ${SRC}/TAMU_PCA/interface/LinearizedTrackFitter.h
+	g++ -c ${FLAG} ${INC} ${SRC}/TAMU_PCA/src/LinearizedTrackFitter.cc
+
+BuildTestFunctions.o:${SRC}/TAMU_PCA/src/BuildTestFunctions.cc ${SRC}/TAMU_PCA/interface/BuildTestFunctions.h
+	g++ -c ${FLAG} ${INC} ${SRC}/TAMU_PCA/src/BuildTestFunctions.cc
+
+CombinationIndexListBuilder.o:${SRC}/TAMU_PCA/src/CombinationIndexListBuilder.cc ${SRC}/TAMU_PCA/interface/CombinationIndexListBuilder.h
+	g++ -c ${FLAG} ${INC} ${SRC}/TAMU_PCA/src/CombinationIndexListBuilder.cc
+
+L1TrackTriggerTree.o:${SRC}/TAMU_PCA/src/L1TrackTriggerTree.cc ${SRC}/TAMU_PCA/interface/L1TrackTriggerTree.h
+	g++ -c ${FLAG} ${INC} ${SRC}/TAMU_PCA/src/L1TrackTriggerTree.cc
+
+MatrixReader.o:${SRC}/TAMU_PCA/src/MatrixReader.cc ${SRC}/TAMU_PCA/interface/MatrixReader.h
+	g++ -c ${FLAG} ${INC} ${SRC}/TAMU_PCA/src/MatrixReader.cc
+
+CombinationIndex.o :${SRC}/TAMU_PCA/src/CombinationIndex.cc ${SRC}/TAMU_PCA/interface/CombinationIndex.h
+	g++ -c ${FLAG} ${INC} ${SRC}/TAMU_PCA/src/CombinationIndex.cc
+
+GetVariables.o :${SRC}/TAMU_PCA/src/GetVariables.cc ${SRC}/TAMU_PCA/interface/GetVariables.h
+	g++ -c ${FLAG} ${INC} ${SRC}/TAMU_PCA/src/GetVariables.cc
+
+StubsCombination.o:${SRC}/TAMU_PCA/src/StubsCombination.cc ${SRC}/TAMU_PCA/interface/StubsCombination.h
+	g++ -c ${FLAG} ${INC} ${SRC}/TAMU_PCA/src/StubsCombination.cc
