@@ -119,7 +119,16 @@ float Hit::getBend() const{
 }
 
 float Hit::getPolarPhi() const{
-  return atan(y/x);
+  float val = atan(y/x);
+  if(x<0){
+    if(y<0){
+      val-=M_PI;
+    }
+    else{
+      val+=M_PI;
+    }
+  }
+  return val;
 }
 
 float Hit::getPolarDistance() const{

@@ -375,6 +375,7 @@ void PatternFinder::find(int start, int& stop){
 	  try{
 	    int hit_index = stubsInTrack[l];
 	    Hit* current_hit=hits_map[hit_index];
+	    //cout<<*current_hit<<endl;
 	    if(current_hit==NULL){
 	      cout<<"Cannot find hit index "<<hit_index<<endl;
 	      break;
@@ -416,11 +417,7 @@ void PatternFinder::find(int start, int& stop){
 	  const std::vector<double> pars = linearizedTrackFitter->estimatedPars();
 	  float pt=1.0/fabs(pars[0]);
 	  float pz=pt*pars[2];
-	  float phi=pars[1]-M_PI;
-	  if(phi<-M_PI)
-	    phi+=2*M_PI;
-	  if(phi>M_PI)
-	    phi-=2*M_PI;
+	  float phi=pars[1];
 	  shared_ptr<Track> pca_track = make_shared<Track>(pt,0,phi,asinh(pz/pt),pars[3],0,-1,-1,normChi2);
 	  for(unsigned int l=0;l<stubsInTrack.size();l++){
 	    pca_track->addStubIndex(stubsInTrack[l]);
