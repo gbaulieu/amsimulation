@@ -372,40 +372,42 @@ void PatternFinder::find(int start, int& stop){
 	m_tc_secid->push_back(sector_id);
 
 	for(unsigned int l=0;l<stubsInTrack.size();l++){
+	  int hit_index = stubsInTrack[l];
+	  Hit* current_hit=hits_map[hit_index];
+	  //cout<<*current_hit<<endl;
+	  if(current_hit==NULL){
+	    cout<<"Cannot find hit index "<<hit_index<<endl;
+	    break;
+	  }
+	  int hit_layer = current_hit->getLayer();
+	  int hit_ladder = current_hit->getLadder();
+	  int hit_module = current_hit->getModule();	    
+	  bool isPSModule = false;
+	  if((hit_layer>=5 && hit_layer<=7) || (hit_layer>10 && hit_ladder<=8)){
+	    isPSModule=true;
+	  }
+	  int prbf2_layer = CMSPatternLayer::cmssw_layer_to_prbf2_layer(hit_layer,isPSModule);
+	  int prbf2_ladder = pattern_list[i]->getLadderCode(hit_layer, hit_ladder);
+	  int prbf2_module = pattern_list[i]->getModuleCode(hit_layer, hit_ladder, hit_module);
+	  shared_ptr<Hit> global_hit;
 	  try{
-	    int hit_index = stubsInTrack[l];
-	    Hit* current_hit=hits_map[hit_index];
-	    //cout<<*current_hit<<endl;
-	    if(current_hit==NULL){
-	      cout<<"Cannot find hit index "<<hit_index<<endl;
-	      break;
-	    }
-	    int hit_layer = current_hit->getLayer();
-	    int hit_ladder = current_hit->getLadder();
-	    int hit_module = current_hit->getModule();	    
-	    bool isPSModule = false;
-	    if((hit_layer>=5 && hit_layer<=7) || (hit_layer>10 && hit_ladder<=8)){
-	      isPSModule=true;
-	    }
-	    int prbf2_layer = CMSPatternLayer::cmssw_layer_to_prbf2_layer(hit_layer,isPSModule);
-	    int prbf2_ladder = pattern_list[i]->getLadderCode(hit_layer, hit_ladder);
-	    int prbf2_module = pattern_list[i]->getModuleCode(hit_layer, hit_ladder, hit_module);
-	    
 	    vector<float> coords = converter->toGlobal(prbf2_layer, prbf2_ladder, prbf2_module, current_hit->getSegment(), current_hit->getHDStripNumber());
-	    Hit global_hit(0,0,0,0,0,0,0,0,0,0,0,coords[0],coords[1],coords[2],0,0,0,0);
-	    //cout<<"Polar coordinates : PHI="<<global_hit.getPolarPhi()<<", R="<<global_hit.getPolarDistance()<<", Z="<<global_hit.getZ()<<endl;
-	    tc_for_fit.push_back(global_hit.getPolarPhi());
-	    tc_for_fit.push_back(global_hit.getPolarDistance());
-	    tc_for_fit.push_back(global_hit.getZ());
-	    if(hit_layer>10)
-	      bit_values.push_back(50);//we do not support endcap layers yet
-	    bit_values.erase(std::remove(bit_values.begin(), bit_values.end(), hit_layer), bit_values.end());
+	    global_hit = make_shared<Hit>(0,0,0,0,0,0,0,0,0,0,0,coords[0],coords[1],coords[2],0,0,0,0);
 	  }
 	  catch(const std::runtime_error& e){
 	    cout<<e.what()<<endl;
+	    cout<<"Using CMSSW cartesian coordinates instead..."<<endl;
+	    global_hit = make_shared<Hit>(0,0,0,0,0,0,0,0,0,0,0,current_hit->getX(),current_hit->getY(),current_hit->getZ(),0,0,0,0);
 	  }
+	  //cout<<"Polar coordinates : PHI="<<global_hit.getPolarPhi()<<", R="<<global_hit.getPolarDistance()<<", Z="<<global_hit.getZ()<<endl;
+	  tc_for_fit.push_back(global_hit->getPolarPhi());
+	  tc_for_fit.push_back(global_hit->getPolarDistance());
+	  tc_for_fit.push_back(global_hit->getZ());
+	  if(hit_layer>10)
+	    bit_values.push_back(50);//we do not support endcap layers yet
+	  bit_values.erase(std::remove(bit_values.begin(), bit_values.end(), hit_layer), bit_values.end());
 	}
-
+      
 	int bits=-1;
 	if(bit_values.size()==0)
 	  bits=0;
