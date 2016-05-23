@@ -95,15 +95,24 @@ void filter::do_filter(int secid,int hit_lim)
 
     n_hits=0;
 
-    for (int k=0;k<20;++k)
+
+    for (int j=0;j<m_nsec;++j)
     {
-      if (is_sec_there[secid][k]>0) ++n_hits; 
+      n_hits=0;
+
+      for (int k=0;k<20;++k)
+      {
+	if (is_sec_there[j][k]>0) ++n_hits; 
+      }
+
+      if (n_hits>=hit_lim)
+      {
+	if (secid!=j) break; // Particle in overlap region
+
+	m_efftree->Fill(); // If yes fill the skimmed tree
+	break;
+      }
     }
-
-    if (n_hits<hit_lim) continue;
-
-    m_efftree->Fill(); // If yes fill the skimmed tree
-
   }
 
   m_outfile->Write();
