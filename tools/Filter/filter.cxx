@@ -41,7 +41,9 @@ void filter::do_filter(int secid,int hit_lim)
   int ladder;
   int module;
 
-  int n_hits;
+  int n_hits[m_nsec];
+
+  std::vector<int> list_sec;
 
   // Loop over the events
  
@@ -61,7 +63,10 @@ void filter::do_filter(int secid,int hit_lim)
     for (int j=0;j<m_nsec;++j)
     {
       for (int k=0;k<20;++k) is_sec_there[j][k] = 0;
+      n_hits[j] = 0;
     }
+
+    list_sec.clear();
 
     for (int j=0;j<m_stub;++j)
     {  
@@ -93,27 +98,56 @@ void filter::do_filter(int secid,int hit_lim)
     // Check if the sector we are interested in contains the track
     // in a sufficiently large number of layers
 
-    n_hits=0;
-
+    int n_hits_max=hit_lim;
+    std::vector<int> sec_max;
+    sec_max.clear();
 
     for (int j=0;j<m_nsec;++j)
     {
-      n_hits=0;
+      n_hits[j]=0;
 
       for (int k=0;k<20;++k)
       {
-	if (is_sec_there[j][k]>0) ++n_hits; 
+	if (is_sec_there[j][k]>0) ++n_hits[j]; 
       }
 
-      if (n_hits>=hit_lim)
+      if (n_hits[j]>=n_hits_max)
       {
-	if (secid!=j) break; // Particle in overlap region
+	if (n_hits[j]==n_hits_max) sec_max.push_back(j);
 
-	m_efftree->Fill(); // If yes fill the skimmed tree
-	break;
+	if (n_hits[j]>n_hits_max)
+	{
+	  n_hits_max=n_hits[j];
+	  sec_max.clear();
+	  sec_max.push_back(j);
+	}
       }
+    } // End of loop on towers
+
+    // sec_max contains the tower(s) containing most of the hits
+    // this size is given by n_hits_max
+
+    // If n_hits_max is equal to 5, we just have to be careful not to give the track to a barrel tower
+
+    if (sec_max.size()==0) continue;
+
+    bool keepit  = true;
+    bool isthere = false;
+
+    for (unsigned int j=0;j<sec_max.size();++j)
+    {
+      if (secid==sec_max.at(j)) isthere=true;
+      
+      if (secid!=sec_max.at(j) && n_hits_max>=6) keepit=false;
+      if (secid!=sec_max.at(j) && n_hits_max==5 && (sec_max.at(j)<16 || sec_max.at(j)>=32)) keepit=false;
     }
-  }
+
+    if (!isthere) continue; // This track is not in that tower
+    if (!keepit) continue; // This track is better in another tower
+
+    m_efftree->Fill(); // If yes fill the skimmed tree  
+    
+  } // End of loop on tracks 
 
   m_outfile->Write();
   m_outfile->Close();
