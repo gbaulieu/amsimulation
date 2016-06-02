@@ -1318,6 +1318,7 @@ int main(int av, char** ac){
       if(sectors[i]->getFitter()==NULL){
 	//TrackFitter* fitter = new KarimakiTrackFitter(sectors[i]->getNbLayers());
 	TrackFitter* fitter = new TCBuilder(sectors[i]->getNbLayers());
+	((TCBuilder*)fitter)->setHardwareEmulation(true);
 	sectors[i]->setFitter(fitter);
 	sectors[i]->updateFitterPhiRotation();
       }
