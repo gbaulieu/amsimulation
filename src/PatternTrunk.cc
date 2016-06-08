@@ -34,8 +34,8 @@ void PatternTrunk::addFDPattern(Pattern* p){
 
 void PatternTrunk::addFDPattern(Pattern* p, float pt){
   lowDefPattern->increment(pt);
-  lowDefPattern->mergeInfos(p->getStatisticalInformations());
   if(p!=NULL){
+    lowDefPattern->mergeInfos(p->getStatisticalInformations());
     string key=p->getKey();
     map<string, GradedPattern*>::iterator it = fullDefPatterns.find(key);
     if(it==fullDefPatterns.end()){//not found
