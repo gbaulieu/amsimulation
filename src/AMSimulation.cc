@@ -43,7 +43,7 @@ using namespace std;
 
    If everything goes fine, you should get a binary file called "AMSimulation".
  
-   \subsection CUDA
+   \subsection cuda CUDA (No more supported)
    Some features of the program (pattern recognition) can use a GPU card to accelarate the computing. If you want to use this feature you will need:
    - Root (http://root.cern.ch) installed and configured ($ROOTSYS must be pointing on the installation directory and $ROOTSYS/bin must be in the PATH)
    - Boost (http://www.boost.org/) libraries and header files
@@ -83,8 +83,8 @@ using namespace std;
    \endcode
    All options can be stored in a file called amsimulation.cfg, here is an example :
    \code
-   # Number of strips in a superstrip {16,32,64,128,256,512,1024}
-   ss_size=32
+   # File containing the number of strips in a superstrip. On value per layer in barrel, one value per ladder in endcap disks.
+   ss_size_file=ss_size.txt
    # Number of DC bits to use [0-3]
    dc_bits=3
    # Minimal PT of tracks used to generate a pattern
@@ -113,35 +113,33 @@ using namespace std;
 
    Each option contained in the configuration file can be overwritten via the command line, for example :
    \code
-   ./AMSimulation --generateBank --ss_size=64
+   ./AMSimulation --generateBank --pt_min=3
    \endcode
-   will set the value of the ss_size option to 64, whatever is contained in the configuration file.
+   will set the minimum PT value to 3, whatever is contained in the configuration file.
 
-   If you have created 2 banks for the same sector with 2 different PT range (2-10 GeV and 10-50 GeV for example), you can merge the 2 files into a single one using the command :
-   \code
-   ./AMSimulation --MergeBanks --inputFile testPT2-10.pbk --secondFile testPT10-50.pbk --outputFile testPT2-10-50.pbk
-   \endcode
    \subsection find Finding patterns in events
-   To search for patterns in events, enter :
+   To search for patterns in events (a branch L1tracks_sec<ID> will be added for each sector to the input file), enter :
    \code
-   ./AMSimulation --findPatterns --inputFile <path to Root File containing events (local or RFIO)> --bankFile <path to your pattern bank file> --outputFile <Root output file> --ss_threshold <minimum number of stubs to activate the pattern> --startEvent <Index of first event to analyse> --stopEvent <Index of last event to analyse>
+   ./AMSimulation --findPatterns --inputFile <path to Root File containing events (local or RFIO)> --bankFile <path to your pattern bank file> --ss_threshold <minimum number of stubs to activate the pattern> --startEvent <Index of first event to analyse> --stopEvent <Index of last event to analyse>
    \endcode
 
-  The program is using a virtual detector during the search process. The geometry of this detector (layers, ladders, Z modules and strips per segment) is contained in the CMSPatternLayer class but can be overwritten with a detector.cfg file located in the root directory of the program. Here is an example of the syntax :
-  \code
-  #layerID,nb ladders,nb Z modules,nb strips per segment
-  5,16,15,1024
-  6,24,15,1024
-  7,36,15,1024
-  8,48,14,1024
-  9,60,14,1024
-  10,76,14,1024
-  \endcode
+   If you add the option --verbose to the previous command, for each stub in the trigger tower the program will display the stub's informations along with the corresponding superstrip value. The format is one line per stub + one line per superstrip (the first value is the layer's ID, the second value is the superstrip value in hexadecimal). 
 
-If you compiled the program using the cuda libraries, you can add the --useGPU flag to use the GPU device to perform the pattern recognition.
+   \subsection output Using the output
+   If you run the pattern recognition on the same events using different sectors, you will end up with several L1tracks_secX TTree in your input file. You can then use the mergeSectors utility to merge these TTrees into a single L1tracks TTree containing all the informations from the different sectors. The utility is located in the ./tools/mergeSectors/ folder of the AMSimulation package. 
+   \code
+   ./mergeSectors <your Root file>
+   \endcode
+
+   If you add the --clean option at the end, no merge will be performed but all the L1tracks_secX TTrees will be removed from your file.
+   \code
+   ./mergeSectors <your Root file> --clean
+   \endcode
+
+   You can list the content of the final file using the listPatterns utility in ./tools/listPatterns : it will give you for each event the list of patterns and stubs selected. A more in depth analysis can be done using the AM_ana tool from S. Viret (https://indico.cern.ch/event/325924/session/2/contribution/7/attachments/632549/870536/10_AM_analysis_tools.pdf).
 
    \subsection merge Merging banks
-   If you have created 2 banks for the same sector but with different PT range (for example 2 to 10 GeV and 10 to 100 GeV) you can merge the 2 files into a single one by using the command :   
+   If you have created 2 banks for the same trigger tower but with different PT range (for example 2 to 10 GeV and 10 to 100 GeV) you can merge the 2 files into a single one by using the command :   
    \code
    ./AMSimulation --MergeBanks --inputFile <PBK file of the first bank> --secondFile <PBK file of the second bank> --outputFile  <output PBK file name>
    \endcode
@@ -159,15 +157,13 @@ If you compiled the program using the cuda libraries, you can add the --useGPU f
    \code
    ./AMSimulation --printBank --bankFile <You patterns bank file>
    \endcode
-   The interpretation of the DC bits is a bit tricky. Inside the pattern, the superstrip position is stored using gray encoding. If you have 'strip 3 (11X)' you have to convert the decimal value 3 to gray code : '10' then append the DC bits to that value : '1011X' which corresponds to 2 values : '10110' and '10111'. Those two gray values correspond to the decimal values 27 and 26 which are the high resolution indices of the superstrips in the module.
 
-
-   If you are more interested in the encoding of the patterns you can display the patterns with a decimal representation of each pattern layer :
+   The values will be displayed using hexadecimal values. If you prefer decimal values, you can use the command :
    \code
-   ./AMSimulation --printBankBinary --bankFile <You patterns bank file>
+   ./AMSimulation --printBankBinary --bankFile <Your patterns bank file>
    \endcode
 
-   It should display one pattern per line. The interpretation process is the following : if you have '11014 (00X)' you have to convert the decimal value 11014 to binary : '00101 0110 000011 0'. The first 5 bits are the Z position of the module (00101 is 5 in decimal), then you have the index of the ladder (0110 is 6), the last bit is the segment (0 is 0). 000011 gives you the superstrip position and is encoded using gray code. You have to append the DC bits : 00001100X which corresponds to 2 values : 000011000 and 000011001. The decimal values of these gray encoded binary values are 16 and 17 which are the indices of the high resolution superstrips inside the module.
+   It should display one pattern per line, with one value per layer from inner to outer. The interpretation process is the following : if you have '21251 (X1)' you have to convert the decimal value to binary.<br><p>On endcap layers you will have 0101 0 0110 0000011 (X1) : 0101 is the module number 5, 0 is segment 0, 0110 is ladder 6.</p><p>On barrel layers you will have 01010 0110 0000011 (X1) : 01010 is the Z value 10, 0110 is ladder 6.</p><p>0000011 gives you the superstrip position and is encoded using gray code. You have to append the DC bits : 0000011X1 which corresponds to 2 values : 000001101 and 000001111. The decimal values of these gray encoded binary values are 11 and 8 which are the indices of the high resolution superstrips inside the segment.</p>
 
    You can also display the patterns using a format compatible with AM05 chips : for every pattern you will get one 18 bits value per line corresponding to the value you have to upload in the AM05 chip. DC bits encoding is taken care of. 
    \code
@@ -175,6 +171,16 @@ If you compiled the program using the cuda libraries, you can add the --useGPU f
    \endcode
 
    You can use the --nbActiveLayers option to select the patterns having a specific number of active layers (useful if you want to group patterns by threshold value). In trigger towers using 9 layers, the patterns will be split in 2 groups of 8 layers patterns.
+
+   \subsection lut Getting trigger tower's LookUp Tables
+   If you need to compute the superstrip value corresponding to a stub in a given trigger tower, you will need to convert the global coordinates of the stub (ladder ID and module ID) to local coordinates (positions of the said ladder and module in the trigger tower). The following command will print the mapping between global and local coordinates : 
+   \code
+   ./AMSimulation --printSectorLUT --bankFile=<Your patterns bank file>
+   \endcode
+
+   The section starting with <b>LAYER/LADDER -> LOCAL LADDER</b> gives the mapping for ladders : <i>0506 0</i> means that ladder ID 6 on layer 5 has the local ID 0.<br>
+   The section starting with <b>LAYER/LADDER/MODULE -> LOCAL MODULE</b> gives the mapping for modules : <i>050634 4</i> means that module ID 34 on ladder ID 6 on layer 5 has the local ID 4.<br>
+   
 
    \author Guillaume Baulieu g.baulieu@ipnl.in2p3.fr
  **/
@@ -283,6 +289,128 @@ vector< vector<int> > getRestrictions(const vector<int> &layers){
   return res;
 }
 
+bool comparePatternIDs(GradedPattern* p1, GradedPattern* p2){
+  return p1->getOrderInChip()<p2->getOrderInChip();
+}
+
+void displaySectorLUT(SectorTree &st){ 
+  vector<Sector*> list = st.getAllSectors();
+  if(list.size()>0){
+    Sector* s = list[0];
+    map<string, int> ladderMap = s->getLadderCodeMap();
+    map<string, int> moduleMap = s->getModuleCodeMap();
+
+    cout<<"** LUTs for sector "<<s->getOfficialID()<<endl;
+    cout<<endl;
+    cout<<"** LAYER/LADDER -> LOCAL LADDER"<<endl;
+    for(map<string, int>::iterator it = ladderMap.begin(); it != ladderMap.end(); it++) {
+      cout<<it->first<<" "<<it->second<<endl;
+    }
+    cout<<endl;
+    cout<<"** LAYER/LADDER/MODULE -> LOCAL MODULE"<<endl;
+    for(map<string, int>::iterator it = moduleMap.begin(); it != moduleMap.end(); it++) {
+      cout<<it->first<<" "<<it->second<<endl;
+    }
+  }
+}
+
+void displaySuperstripSizesWithLocalID(SectorTree &st){
+  vector<Sector*> list = st.getAllSectors();
+  map<string, int> ladderMap = list[0]->getLadderCodeMap();
+  map<string, int> superstripSize_lut = st.getSuperstripSize_lut();
+  for(map<string, int>::iterator it=superstripSize_lut.begin();it!=superstripSize_lut.end();it++){
+    if(it->first.length()==2 && it->first.compare("00")!=0){//barrel and not 00
+      //Get the global layer ID
+      istringstream buffer(it->first);
+      //Convertion to integer
+      int l;
+      buffer >> l;
+      //Check module's type
+      bool is_ps_module = l<8;
+      //Get new layer ID
+      int new_layer = CMSPatternLayer::cmssw_layer_to_prbf2_layer(l,is_ps_module);
+      //display
+      ostringstream oss;
+      oss<<std::setfill('0');
+      oss<<setw(2)<<new_layer;
+      cout<<oss.str()<<" "<<it->second<<endl;
+    }
+    if(it->first.length()==4){//endcap
+      //Get the global layer ID
+      istringstream buffer_layer(it->first.substr(0,2));
+      istringstream buffer_ladder(it->first.substr(2,2));
+      //Convertion to integer
+      int old_layer;
+      int old_ladder;
+      buffer_layer >> old_layer;
+      buffer_ladder >> old_ladder;
+      //Check module's type
+      bool is_ps_module = (old_layer>10 && old_ladder<9);
+      int new_layer = CMSPatternLayer::cmssw_layer_to_prbf2_layer(old_layer,is_ps_module);
+      map<string, int>::iterator ladder_it = ladderMap.find(it->first);
+      if(ladder_it!=ladderMap.end()){
+	ostringstream oss;
+	oss<<std::setfill('0');
+	oss<<setw(2)<<new_layer<<setw(2)<<ladder_it->second;
+	cout<<oss.str()<<" "<<it->second<<endl;
+      }
+    }
+  }
+}
+
+
+void displayInformations(SectorTree &st){ 
+  vector<Sector*> list = st.getAllSectors();
+  for(unsigned int i=0;i<list.size();i++){
+    vector<GradedPattern*> patterns = list[i]->getPatternTree()->getLDPatterns();
+    vector<int> layers = list[i]->getLayersID();
+    vector<int> maxDC;
+    
+    cout<<"The bank contains "<<patterns.size();
+    if(patterns.size()>1)
+      cout<<" patterns";
+    else
+      cout<<" pattern";
+    cout<<" for sector "<<list[i]->getOfficialID()<<endl;
+    //cout<<*list[i]<<endl;
+
+    cout<<"Superstrips size (by layer in the barrel and layer/ladder in the endcap):"<<endl;
+    SectorTree::displaySuperstripSizes();
+    cout<<endl;
+     
+    for(unsigned int i=0;i<layers.size();i++){
+      maxDC.push_back(0);
+    }
+
+    float maxPT=-1;
+    float minPT=1000;    
+    int nbDC = 0;
+    for(unsigned int j=0;j<patterns.size();j++){
+      float pt = patterns[j]->getAveragePt();
+      if(pt>maxPT)
+	maxPT=pt;
+      if(pt<minPT)
+	minPT=pt;
+
+      for(int k=0;k<patterns[j]->getNbLayers();k++){
+	PatternLayer* pl = patterns[j]->getLayerStrip(k);
+	nbDC = pl->getDCBitsNumber();
+	if(maxDC[k]<nbDC)
+	  maxDC[k]=nbDC;
+      }
+      delete patterns[j];
+    }
+    patterns.clear();
+    
+    cout<<"Number of used DC bits :"<<endl;
+    for(unsigned int j=0;j<layers.size();j++){
+      cout<<"\tLayer "<<layers[j]<<" : "<<maxDC[j]<<endl;
+    }
+
+    cout<<"PT range is ["<<round(minPT)<<","<<round(maxPT)<<"] GeV"<<endl;
+  }
+}
+
 void createAnalysis(SectorTree &st){
   vector<Sector*> list = st.getAllSectors();
   int nbLayers = 0;
@@ -308,31 +436,6 @@ void createAnalysis(SectorTree &st){
   //sorting the patterns
   sort(allPatterns.begin(), allPatterns.end(), sorting);
   
-  //float patterns[allPatterns.size()];
-  //float tracks[allPatterns.size()];
-  //float tracks_nb[allPatterns.size()];
-  //float average_pt[allPatterns.size()];
-  //int coveredTracks = 0;
-  //TH1I* histo = new TH1I("Pattern Eff","Nb Tracks per pattern", allPatterns[0]->getGrade()+10, 0, allPatterns[0]->getGrade()+10);
-
-  //Creates the layer plots
-  /*
-  for(unsigned int k=0;k<allPatterns.size();k++){
-    patterns[k]=k;
-    coveredTracks+=allPatterns[k]->getGrade();
-    tracks[k]=coveredTracks*100/(float)nbTracks;
-    histo->Fill(allPatterns[k]->getGrade());
-    average_pt[k]=allPatterns[k]->getAveragePt();
-    tracks_nb[k]=allPatterns[k]->getGrade();
-    for(int j=0;j<nbLayers;j++){
-      CMSPatternLayer* pl = (CMSPatternLayer*)allPatterns[k]->getLayerStrip(j);
-      modulesPlot[j]->Fill(pl->getModule());
-    }
-  }
-  histo->SetFillColor(41);
-  histo->Write();
-  delete histo;
-  */
   for(unsigned int k=0;k<list.size();k++){
     vector<int> PT = list[k]->getPatternTree()->getPTHisto();
     TH1I* pt_histo = new TH1I("PT sector "+k,"PT of pattern generating tracks", 110, 0, 110);
@@ -384,22 +487,78 @@ void createAnalysis(SectorTree &st){
     delete OUT;
   }
 
-  /*
-  TGraph* nbPatt = new TGraph(allPatterns.size(),patterns,tracks);
-  nbPatt->GetXaxis()->SetTitle("Patterns bank size");
-  nbPatt->GetYaxis()->SetTitle("Tracks covered (%)");
-  nbPatt->SetTitle("Patterns coverage");
-  nbPatt->Write();
-  delete nbPatt;
-  */
-  /*
-  TGraph* ptFreq = new TGraph(allPatterns.size(),tracks_nb,average_pt);
-  ptFreq->GetXaxis()->SetTitle("nb tracks per pattern");
-  ptFreq->GetYaxis()->SetTitle("average Pt per pattern");
-  ptFreq->SetTitle("Average Pt / pattern size");
-  ptFreq->Write();
-  delete ptFreq;
-  */
+  float* patts = new float[allPatterns.size()];
+  float* scores = new float[allPatterns.size()];
+  int total_score=0;
+  for(unsigned int i=0;i<allPatterns.size();i++){
+    total_score+=allPatterns[i]->getGrade();
+  }
+
+  int score_accumulation = 0;
+  double scale = 100/(double)total_score;
+  for(unsigned int i=0;i<allPatterns.size();i++){
+    patts[i]=i;
+    score_accumulation+=allPatterns[i]->getGrade();
+    scores[i]=score_accumulation*scale;
+  }
+
+  TGraph* bank_eff = new TGraph(allPatterns.size(),patts,scores);
+  bank_eff->SetTitle("Efficiency evolution");
+  bank_eff->GetXaxis()->SetTitle("Patterns bank size");
+  bank_eff->GetYaxis()->SetTitle("Efficiency (%)");
+  bank_eff->Write();
+  delete bank_eff;
+  delete patts;
+  delete scores;
+
+  int patt_id;
+  int patt_ssid;
+  int patt_layer;
+  int patt_z;
+  int patt_sstrip;
+
+  float patt_pt;
+  int patt_order;
+  int patt_grade;
+
+  TTree *OUT2    = new TTree("PatternGeom", "Geometry of patterns");
+  OUT2->Branch("id",    &patt_id);
+  OUT2->Branch("ssid",  &patt_ssid);
+  OUT2->Branch("layer", &patt_layer);
+  OUT2->Branch("z",     &patt_z);
+  OUT2->Branch("phi",   &patt_sstrip);
+
+  TTree *OUT3    = new TTree("PatternData", "Informations about patterns");
+  OUT3->Branch("order",    &patt_order);
+  OUT3->Branch("AveragePT",  &patt_pt);
+  OUT3->Branch("Popularity", &patt_grade);
+  
+  for(unsigned int i=0;i<allPatterns.size();i++){
+    GradedPattern* p = allPatterns[i];
+
+    patt_id=i;
+    patt_order = p->getOrderInChip();
+    patt_pt = p->getAveragePt();
+    patt_grade = p->getGrade();
+    OUT3->Fill();
+
+    for(int j=0;j<p->getNbLayers();j++){
+      patt_layer = j;
+      CMSPatternLayer* pl = (CMSPatternLayer*)p->getLayerStrip(j);
+      vector<int> positions = pl->getHDSuperstrips();
+      for(unsigned int k=0;k<positions.size();k++){
+	patt_ssid = k;
+	patt_z = pl->getModule();
+	patt_sstrip = positions[k];
+	OUT2->Fill();
+      }
+    }
+  }
+  OUT2->Write("", TObject::kOverwrite);
+  delete OUT2;
+  OUT3->Write("", TObject::kOverwrite);
+  delete OUT3;
+
   for(int i=0;i<nbLayers;i++){
     modulesPlot[i]->Write();
     delete modulesPlot[i];
@@ -649,6 +808,72 @@ void getOrderDataForModules(vector<int> list, int maxNbModules, int* first, int*
   }
 }
 
+vector<unsigned int> loadDefectiveAddresses(string name){
+  string line;
+  ifstream myfile (name.c_str());
+  vector< unsigned int > addresses;
+  set<unsigned int> addr_set;
+  if (myfile.is_open()){
+    while ( myfile.good() ){
+      getline (myfile,line);
+      if(line.length()>0 && line.find("#")!=0){//the line does not start with # and is not empty
+	stringstream ss(line);
+	std::string item;
+	vector<string> items;
+	while (getline(ss, item, ' ')) {//split with the space character
+	  std::string::iterator end_pos = std::remove(item.begin(), item.end(), ' ');
+	  item.erase(end_pos, item.end());
+	  if(item.find("-")!=std::string::npos){//there is a - character
+	    stringstream ss2(item);
+	    std::string val;
+	    unsigned int start=0;
+	    unsigned int stop=0;
+	    bool second = false;
+	    while (getline(ss2, val, '-')) {//split with the - character
+	      std::string::iterator end = std::remove(val.begin(), val.end(), ' ');
+	      val.erase(end, val.end());
+	      
+	      istringstream buffer(val);
+	      unsigned int v;
+	      buffer >> v;
+
+	      if(second){
+		stop=v;
+		if(stop<start){
+		  unsigned int tmp = start;
+		  start=stop;
+		  stop=tmp;
+		}
+		for(unsigned int i=start;i<=stop;i++){
+		  addr_set.insert(i);
+		}
+		second=false;
+	      }
+	      else
+		start=v;
+		second=true;
+	    }
+	  }
+	  else{
+	    istringstream buffer(item);
+	    unsigned int v;
+	    buffer >> v;
+	    addr_set.insert(v);
+	  }
+	}
+      }
+    }
+    myfile.close();
+  }
+  else{
+    cout << "Can not find file "<<name<<" to load the list of defective addresses of the chip!"<<endl;
+    exit(-1);
+  }
+  std::copy(addr_set.begin(), addr_set.end(), std::back_inserter(addresses));
+  sort(addresses.begin(),addresses.end());
+  return addresses;
+}
+
 void createSectorFromRootFile(SectorTree* st, string fileName, vector<int> layers, int sector_id){
 
   Sector s(layers);
@@ -775,12 +1000,11 @@ int main(int av, char** ac){
   po::options_description desc("Allowed options");
   desc.add_options()
     ("help", "produce help message")
-    ("generateBank", "Generates a pattern bank from root simulation file (needs --ss_size --dc_bits --pt_min --pt_max --eta_min --eta_max --coverage --input_directory --bank_name --sector_file --sector_id --active_layers)")
+    ("generateBank", "Generates a pattern bank from root simulation file (needs --ss_size_file --dc_bits --pt_min --pt_max --eta_min --eta_max --coverage --input_directory --bank_name --sector_file --sector_id --active_layers)")
     ("testSectors", "Get the tracks sectors")
-    ("MergeSectors", "Merge 2 root files having same events but different sectors (needs --inputFile --secondFile and --outputFile)")
     ("MergeBanks", "Merge 2 bank files having only 1 sector (needs --inputFile --secondFile and --outputFile)")
     ("buildFitParams", "Computes the Fit parameters for the given bank using tracks from the given directory (needs --bankFile, --input_directory and --outputFile)")
-    ("findPatterns", "Search for patterns in an event file (needs --ss_threshold --inputFile, --bankFile, --outputFile, --startEvent and --stopEvent)")
+    ("findPatterns", "Search for patterns in an event file (needs --ss_threshold --inputFile, --bankFile, --startEvent and --stopEvent)")
 #ifdef USE_CUDA
     ("useGPU", "Use the GPU card to accelerate the pattern recognition (needs cuda libraries and a configured GPU card)")
 #endif
@@ -789,7 +1013,8 @@ int main(int av, char** ac){
     ("printBankAM05", "Display all patterns from a bank with the format used for the AM05 chip (needs --bankFile and optionaly --nbActiveLayers)")
     ("testCode", "Dev tests")
     ("analyseBank", "Creates histograms from a pattern bank file (needs --bankFile and --outputFile)")
-    ("stubsToSuperstrips", "Display each stub of an event file as a superstrip (used for tests) (needs --inputFile, --bankFile, --startEvent, --stopEvent)")
+    ("showBankInfos", "Display some informations about the bank content (needs --bankFile)")
+    ("printSectorLUT", "Display the mapping between global ladder and module IDs and local to sector IDs for a given bank (needs --bankFile)")
     ("alterBank", "Creates a new bank from an existing one, the existing bank is not modified (used with --bankFile and --outputFile and --truncate or --minFS and/or --maxFS)")
     ("inputFile", po::value<string>(), "The file to analyse")
     ("secondFile", po::value<string>(), "Second file to merge")
@@ -797,13 +1022,15 @@ int main(int av, char** ac){
     ("outputFile", po::value<string>(), "The root output file")
     ("ss_threshold", po::value<int>(), "The minimum number of hit superstrips to activate a pattern")
     ("ss_missingHits", po::value<int>(), "The maximum number of non activated layers to activate a pattern. --ss_threshold is used as a mandatory minimum value.")
+    ("max_output_roads", po::value<int>(), "Limit the number of output roads from the chips : keep only the first max_output_roads.")
     ("startEvent", po::value<int>(), "The first event index")
     ("stopEvent", po::value<int>(), "The last event index")
+    ("verbose", "During pattern recognition, display each stub of an event as a superstrip (format is Layer_ID SUPERSTRIP_IN_HEXA)")
     ("decode", po::value<int>(), "Decode the given super strip")
-    ("ss_size", po::value<string>(), "Number of strips in a super strip {16,32,64,128,256,512,1024}. Either one value for all detector or one value per layer")
-    ("dc_bits", po::value<int>(), "Number of used DC bits [0-3]")
-    ("pt_min", po::value<int>(), "Only tracks having a greater PT will be used to generate a pattern")
-    ("pt_max", po::value<int>(), "Only tracks having a smaller PT will be used to generate a pattern")
+    ("ss_size_file", po::value<string>(), "Name of the file containing the superstrip sizes definition")
+    ("dc_bits", po::value<string>(), "Number of used DC bits [0-3]. Either one value for all detector or one value per layer")
+    ("pt_min", po::value<float>(), "Only tracks having a greater PT will be used to generate a pattern")
+    ("pt_max", po::value<float>(), "Only tracks having a smaller PT will be used to generate a pattern")
     ("eta_min", po::value<float>(), "Only tracks having a greater ETA will be used to generate a pattern")
     ("eta_max", po::value<float>(), "Only tracks having a smaller ETA will be used to generate a pattern")
     ("maxFakeSStrips", po::value<int>(), "The maximum number of fake superstrips used in a pattern (0=desactivated)")
@@ -815,7 +1042,8 @@ int main(int av, char** ac){
     ("bank_name", po::value<string>(), "The bank file name")    
     ("minFS", po::value<int>(), "Used with --alterBank : only patterns with at least minFS fake stubs will be kept in the new bank")
     ("maxFS", po::value<int>(), "Used with --alterBank : only patterns with at most maxFS fake stubs will be kept in the new bank")
-    ("truncate", po::value<int>(), "Used with --alterBank : gives the number of patterns to keep in the new bank, starting with the most used ones.")
+    ("truncate", po::value<int>(), "Used with --alterBank : gives the number of patterns to keep in the new bank, starting with the most used ones. Can be used with --defectiveAddressesFile to manage non working pattern addresses in the chip.")
+    ("defectiveAddressesFile", po::value<string>(), "The file containing the list of defective pattern addresses in the chip (separeted with spaces or - for ranges)")    
     ("nbActiveLayers", po::value<int>(), "Used with --printBankAM05 : only patterns with this exact number of active layers will be printed")
     ;
      
@@ -853,12 +1081,57 @@ int main(int av, char** ac){
     }
     TFile f( vm["outputFile"].as<string>().c_str(), "recreate");
     createAnalysis(st);
+  } else if (vm.count("showBankInfos")) {
+    SectorTree st;
+    cout<<"Loading pattern bank..."<<endl;
+    {
+      std::ifstream ifs(vm["bankFile"].as<string>().c_str());
+      //Decompression
+      boost::iostreams::filtering_stream<boost::iostreams::input> f;
+      f.push(boost::iostreams::gzip_decompressor());
+      try { 
+	f.push(ifs);
+	boost::archive::text_iarchive ia(f);
+	ia >> st;
+      }
+      catch (boost::iostreams::gzip_error& e) {
+	if(e.error()==4){//file is not compressed->read it without decompression
+	  std::ifstream new_ifs(vm["bankFile"].as<string>().c_str());
+	  boost::archive::text_iarchive ia(new_ifs);
+	  ia >> st;
+	}
+      }
+    }
+    displayInformations(st);
+  } else if (vm.count("printSectorLUT")) {
+    SectorTree st;
+    cout<<"Loading pattern bank..."<<endl;
+    {
+      std::ifstream ifs(vm["bankFile"].as<string>().c_str());
+      //Decompression
+      boost::iostreams::filtering_stream<boost::iostreams::input> f;
+      f.push(boost::iostreams::gzip_decompressor());
+      try { 
+	f.push(ifs);
+	boost::archive::text_iarchive ia(f);
+	ia >> st;
+      }
+      catch (boost::iostreams::gzip_error& e) {
+	if(e.error()==4){//file is not compressed->read it without decompression
+	  std::ifstream new_ifs(vm["bankFile"].as<string>().c_str());
+	  boost::archive::text_iarchive ia(new_ifs);
+	  ia >> st;
+	}
+      }
+    }
+    displaySectorLUT(st);
   } else if (vm.count("generateBank")) {
     
     vector<int> layers;
     SectorTree st;
-    string stripSizes="";
-    int dcBits=0;
+    string size_file="";
+    string dcBits="";
+    vector<int> layer_dc_bits_number;
     string partDirName="";
     string bankFileName="";
     string rootFileName="";
@@ -876,13 +1149,13 @@ int main(int av, char** ac){
     map<int,pair<float,float> > eta = CMSPatternLayer::getLayerDefInEta();
     
     try{
-      stripSizes=vm["ss_size"].as<string>();
-      cout<<"Superstrip sizes : "<<stripSizes<<endl;
-      dcBits=vm["dc_bits"].as<int>();
-      cout<<"DC bits number : "<<dcBits<<endl;
-      min=vm["pt_min"].as<int>();
+      size_file=vm["ss_size_file"].as<string>();
+      cout<<"Superstrip sizes file : "<<size_file<<endl;
+      dcBits=vm["dc_bits"].as<string>();
+      cout<<"DC bits numbers : "<<dcBits<<endl;
+      min=vm["pt_min"].as<float>();
       cout<<"PT min : "<<min<<endl;
-      max=vm["pt_max"].as<int>();
+      max=vm["pt_max"].as<float>();
       cout<<"PT max : "<<max<<endl;
       minEta=vm["eta_min"].as<float>();
       cout<<"ETA min : "<<minEta<<endl;
@@ -958,23 +1231,14 @@ int main(int av, char** ac){
 	eta[desactivated_layers[i]].second=10;
       }
 
-      vector<int> layer_superstrip_size;
-      std::istringstream strips( stripSizes );
-      while( strips >> n ) {
-	layer_superstrip_size.push_back(n);
-      }
-      if(layer_superstrip_size.size()==1){
-	st.setSuperStripSize(layer_superstrip_size[0]);
-      }
-      else if(layer_superstrip_size.size()==active_layers.size()){//one size per layer
-	for(unsigned int ln=0;ln<active_layers.size();ln++){
-	  st.setSuperStripSize(layer_superstrip_size[ln],active_layers[ln]);
-	}
-      }
-      else{
-	st.setSuperStripSize(-1);
-      }
+      SectorTree::setSuperstripSizeFile(size_file);
+      SectorTree::getSuperstripSize();
       
+      
+      std::istringstream bits( dcBits );
+      while( bits >> n ) {
+	layer_dc_bits_number.push_back(n);
+      }
 
       size_t end_index = bankFileName.find(".pbk");
       if(end_index==string::npos)
@@ -1011,13 +1275,23 @@ int main(int av, char** ac){
     pg.setMaxEta(maxEta);
     pg.setMaxFakeSuperstrips(maxNbFake);
     TFile f(rootFileName.c_str(), "recreate");
-    pg.setVariableResolution(dcBits);
+    if(layer_dc_bits_number.size()==active_layers.size() || layer_dc_bits_number.size()==1){
+      for(unsigned int i=0;i<active_layers.size();i++){
+	if(layer_dc_bits_number.size()==1)
+	  pg.setVariableResolution(layer_dc_bits_number[0], active_layers[i]);
+	else
+	  pg.setVariableResolution(layer_dc_bits_number[i], active_layers[i]);
+      }
+    }
+    
     pg.generate(&st, 100000, threshold, eta);
 
 
     if(pg.getVariableResolutionState()>0){
       cout<<"LD Patterns : "<<st.getLDPatternNumber()<<endl;
     }
+
+    st.getAllSectors()[0]->getPatternTree()->truncate(-1);
   
     cout<<"Saving SectorTree...";
     {
@@ -1051,34 +1325,6 @@ int main(int av, char** ac){
     p.setIntValue(val);
     cout<<p.toString()<<endl;
   }
-  else if(vm.count("stubsToSuperstrips")) {
-    SectorTree st;
-    cout<<"Loading pattern bank..."<<endl;
-    {
-      std::ifstream ifs(vm["bankFile"].as<string>().c_str());
-      boost::iostreams::filtering_stream<boost::iostreams::input> f;
-      f.push(boost::iostreams::gzip_decompressor());
-      //we try to read a compressed file
-      try { 
-	f.push(ifs);
-	boost::archive::text_iarchive ia(f);
-	ia >> st;
-      }
-      catch (boost::iostreams::gzip_error& e) {
-	if(e.error()==4){//file is not compressed->read it without decompression
-	  std::ifstream new_ifs(vm["bankFile"].as<string>().c_str());
-	  boost::archive::text_iarchive ia(new_ifs);
-	  ia >> st;
-	}
-      }
-    }
-    PatternFinder pf(0, &st,  vm["inputFile"].as<string>().c_str(),  "none");
-    {
-      int start = vm["startEvent"].as<int>();
-      int stop = vm["stopEvent"].as<int>();
-      pf.displayEventsSuperstrips(start, stop);
-    }
-  }
   else if(vm.count("findPatterns")) {
     SectorTree st;
     cout<<"Loading pattern bank..."<<endl;
@@ -1107,7 +1353,8 @@ int main(int av, char** ac){
     for(unsigned int i=0;i<sectors.size();i++){
       if(sectors[i]->getFitter()==NULL){
 	//TrackFitter* fitter = new KarimakiTrackFitter(sectors[i]->getNbLayers());
-	TrackFitter* fitter = new HoughFitter(sectors[i]->getNbLayers());
+	TrackFitter* fitter = new TCBuilder(sectors[i]->getNbLayers());
+	((TCBuilder*)fitter)->setHardwareEmulation(true);
 	sectors[i]->setFitter(fitter);
 	sectors[i]->updateFitterPhiRotation();
       }
@@ -1128,7 +1375,7 @@ int main(int av, char** ac){
 
       st.getAllSectors()[0]->linkCuda(&d_pb,&d_detector);
 
-      PatternFinder pf(vm["ss_threshold"].as<int>(), &st,  vm["inputFile"].as<string>().c_str(),  vm["outputFile"].as<string>().c_str(), 
+      PatternFinder pf(vm["ss_threshold"].as<int>(), &st,  vm["inputFile"].as<string>().c_str(),  vm["inputFile"].as<string>().c_str(), 
 		       &d_pb, &d_detector, &d_param); 
       {
 	boost::progress_timer t;
@@ -1148,6 +1395,7 @@ int main(int av, char** ac){
 #endif
       int nbMissingHit=0;
       int threshold=0;
+      int max_output_roads = -1;
       if(vm.count("ss_missingHits")){
 	  nbMissingHit=vm["ss_missingHits"].as<int>();
 	  threshold=vm["ss_threshold"].as<int>();
@@ -1156,7 +1404,10 @@ int main(int av, char** ac){
 	nbMissingHit=-1;
 	threshold=vm["ss_threshold"].as<int>();
       }
-      PatternFinder pf(threshold, &st,  vm["inputFile"].as<string>().c_str(),  vm["outputFile"].as<string>().c_str());
+      if(vm.count("max_output_roads")){
+	max_output_roads=vm["max_output_roads"].as<int>();
+      }
+      PatternFinder pf(threshold, &st,  vm["inputFile"].as<string>().c_str(),  vm["inputFile"].as<string>().c_str());
       {
 	boost::progress_timer t;
 	int start = vm["startEvent"].as<int>();
@@ -1164,6 +1415,12 @@ int main(int av, char** ac){
 
 	if(vm.count("ss_missingHits")){
 	    pf.useMissingHitThreshold(nbMissingHit);
+	}
+	if(max_output_roads>=0){
+	  pf.setMaxRoadNumber((unsigned int)max_output_roads);
+	}
+	if(vm.count("verbose")){
+	    pf.setVerboseMode(true);
 	}
 	pf.find(start, stop);
 	cout<<"Time used to analyse "<<stop-start+1<<" events : "<<endl;
@@ -1198,7 +1455,9 @@ int main(int av, char** ac){
 
     PrincipalFitGenerator pfg(vm["input_directory"].as<string>().c_str(), &st);
     pfg.generate(eta_limits, 2, 100, 0, 0.87);
-    
+
+    st.getAllSectors()[0]->getPatternTree()->truncate(-1);
+
     cout<<"Saving SectorTree...";
     {
       const SectorTree& ref = st;
@@ -1239,6 +1498,7 @@ int main(int av, char** ac){
     for(unsigned int i=0;i<sectors.size();i++){
       Sector* mySector = sectors[i];
       vector<GradedPattern*> patterns = mySector->getPatternTree()->getLDPatterns();
+      sort(patterns.begin(),patterns.end(), comparePatternIDs);//order by orderInChip
       for(unsigned int j=0;j<patterns.size();j++){
 	Pattern* p = patterns[j];
 	for(int k=0;k<p->getNbLayers();k++){
@@ -1274,6 +1534,7 @@ int main(int av, char** ac){
     for(unsigned int i=0;i<sectors.size();i++){
       Sector* mySector = sectors[i];
       vector<GradedPattern*> patterns = mySector->getPatternTree()->getLDPatterns();
+      sort(patterns.begin(),patterns.end(), comparePatternIDs);//order by orderInChip
       for(unsigned int j=0;j<patterns.size();j++){
 	Pattern* p = patterns[j];
 	for(int k=0;k<p->getNbLayers();k++){
@@ -1309,134 +1570,151 @@ int main(int av, char** ac){
       Sector* mySector = sectors[i];
       int sector_id = mySector->getOfficialID();
       vector<GradedPattern*> patterns = mySector->getPatternTree()->getLDPatterns();
+      sort(patterns.begin(),patterns.end(), comparePatternIDs);//order by orderInChip
       vector<int> layers = mySector->getLayersID();
       int expected_active_layers = -1;
       bool hybrid_sector = layers.size()>8;//we have more layers than input buses
-      bool first_pass=true;
 
       int biggestID = -1;//last layer of the sector
-      int biggestBarrelID = -1;//last barrel layer of the sector
-      int biggestBarrelIndex = -1;//index of last barrel layer of the sector
-      for(unsigned int j=0;j<layers.size();j++){
-	biggestID=layers[j];
-	if(layers[j]<11){
-	  biggestBarrelID=layers[j];
-	  biggestBarrelIndex=j;
-	}
-      }
+      biggestID=layers[layers.size()-1];
 
+      bool endcap_sector = false;
+      if(biggestID>10 && !hybrid_sector)
+	endcap_sector = true;
+
+      int maxDC=-1;      
+      int nbDC = 0;
+      for(unsigned int j=0;j<patterns.size();j++){
+	for(int k=0;k<patterns[j]->getNbLayers();k++){
+	  PatternLayer* pl = patterns[j]->getLayerStrip(k);
+	  nbDC = pl->getDCBitsNumber();
+	  if(maxDC<nbDC)
+	    maxDC=nbDC;
+	}
+	if(maxDC==3)
+	  break;
+      }
+      
       if(vm.count("nbActiveLayers"))
 	expected_active_layers = vm["nbActiveLayers"].as<int>(); // we only want patterns with this number of active layers (ie layers without fake superstrips)
-
+      
       cout<<"** Bank of patterns formatted for AM05 chip. Patterns are displayed with 1 line per layer (from innermost to outermost layer) and separated with an empty line."<<endl;
-      cout<<"** Each line contains the decimal representation of the 18 bits value to store in the AM chip followed by the number of DC bits configured on that layer."<<endl;
-      cout<<"** The format of the 16 bits superstrips to send to the AM chip is (all positions are relative to the trigger tower): "<<endl;
-      int total_nb_bits = PatternLayer::getSizeFromMask(CMSPatternLayer::MOD_MASK)+
-	PatternLayer::getSizeFromMask(CMSPatternLayer::PHI_MASK)+
-	PatternLayer::getSizeFromMask(CMSPatternLayer::SEG_MASK)+
-	PatternLayer::getSizeFromMask(CMSPatternLayer::STRIP_MASK);
-
-      bool overflow = false;
-      if(total_nb_bits+patterns[0]->getLayerStrip(0)->getDCBitsNumber()>18){//format+DC bit too large
-	if(PatternLayer::getSizeFromMask(CMSPatternLayer::MOD_MASK)==5){//can we take of a module bit?
-	  overflow=true;
-	  cout<<"** \t1 bit set at 0"<<endl;
-	  cout<<"** \t4 bits for the position of the module on the ladder"<<endl;
-	}
-	else{//not enough room...
-	  cout<<"** Your format can not fit in the 18 bits of the AM05 chip!!! ("<<total_nb_bits+patterns[0]->getLayerStrip(0)->getDCBitsNumber()<<" bits needed)"<<endl;
-	}
-      }
-      else{//we have enough room
-	if(!overflow){//module is not already treated
-	  cout<<"** \t"<<PatternLayer::getSizeFromMask(CMSPatternLayer::MOD_MASK)<<" bits for the position of the module on the ladder"<<endl;
-	}
-	cout<<"** \t"<<PatternLayer::getSizeFromMask(CMSPatternLayer::PHI_MASK)<<" bits for the position of the ladder on the layer"<<endl;
-	cout<<"** \t"<<PatternLayer::getSizeFromMask(CMSPatternLayer::SEG_MASK)<<" bit for the position of the segment on the module";
-	if(CMSPatternLayer::INNER_LAYER_SEG_DIVIDE==2 && CMSPatternLayer::OUTER_LAYER_SEG_DIVIDE==2) 
-	  cout<<" (forced to 0 on barrel layers)"<<endl;
-	else if(CMSPatternLayer::INNER_LAYER_SEG_DIVIDE==2){
-	  cout<<" (forced to 0 on the 3 innermost barrel layers)"<<endl;
-	}
-	else if(CMSPatternLayer::OUTER_LAYER_SEG_DIVIDE==2){
-	  cout<<" (forced to 0 on the 3 outermost barrel layers)"<<endl;
-	}
-	cout<<"** \t"<<PatternLayer::getSizeFromMask(CMSPatternLayer::STRIP_MASK)<<" bits for the position of the superstrip on the segment (stub's strip index divided by the superstrip size (see below) ENCODED IN GRAY CODE)"<<endl;
-      }
+      cout<<"** Each line contains the hexadecimal representation of the 18 bits value to store in the AM chip followed by the number of DC bits configured on that layer."<<endl;
       cout<<"**"<<endl;
-      while(true){
-	cout<<"** The 8 input buses are used for the following layers (CMS IDs - superstrips size between parenthesis) : ";
-	for(unsigned int j=0;j<layers.size();j++){
-	  if(hybrid_sector && first_pass && layers[j]==biggestID)
-	    continue;
-	  if(hybrid_sector && !first_pass && layers[j]==biggestBarrelID)
-	    continue;
-	  cout<<layers[j]<<" ("<<st.getSuperStripSize(layers[j])<<") - ";
-	}
-	for(unsigned int j=layers.size();j<8;j++){
-	  cout<<"Unused - ";
-	}
-	cout<<endl;
-	cout<<"**"<<endl;
-
-	if(sector_id!=-1)
-	  cout<<"********* PATTERNS FOR SECTOR "<<sector_id<<" **********"<<endl;
-	else
-	  cout<<"********** PATTERNS **********"<<endl;
-	cout<<endl;
-
-	for(unsigned int j=0;j<patterns.size();j++){
-	  Pattern* p = patterns[j];
-
-	  int nb_active_layers = p->getNbLayers()-p->getNbFakeSuperstrips();
-	  if(expected_active_layers!=-1 && expected_active_layers!=nb_active_layers) // the pattern does not have the expected number of active layers
-	    continue;
-
-	  if(hybrid_sector && first_pass && !p->getLayerStrip(8)->isFake())
-	    continue;
-
-	  if(hybrid_sector && !first_pass && p->getLayerStrip(8)->isFake())
-	    continue;
-
-	  for(int k=0;k<p->getNbLayers();k++){
-
-	    if(hybrid_sector && first_pass && k==8)
-	      continue;
-	    if(hybrid_sector && !first_pass && k==biggestBarrelIndex)
-	      continue;
-
-	    PatternLayer* mp = p->getLayerStrip(k);
-	    cout<<((CMSPatternLayer*)mp)->toAM05Format()<<endl;
-	  }
-	  //unused layers set to 15 (2 DC with "cannot be activated" value)
-	  for(int k=p->getNbLayers();k<8;k++){
-	    cout<<"15 2"<<endl;
-	  }
-	  cout<<endl;
-	}
-	cout<<"********** END OF PATTERNS **********"<<endl;
-	if(!hybrid_sector)
-	  break;
-	else if(!first_pass)
-	  break;
-	first_pass=false;
+      cout<<"** On endcap disks, the format of the 16 bits superstrips to send to the AM chip is (all positions are relative to the trigger tower): "<<endl;
+      cout<<"** \t4 bits for the position of the module on the ladder"<<endl;
+      cout<<"** \t1 bit for the position of the segment on the module. (initial value divided by 16 on P/S modules)"<<endl;
+      cout<<"** \t4 bits for the position of the ladder on the layer."<<endl;
+      cout<<"** \t7 bits for the position of the superstrip on the segment. (stub's strip index divided by the superstrip size (see below) ENCODED IN GRAY CODE)"<<endl;
+      cout<<"**"<<endl;
+      cout<<"** On inner barrel layers (5,6,7), the format of the 16 bits superstrips to send to the AM chip is (all positions are relative to the trigger tower): "<<endl;
+      if(maxDC==3){
+	cout<<"** \t1 bit at 0"<<endl;
+	cout<<"** \t4 bits for the Z position : (module position*2+(1-segment/16))/"<<2*CMSPatternLayer::INNER_LAYER_SEG_DIVIDE<<endl;
       }
+      else
+	cout<<"** \t5 bits for the Z position : (module position*2+(1-segment/16))/"<<2*CMSPatternLayer::INNER_LAYER_SEG_DIVIDE<<endl;
+      cout<<"** \t4 bits for the position of the ladder on the layer."<<endl;
+      cout<<"** \t7 bits for the position of the superstrip on the segment. (stub's strip index divided by the superstrip size (see below) ENCODED IN GRAY CODE)"<<endl;
+      cout<<"**"<<endl;
+      cout<<"** On outer barrel layers (8,9,10), the format of the 16 bits superstrips to send to the AM chip is (all positions are relative to the trigger tower): "<<endl;
+      if(maxDC==3){
+	cout<<"** \t1 bit at 0"<<endl;
+	cout<<"** \t4 bits for the Z position : (module position*2+(1-segment))/"<<CMSPatternLayer::OUTER_LAYER_SEG_DIVIDE<<endl;
+      }
+      else
+	cout<<"** \t5 bits for the Z position : (module position*2+(1-segment))/"<<CMSPatternLayer::OUTER_LAYER_SEG_DIVIDE<<endl;
+      cout<<"** \t4 bits for the position of the ladder on the layer."<<endl;
+      cout<<"** \t7 bits for the position of the superstrip on the segment. (stub's strip index divided by the superstrip size ENCODED IN GRAY CODE)"<<endl;
+      cout<<"** "<<endl;
+      cout<<"** Lookup table for the superstrip sizes : "<<endl;
+      st.displaySuperstripSizes();
+      cout<<"**"<<endl;
+      cout<<"** Lookup table for global to local conversion : "<<endl;
+      displaySectorLUT(st);
+      cout<<"**"<<endl;
+      cout<<"** LOCAL LAYER/LADDER -> Superstrip Size "<<endl;
+      displaySuperstripSizesWithLocalID(st);
+      cout<<"**"<<endl;
+      cout<<"** The 8 input buses are used for the following layers (CMS IDs) : ";
+      for(unsigned int j=0;j<layers.size();j++){
+	if(hybrid_sector && layers[j]==9)
+	  continue;
+	if(hybrid_sector && layers[j]==biggestID)
+	  cout<<9<<"/"<<biggestID;
+	else
+	  cout<<layers[j]<<" - ";
+      }
+      for(unsigned int j=layers.size();j<8;j++){
+	cout<<"Unused - ";
+      }
+      cout<<endl;
+      cout<<"**"<<endl;
+      
+      if(sector_id!=-1)
+	cout<<"********* PATTERNS FOR SECTOR "<<sector_id<<" **********"<<endl;
+      else
+	cout<<"********** PATTERNS **********"<<endl;
+      cout<<endl;
+      
+      for(unsigned int j=0;j<patterns.size();j++){
+	Pattern* p = patterns[j];
+	cout<<"# "<<*p;
+	
+	int nb_active_layers = p->getNbLayers()-p->getNbFakeSuperstrips();
+	if(expected_active_layers!=-1 && expected_active_layers!=nb_active_layers) // the pattern does not have the expected number of active layers
+	  continue;
+	
+	for(int k=0;k<p->getNbLayers();k++){
+
+	  bool tagLayer = false;
+	  if(hybrid_sector && k==4){ // this is layer 9 -> in hybrid sector we set it on bus 7
+	    continue;
+	  }
+
+	  PatternLayer* mp = p->getLayerStrip(k);
+
+	  if(k==4 && !endcap_sector && !mp->isFake()) // this is layer 9 and not a fake superstrip -> we tag it
+	    tagLayer = true;
+	  
+	  if(hybrid_sector && k==p->getNbLayers()-1){ // this is the last layer -> set its data on last bus along with data from layer 9
+	    if(mp->isFake()){ // if we have a fake superstrip on this layer -> we use the value of layer 9
+	      mp = p->getLayerStrip(4);
+	      if (!mp->isFake())
+		tagLayer = true;//we need to tag the layer to distinguish layer 9 from the endcap layer sharing the same bus
+	    }
+	  }
+	  
+	  cout<<((CMSPatternLayer*)mp)->toAM05Format(tagLayer)<<endl;
+	}
+	//unused layers set to 0x01e05 (fake stub value)
+	//We want a threshold at 5/6 but we have 8 buses and the threshold can not go below 6
+	// -> unused layers are set to 0x01E05 and will be activated by this superstrip sent on all buses for all events
+	// -> the threshold is set to 7 (5 used layers + 2 unused layers forced to active)
+	for(int k=p->getNbLayers();k<8;k++){
+	  cout<<"0x01e05 2"<<endl;
+	}
+	cout<<endl;
+      }
+      cout<<"********** END OF PATTERNS **********"<<endl;
     }
   }
   else if(vm.count("alterBank")) {
     SectorTree st;
-    SectorTree st2;
     SectorTree* save=NULL;
     int minFS=-1;
     int maxFS=-1;
     int newNbPatterns = -1;
+    vector<unsigned int> defectiveAddresses;
     if(vm.count("minFS"))
       minFS = vm["minFS"].as<int>();
     if(vm.count("maxFS"))
       maxFS = vm["maxFS"].as<int>();
     if(vm.count("truncate"))
       newNbPatterns = vm["truncate"].as<int>();
-
+    if(vm.count("defectiveAddressesFile"))
+      defectiveAddresses=loadDefectiveAddresses(vm["defectiveAddressesFile"].as<string>());
+      
     if(minFS<0 && maxFS<0 && newNbPatterns<0){
       cout<<"Missing parameter : you need to set minFS, maxFS or truncate!"<<endl;
       return -1;
@@ -1465,17 +1743,14 @@ int main(int av, char** ac){
       }
     }
 
-    if(newNbPatterns>0){
+    SectorTree st2(st);
+
+    if(maxFS<0 && minFS<0 && newNbPatterns>0){
       cout<<"loaded "<<st.getAllSectors()[0]->getLDPatternNumber()<<" patterns for sector "<<st.getAllSectors()[0]->getOfficialID()<<endl;
       st.getAllSectors()[0]->getPatternTree()->truncate(newNbPatterns);
       save=&st;
     }
     else{
-      vector<int> size_on_layers = st.getSuperStripSizeLayers();
-      for(unsigned int i=0;i<size_on_layers.size();i++){
-	st2.setSuperStripSize(st.getSuperStripSize(size_on_layers[i]), size_on_layers[i]);
-      }
-      
       cout<<"Altering bank..."<<endl;
       vector<Sector*> sectors = st.getAllSectors();
       for(unsigned int i=0;i<sectors.size();i++){
@@ -1488,9 +1763,12 @@ int main(int av, char** ac){
 	  int nbFS = p->getNbFakeSuperstrips();
 	  if(nbFS<=maxFS && nbFS>=minFS){
 	    //add the pattern
-	    newSector->getPatternTree()->addPattern(p,NULL,p->getAveragePt());
+	    for(int k=0;k<p->getGrade();k++){
+	      newSector->getPatternTree()->addPattern(p,NULL,p->getAveragePt());
+	    }
 	  }
 	}
+	newSector->getPatternTree()->truncate(newNbPatterns,defectiveAddresses);
 	cout<<"Sector "<<mySector->getOfficialID()<<" :\n\tinput bank : "<<mySector->getPatternTree()->getLDPatternNumber()<<" patterns\n\toutput bank : "<<newSector->getPatternTree()->getLDPatternNumber()<<" patterns."<<endl;
       }
       save=&st2;
@@ -1508,9 +1786,6 @@ int main(int av, char** ac){
       boost::archive::text_oarchive oa(f);
       oa << ref;
     }
-  }
-  else if(vm.count("MergeSectors")) {
-    PatternFinder::mergeFiles(vm["outputFile"].as<string>().c_str(), vm["inputFile"].as<string>().c_str(), vm["secondFile"].as<string>().c_str());
   }
   else if(vm.count("MergeBanks")) {
     SectorTree st1;
@@ -1569,19 +1844,9 @@ int main(int av, char** ac){
       cout<<"You can only merge banks containing 1 sector ("<<nbSectors2<<" found)"<<endl;
       return -1;
     }
-    vector<int> layers_1 = st1.getSuperStripSizeLayers();
-    vector<int> layers_2 = st2.getSuperStripSizeLayers();
-    for(unsigned int i=0;i<layers_1.size();i++){
-      if(st1.getSuperStripSize(layers_1[i])!=st2.getSuperStripSize(layers_1[i])){
-	cout<<"You can only merge banks using the same superstrip size (on layer "<<layers_1[i]<<" : "<<st1.getSuperStripSize(layers_1[i])<<" and "<<st2.getSuperStripSize(layers_1[i])<<" found)"<<endl;
-	return -1;
-      }
-    }
-    for(unsigned int i=0;i<layers_2.size();i++){
-      if(st1.getSuperStripSize(layers_2[i])!=st2.getSuperStripSize(layers_2[i])){
-	cout<<"You can only merge banks using the same superstrip size (on layer "<<layers_2[i]<<" : "<<st1.getSuperStripSize(layers_2[i])<<" and "<<st2.getSuperStripSize(layers_2[i])<<" found)"<<endl;
-	return -1;
-      }
+    if(!st1.hasSameSuperstripSizes(st2)){
+      cout<<"You can only merge banks using the same superstrip size!"<<endl;
+      return -1;
     }
     if(list1[0]->getNbLayers()!=list2[0]->getNbLayers()){
       cout<<"You can only merge banks using the same number of layers ("<<list1[0]->getNbLayers()<<" and "<<list2[0]->getNbLayers()<<" found)"<<endl;
@@ -1590,10 +1855,36 @@ int main(int av, char** ac){
     int nbPatterns2 = list2[0]->getPatternTree()->getLDPatternNumber();
     cout<<nbPatterns2<<" patterns found."<<endl;
 
+    bool dc_bits_ok = true;
+    vector<GradedPattern*> patterns_1 = list1[0]->getPatternTree()->getLDPatterns();
+    vector<GradedPattern*> patterns_2 = list2[0]->getPatternTree()->getLDPatterns();
+    for(int k=0;k<patterns_1[0]->getNbLayers();k++){
+      PatternLayer* pl1 = patterns_1[0]->getLayerStrip(k);
+      PatternLayer* pl2 = patterns_2[0]->getLayerStrip(k);
+      if(pl1->getDCBitsNumber()!=pl2->getDCBitsNumber()){
+	dc_bits_ok=false;
+	break;
+      }
+    }
+    for(unsigned int j=0;j<patterns_1.size();j++){
+      delete patterns_1[j];
+    }
+    patterns_1.clear();
+    for(unsigned int j=0;j<patterns_2.size();j++){
+      delete patterns_2[j];
+    }
+    patterns_2.clear();
+
+    if(!dc_bits_ok){
+      cout<<"The 2 banks must use the same number of DC bits for merging!"<<endl;
+      return -1;
+    }
+
     cout<<"Merging banks..."<<endl;
     if(nbPatterns1>nbPatterns2){
       list1[0]->getPatternTree()->addPatternsFromTree(list2[0]->getPatternTree());
       cout<<"-> "<<list1[0]->getPatternTree()->getLDPatternNumber()<<" patterns."<<endl;
+      list1[0]->getPatternTree()->truncate(-1);
       cout<<"Saving new bank in "<<vm["outputFile"].as<string>().c_str()<<"..."<<endl;
       {
 	const SectorTree& ref = st1;
@@ -1609,6 +1900,7 @@ int main(int av, char** ac){
     }
     else{
       list2[0]->getPatternTree()->addPatternsFromTree(list1[0]->getPatternTree());
+      list2[0]->getPatternTree()->truncate(-1);
       cout<<"-> "<<list2[0]->getPatternTree()->getLDPatternNumber()<<" patterns."<<endl;
       cout<<"Saving new bank in "<<vm["outputFile"].as<string>().c_str()<<"..."<<endl;
       {
@@ -1632,45 +1924,32 @@ int main(int av, char** ac){
     delete gp;
     //cuProfilerStop();
 #else
-    string result;
+    SectorTree st;
     {
-      SectorTree sTest;
-      cout<<"Loading pattern bank..."<<endl;
-      {
-	string file = "/home/infor/baulieu/private/cms/slc6/CMSSW_6_2_0_SLHC15/src/amsimulation_dev/test3_Fountain_NoSeg_2DC_lowmidhig.pbk";
-	std::ifstream ifs(file.c_str());
-	boost::iostreams::filtering_stream<boost::iostreams::input> f;
-	f.push(boost::iostreams::gzip_decompressor());
-	//we try to read a compressed file
-	try { 
-	  f.push(ifs);
-	  boost::archive::text_iarchive ia(f);
-	  ia >> sTest;
-	}
-	catch (boost::iostreams::gzip_error& e) {
-	  if(e.error()==4){//file is not compressed->read it without decompression
-	    std::ifstream new_ifs(file.c_str());
-	    boost::archive::text_iarchive ia(new_ifs);
-	    ia >> sTest;
-	  }
+      std::ifstream ifs(vm["bankFile"].as<string>().c_str());
+      boost::iostreams::filtering_stream<boost::iostreams::input> f;
+      f.push(boost::iostreams::gzip_decompressor());
+      //we try to read a compressed file
+      try { 
+	f.push(ifs);
+	boost::archive::text_iarchive ia(f);
+	ia >> st;
+      }
+      catch (boost::iostreams::gzip_error& e) {
+	if(e.error()==4){//file is not compressed->read it without decompression
+	  std::ifstream new_ifs(vm["bankFile"].as<string>().c_str());
+	  boost::archive::text_iarchive ia(new_ifs);
+	  ia >> st;
 	}
       }
-      cout<<"Sector :"<<endl;
-      cout<<*(sTest.getAllSectors()[0])<<endl;
-      cout<<"loaded "<<sTest.getAllSectors()[0]->getLDPatternNumber()<<" patterns for sector "<<sTest.getAllSectors()[0]->getOfficialID()<<endl;
-      sTest.getAllSectors()[0]->getPatternTree()->truncate(1000000);
-
-      cout<<"Saving new bank in testOut.pbk..."<<endl;
-      {
-	const SectorTree& ref = sTest;
-	std::ofstream ofs("./testOut.pbk");
-	// Compression part
-	boost::iostreams::filtering_stream<boost::iostreams::output> f;
-	f.push(boost::iostreams::gzip_compressor(boost::iostreams::gzip_params(boost::iostreams::gzip::best_compression)));
-	f.push(ofs);
-	//
-	boost::archive::text_oarchive oa(f);
-	oa << ref;
+    }
+    vector<Sector*> sectors = st.getAllSectors();
+    for(unsigned int i=0;i<sectors.size();i++){
+      Sector* mySector = sectors[i];
+      vector<GradedPattern*> patterns = mySector->getPatternTree()->getLDPatterns();
+      sort(patterns.begin(),patterns.end(), comparePatternIDs);
+      for(unsigned int j=0;j<patterns.size();j++){
+	cout<<"("<<patterns[j]->getGrade()<<" - "<<patterns[j]->getAveragePt()<<")"<<*(patterns[j])<<endl;
       }
     }
 #endif

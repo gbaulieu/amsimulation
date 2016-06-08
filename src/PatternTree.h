@@ -59,10 +59,8 @@ class PatternTree{
   /**
      \brief Link all patterns to the detector structure
      \param d The detector
-     \param sec The ladders in the sector (one vector per layer)
-     \param modules The modules in the sector (one vector per ladder)
   **/
-  void link(Detector& d, const vector< vector<int> >& sec, const vector<map<int, vector<int> > >& modules);
+  void link(Detector& d);
 #ifdef USE_CUDA
   /**
      \brief Link all patterns to the detector structure
@@ -89,9 +87,9 @@ class PatternTree{
   void getActivePatternsUsingMissingHit(int max_nb_missing_hit, int active_threshold, vector<GradedPattern*>& active_patterns);
   /**
      \brief Replace all LD patterns with adapatative patterns. All FD patterns are removed.
-     \param r The number of DC bits used between FD and LD
+     \param r The number of DC bits used between FD and LD for each layer
   **/
-  void computeAdaptativePatterns(short r);
+  void computeAdaptativePatterns(vector<int> r);
   /**
      \brief Add all LD patterns coming from an other PatternTree
      \param p The PatternTree containing the patterns to add
@@ -117,7 +115,7 @@ class PatternTree{
      \brief Delete the least used patterns to match the given pattern number
      \param nbPatterns The number of patterns to keep
   **/
-  void truncate(int nbPatterns);
+  void truncate(int nbPatterns, vector<unsigned int> defective_patterns=vector<unsigned int>());
 
  private:
   map<string, PatternTrunk*> patterns;
@@ -182,5 +180,6 @@ class PatternTree{
   BOOST_SERIALIZATION_SPLIT_MEMBER()
 };
 bool comparePatterns(PatternTrunk* p1, PatternTrunk* p2);
+bool comparePatternsbyPT(PatternTrunk* p1, PatternTrunk* p2);
 BOOST_CLASS_VERSION(PatternTree, 1)
 #endif

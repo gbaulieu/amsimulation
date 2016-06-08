@@ -1,11 +1,12 @@
 #include "PatternGenerator.h"
 
 PatternGenerator::PatternGenerator(){
-  variableRes = 0;
   ptMin=2;
   ptMax=100;
   etaMin=0.0f;
   etaMax=1.0f;
+  variableRes_state_cache = false;
+  cache_is_uptodate = false;
 }
 
 void PatternGenerator::setMinPT(float minp){
@@ -46,14 +47,32 @@ void PatternGenerator::setParticuleDirName(string f){
   particuleDirName = f;
 }
 
-void PatternGenerator::setVariableResolution(int nb){
+void PatternGenerator::setVariableResolution(int nb, int l){
   if(nb<0 || nb>3)
     nb = 0;
-  variableRes = nb;
+  variableRes[l] = nb;
+  cache_is_uptodate=false;
 }
 
-int PatternGenerator::getVariableResolutionState(){
-  return variableRes;
+bool PatternGenerator::getVariableResolutionState(){
+  if(cache_is_uptodate)
+    return variableRes_state_cache;
+
+  cache_is_uptodate=true;
+  if(variableRes.size()==0){
+    variableRes_state_cache=false;
+    return variableRes_state_cache;
+  }
+
+  for(map<int, int>::iterator it = variableRes.begin(); it != variableRes.end(); it++){
+    if(it->second!=0){
+      variableRes_state_cache=true;
+      return variableRes_state_cache;
+    }
+  }
+
+  variableRes_state_cache=false;
+  return variableRes_state_cache;
 }
 
 float PatternGenerator::computeZ0(float* x, float* y, float* z){
@@ -151,8 +170,6 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
   int nbInLayer=0;
   int nbInSector = 0;
   int nbModuleOk = 0;
-
-  int ld_fd_factor = (int)pow(2.0,(double)variableRes);
 
   int layers[tracker_layers.size()];
   vector<int> ladder_per_layer(tracker_layers.size());
@@ -281,14 +298,6 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
     ****************************************/
 
     Sector* sector = sectors->getSector(ladder_per_layer, module_per_layer);
-    
-    /*
-    for(unsigned int j=0;j<tracker_layers.size();j++){
-      cout<<"stubs "<<ladder_per_layer[j]<<"/"<<module_per_layer[j]<<"-";
-    }
-    cout<<endl;
-    cout<<"Secteur : "<<sector<<endl;
-    */
 
     if(sector==NULL){
       //cout<<"No sector found"<<endl;
@@ -297,14 +306,23 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
     else{
       nbInSector++;
     }
+    /*
+    for(unsigned int j=0;j<tracker_layers.size();j++){
+      cout<<"stubs "<<ladder_per_layer[j]<<"/"<<module_per_layer[j]<<"-";
+    }
+    cout<<endl;
+    */
+    /*
+    cout<<"Secteur : "<<sector<<endl;
+    */
 
     float last_pt = 0;
     float last_eta = 0;
-
+    int ladder_ori = -1;
     Pattern* p = new Pattern(tracker_layers.size());
     Pattern* lowDef_p=NULL;
     
-    if(variableRes){ // we use variable resolution patterns so we create 2 patterns with different resolution
+    if(getVariableResolutionState()){ // we use variable resolution patterns so we create 2 patterns with different resolution
       lowDef_p = new Pattern(tracker_layers.size());
     }
 
@@ -317,36 +335,32 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
       short module = -1;
       short ladder = -1;
       short strip = -1;
-      short stripLD = -1;
       short seg = -1;
-
+      bool isPSModule = false;
       if(stub_number==-2){//creation of a fake superstrip
 	module=0;
 	strip=0;
-	stripLD=0;
 	seg=0;
-	ladder=15;//should never happen so this superstrip will never be activated
+	ladder=0;
       }
       else{
 	int value = m_stub_modid[stub_number];
 	//	cout<<value<<endl;
 	value = value-(value/1000000)*1000000;
 	ladder = value/10000;
+	ladder_ori = ladder;
 	value = value-ladder*10000;
 	module = value/100;
 	value = value-module*100;
 	seg = value;
-
 	seg = CMSPatternLayer::getSegmentCode(tracker_layers[j], CMSPatternLayer::getLadderCode(tracker_layers[j],ladder), seg);	
+	if((tracker_layers[j]>=5 && tracker_layers[j]<=7) || (tracker_layers[j]>10 && CMSPatternLayer::getLadderCode(tracker_layers[j],ladder)<=8)){
+	  isPSModule=true;
+	}
 	//convertion to sector relative positions
 	module = sector->getModuleCode(tracker_layers[j], CMSPatternLayer::getLadderCode(tracker_layers[j],ladder), CMSPatternLayer::getModuleCode(tracker_layers[j],module));
 	ladder=sector->getLadderCode(tracker_layers[j],CMSPatternLayer::getLadderCode(tracker_layers[j],ladder));
 	
-	strip = m_stub_strip[stub_number]/sectors->getSuperStripSize(tracker_layers[j]);
-	if(variableRes){
-	  stripLD = strip/ld_fd_factor;
-	}
-
 	if(tracker_layers[j]<=7){
 	  int order = tracker_layers[j]-5;
 	  stubs_x[order]=m_stub_x[stub_number];
@@ -354,13 +368,15 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
 	  stubs_z[order]=m_stub_z[stub_number];
 	}
 
+	strip = m_stub_strip[stub_number];
+
       }
-      /*
-      cout<<"Event "<<*evtIndex<<endl;
-      cout<<"    Layer "<<m_stub_layer[stub_number]<<" segment "<<seg<<" module "<<CMSPatternLayer::getModuleCode(m_stub_layer[stub_number],m_stub_module[stub_number])<<" ladder "<<m_stub_ladder[stub_number]<<" strip "<<strip<<endl;
-      cout<<"    Layer "<<j<<" segment "<<seg<<" module "<<module<<" ladder "<<ladder<<" strip "<<strip<<endl;
-      cout<<endl;
-      */
+      
+      
+      //cout<<"Event "<<*evtIndex<<endl;
+      //cout<<"    Layer "<<tracker_layers[j]<<" segment "<<seg<<" module "<<module<<" ladder "<<ladder<<" strip "<<strip<<endl;
+      //cout<<endl;
+      
 
       if(stub_number!=-2){//this is not a fake stub
 	last_pt = m_stub_ptGEN[stub_number];
@@ -368,11 +384,18 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
       }
       CMSPatternLayer pat;
       CMSPatternLayer lowDef_layer;
-      pat.setValues(module, ladder, strip, seg);
+      try{
+	pat.computeSuperstrip(tracker_layers[j], module, ladder, strip, seg, SectorTree::getSuperstripSize(tracker_layers[j],CMSPatternLayer::getLadderCode(tracker_layers[j],ladder_ori)), isPSModule, stub_number==-2);
+      }
+      catch (const std::out_of_range& oor) {
+	std::cerr << "One of the stubs can not be linked to a superstrip"<<endl;
+	continue;
+      }
+     
       p->setLayerStrip(j, &pat);
 
-      if(variableRes){
-	lowDef_layer.setValues(module, ladder, stripLD, seg);
+      if(getVariableResolutionState()){
+	lowDef_layer.computeSuperstrip(tracker_layers[j], module, ladder, strip, seg, SectorTree::getSuperstripSize(tracker_layers[j],CMSPatternLayer::getLadderCode(tracker_layers[j],ladder_ori))*(int)pow(2.0,(double)variableRes[tracker_layers[j]]), isPSModule, stub_number==-2);
 	lowDef_p->setLayerStrip(j, &lowDef_layer);
       }
 
@@ -388,7 +411,7 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
     float Z0 = computeZ0(stubs_x, stubs_y, stubs_z);
     
     if(coverageEstimation==NULL){
-      if(variableRes){
+      if(getVariableResolutionState()){
 	p->updateInfos(last_eta,Z0,last_pt);
 	sector->getPatternTree()->addPattern(lowDef_p,p, last_pt);
       }
@@ -401,7 +424,7 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
       }
     }
     else{
-      if(variableRes){
+      if(getVariableResolutionState()){
 	if(sector->getPatternTree()->checkPattern(lowDef_p, p))//does the bank contains the pattern?
 	  (*coverageEstimation)++;
       }
@@ -424,13 +447,14 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
     cout<<"Nb Events with stubs on all layers : "<<nbInLayer<<endl;
     cout<<"Nb Events in sectors : "<<nbInSector<<endl;
 
-    if(variableRes)
+    if(getVariableResolutionState())
       return sectors->getFDPatternNumber();
     else
       return sectors->getLDPatternNumber();
   }
   else
     return 0;
+
 }
 
 
@@ -456,6 +480,7 @@ void PatternGenerator::generate(SectorTree* sectors, int step, float threshold, 
   cout<<"Starting patterns generation using iterations of "<<step<<" events"<<endl;
   
   while((1-dif)<threshold && iterationNbTracks>0){
+    //threshold=0;
     loop++;
     iterationNbTracks=0;
     newCount = generate(tc, &indexPart, step, &nbTracks, sectors, eta_limits);
@@ -484,7 +509,7 @@ void PatternGenerator::generate(SectorTree* sectors, int step, float threshold, 
   nbPatt->Write();
   delete nbPatt;
   
-  if(variableRes){
+  if(getVariableResolutionState()){
     cout<<"Creating variable resolution bank..."<<endl;
     sectors->computeAdaptativePatterns(variableRes);
     if(iterationNbTracks==step){
