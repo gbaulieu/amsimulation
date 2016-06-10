@@ -417,6 +417,7 @@ void createAnalysis(SectorTree &st){
   if(list.size()>0)
     nbLayers = list[0]->getNbLayers();
   vector<TH1I*> modulesPlot;
+  vector<int> layerIDs = list[0]->getLayersID();
   
   for(int i=0;i<nbLayers;i++){
     ostringstream oss;
@@ -484,6 +485,17 @@ void createAnalysis(SectorTree &st){
   float patt_pt;
   int patt_order;
   int patt_grade;
+  int patt_area;
+
+  int patt_area1;
+  int patt_area2;
+  int patt_area3;
+  int patt_area4;
+  int patt_area5;
+  int patt_area6;
+  int patt_area7;
+  int patt_area8;
+  int patt_area9;
 
   TTree *OUT2    = new TTree("PatternGeom", "Geometry of patterns");
   OUT2->Branch("id",    &patt_id);
@@ -496,6 +508,27 @@ void createAnalysis(SectorTree &st){
   OUT3->Branch("order",    &patt_order);
   OUT3->Branch("AveragePT",  &patt_pt);
   OUT3->Branch("Popularity", &patt_grade);
+  OUT3->Branch("Area", &patt_area);
+  OUT3->Branch("Area1", &patt_area1);
+  OUT3->Branch("Area2", &patt_area2);
+  OUT3->Branch("Area3", &patt_area3);
+  OUT3->Branch("Area4", &patt_area4);
+  OUT3->Branch("Area5", &patt_area5);
+  OUT3->Branch("Area6", &patt_area6);
+  OUT3->Branch("Area7", &patt_area7);
+  OUT3->Branch("Area8", &patt_area8);
+  OUT3->Branch("Area9", &patt_area9);
+
+  vector<int*> patt_area_layer;
+  patt_area_layer.push_back(&patt_area1);
+  patt_area_layer.push_back(&patt_area2);
+  patt_area_layer.push_back(&patt_area3);
+  patt_area_layer.push_back(&patt_area4);
+  patt_area_layer.push_back(&patt_area5);
+  patt_area_layer.push_back(&patt_area6);
+  patt_area_layer.push_back(&patt_area7);
+  patt_area_layer.push_back(&patt_area8);
+  patt_area_layer.push_back(&patt_area9);
   
   for(unsigned int i=0;i<allPatterns.size();i++){
     GradedPattern* p = allPatterns[i];
@@ -504,12 +537,26 @@ void createAnalysis(SectorTree &st){
     patt_order = p->getOrderInChip();
     patt_pt = p->getAveragePt();
     patt_grade = p->getGrade();
-    OUT3->Fill();
+    patt_area = 0;
+    patt_area1 = 0;
+    patt_area2 = 0;
+    patt_area3 = 0;
+    patt_area4 = 0;
+    patt_area5 = 0;
+    patt_area6 = 0;
+    patt_area7 = 0;
+    patt_area8 = 0;
+    patt_area9 = 0;
 
     for(int j=0;j<p->getNbLayers();j++){
       patt_layer = j;
       CMSPatternLayer* pl = (CMSPatternLayer*)p->getLayerStrip(j);
       vector<int> positions = pl->getHDSuperstrips();
+      vector<int> ladder_id = list[0]->getLadders(j);
+      if(!pl->isFake()){
+	*(patt_area_layer[j])=positions.size()*SectorTree::getSuperstripSize(layerIDs[j],ladder_id[pl->getPhi()]);
+	patt_area += *(patt_area_layer[j]);
+      }
       for(unsigned int k=0;k<positions.size();k++){
 	patt_ssid = k;
 	patt_z = pl->getModule();
@@ -517,6 +564,7 @@ void createAnalysis(SectorTree &st){
 	OUT2->Fill();
       }
     }
+    OUT3->Fill();
   }
   OUT2->Write("", TObject::kOverwrite);
   delete OUT2;

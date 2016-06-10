@@ -73,6 +73,10 @@ class PatternLayer{
      \return The value of the DC bit in position index
   **/
   char getDC(int index);
+
+  short binaryToGray(short num);
+  short grayToBinary(short gray);
+
   /**
      \brief Returns the int value of the bitset as a string of 5 characters
      \return A string (ie : "28653" or "00142")
@@ -143,6 +147,8 @@ class PatternLayer{
      \param mask The mask used
   **/
   static int getSizeFromMask(short mask);
+
+  vector<int> getHDSuperstrips();  
 
  private:
   /**
