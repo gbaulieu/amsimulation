@@ -89,6 +89,7 @@ public:
     int m_patt=0;
     std::vector< std::vector<int> > m_patt_links;
     std::vector<int> m_patt_secid;
+    std::vector<int> m_patt_id;
     std::vector<int> m_patt_miss;
     
     int nb_tc=0;
@@ -110,6 +111,7 @@ public:
 
     std::vector< std::vector<int> > *p_m_patt_links = &m_patt_links;
     std::vector<int> *p_m_patt_secid = &m_patt_secid;
+    std::vector<int> *p_m_patt_id = &m_patt_id;
     std::vector<int> *p_m_patt_miss = &m_patt_miss;
     
     std::vector<float> *p_m_tc_pt = &m_tc_pt;
@@ -136,6 +138,7 @@ public:
     PATT->SetBranchAddress("L1PATT_n",           &m_patt);
     PATT->SetBranchAddress("L1PATT_links",       &p_m_patt_links);
     PATT->SetBranchAddress("L1PATT_secid",       &p_m_patt_secid);
+    PATT->SetBranchAddress("L1PATT_id",       &p_m_patt_id);
     PATT->SetBranchAddress("L1PATT_nmiss",       &p_m_patt_miss);
     
     PATT->SetBranchAddress("L1TC_n",            &nb_tc);
@@ -167,6 +170,7 @@ public:
 	cout<<m_patt<<" pattern(s) found : "<<endl;
 	cout<<endl;
 	for(unsigned int k=0;k<m_patt_links.size();k++){
+	  cout<<"Pattern "<<m_patt_id[k]<<endl;
 	  for(unsigned int l=0;l<m_patt_links[k].size();l++){
 	    int index = m_patt_links[k][l];
 	    float pt = sqrt(m_stub_px_gen[index]*m_stub_px_gen[index]+m_stub_py_gen[index]*m_stub_py_gen[index]);

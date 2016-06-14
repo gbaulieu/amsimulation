@@ -137,6 +137,12 @@ class PatternLayer{
   int getDCBitsNumber();
 
   /**
+     \brief Get the number of DC bits with the don't care value on
+     \return The number of DC bits set to X for this PatternLayer
+  **/
+  int getUsedDCBitsNumber();
+
+  /**
      \brief Check if the PatternLayer is a fake one (used on layers not crossed by the track)
      \return True if the PatternLayer is a placeholder
   **/

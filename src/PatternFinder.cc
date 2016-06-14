@@ -187,6 +187,8 @@ void PatternFinder::find(int start, int& stop){
   std::vector< std::vector<int> > *m_patt_links   = new  std::vector< std::vector<int> >;
   std::vector<int> *m_patt_secid   = new  std::vector<int>;
   std::vector<int> *m_patt_miss    = new  std::vector<int>;
+  std::vector<int> *m_patt_id      = new  std::vector<int>;
+  std::vector< std::vector<int> > *m_patt_ss_size   = new  std::vector< std::vector<int> >;
   
   int nb_tc=0;
   std::vector<float> *m_tc_pt       = new  std::vector<float>;
@@ -214,6 +216,8 @@ void PatternFinder::find(int start, int& stop){
   Out->Branch("L1PATT_links",       &m_patt_links);
   Out->Branch("L1PATT_secid",       &m_patt_secid);
   Out->Branch("L1PATT_nmiss",       &m_patt_miss);
+  Out->Branch("L1PATT_id",          &m_patt_id);
+  Out->Branch("L1PATT_ss_size",     &m_patt_ss_size);
   
   Out->Branch("L1TC_n",            &nb_tc);
   Out->Branch("L1TC_links",        &m_tc_links);
@@ -248,6 +252,8 @@ void PatternFinder::find(int start, int& stop){
     m_patt_links->clear();
     m_patt_secid->clear();
     m_patt_miss->clear();
+    m_patt_id->clear();
+    m_patt_ss_size->clear();
     m_tc_pt->clear();
     m_tc_eta->clear();
     m_tc_phi->clear();
@@ -350,8 +356,23 @@ void PatternFinder::find(int start, int& stop){
 	  stub_index.push_back(active_hits[k]->getID());
 	}
 
+	vector<int> patternLayer_dc(16,-1);
+	for (int k=0;k<pl[j]->getNbLayers();k++){
+	  CMSPatternLayer* patt_layer = (CMSPatternLayer*)pl[j]->getLayerStrip(k);
+	  int nb_used_dc = -1;
+	  if(!patt_layer->isFake())
+	    nb_used_dc = patt_layer->getUsedDCBitsNumber();
+	  int patt_layer_id = pattern_list[i]->getLayerID(k);
+	  if(patt_layer_id<16)
+	    patternLayer_dc[patt_layer_id-5]=nb_used_dc;
+	  else if(patt_layer_id<23)
+	    patternLayer_dc[patt_layer_id-7]=nb_used_dc;
+	}
+
 	m_patt_links->push_back(stub_index);
 	m_patt_miss->push_back(stub_layers.size());
+	m_patt_id->push_back(pl[j]->getOrderInChip());
+	m_patt_ss_size->push_back(patternLayer_dc);
 	
 	delete pl[j];
       }
@@ -472,6 +493,8 @@ void PatternFinder::find(int start, int& stop){
   delete m_patt_links;
   delete m_patt_secid;
   delete m_patt_miss;
+  delete m_patt_id;
+  delete m_patt_ss_size;
 
   delete m_tc_pt;
   delete m_tc_eta;
