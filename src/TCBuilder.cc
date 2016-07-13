@@ -940,6 +940,14 @@ void TCBuilder::fit(vector<Hit*> originalHits)
     {
       //If there is a recorded best candidate
 
+      // If we have a 6 stubs TC with a stub on the last endcap disk -> we remove it
+      // The 5 stubs TC will be easier to handle for the PCA
+      if(vecBestCandidateHits.size()==6){
+	if(vecBestCandidateHits[vecBestCandidateHits.size()-1]->getLayer()==7 || vecBestCandidateHits[vecBestCandidateHits.size()-1]->getLayer()==15){
+	  vecBestCandidateHits.pop_back();
+	}
+      }
+
       //Fit the parameters and create the corresponding track object
       Track * fit_track;
       fit_track = createFittedTrack(vecBestCandidateHits);
