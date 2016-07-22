@@ -220,7 +220,7 @@ void PatternFinder::find(int start, int& stop){
   Out->Branch("L1PATT_links",       &m_patt_links);
   Out->Branch("L1PATT_secid",       &m_patt_secid);
   Out->Branch("L1PATT_nmiss",       &m_patt_miss);
-  Out->Branch("L1PATT_id",          &m_patt_id);
+  Out->Branch("L1PATT_pattid",          &m_patt_id);
   Out->Branch("L1PATT_nbstubs",          &m_patt_nbstubs);
   Out->Branch("L1PATT_area",        &m_patt_area);
   Out->Branch("L1PATT_ss_size",     &m_patt_ss_size);

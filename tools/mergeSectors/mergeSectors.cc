@@ -115,7 +115,7 @@ private:
       t->SetBranchAddress("L1PATT_ss_size",      &p_m_patt_ss_size);
       t->SetBranchAddress("L1PATT_secid",       &p_m_patt_secid);
       t->SetBranchAddress("L1PATT_nmiss",       &p_m_patt_miss);
-      t->SetBranchAddress("L1PATT_id",          &p_m_patt_id);
+      t->SetBranchAddress("L1PATT_pattid",          &p_m_patt_id);
       t->SetBranchAddress("L1PATT_nbstubs",          &p_m_patt_nbstubs);
       t->SetBranchAddress("L1PATT_area",          &p_m_patt_area);
       t->SetBranchAddress("L1TC_n",            &nb_tc);
@@ -253,7 +253,7 @@ public:
     PATT->Branch("L1PATT_ss_size",     &p_m_patt_ss_size);
     PATT->Branch("L1PATT_secid",       &p_m_patt_secid);
     PATT->Branch("L1PATT_nmiss",       &p_m_patt_miss);
-    PATT->Branch("L1PATT_id",       &p_m_patt_id);
+    PATT->Branch("L1PATT_pattid",       &p_m_patt_id);
     PATT->Branch("L1PATT_nbstubs",       &p_m_patt_nbstubs);
     PATT->Branch("L1PATT_area",       &p_m_patt_area);
     

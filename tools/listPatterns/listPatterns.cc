@@ -142,7 +142,7 @@ public:
     PATT->SetBranchAddress("L1PATT_n",           &m_patt);
     PATT->SetBranchAddress("L1PATT_links",       &p_m_patt_links);
     PATT->SetBranchAddress("L1PATT_secid",       &p_m_patt_secid);
-    PATT->SetBranchAddress("L1PATT_id",          &p_m_patt_id);
+    PATT->SetBranchAddress("L1PATT_pattid",          &p_m_patt_id);
     PATT->SetBranchAddress("L1PATT_nmiss",       &p_m_patt_miss);
     
     PATT->SetBranchAddress("L1TC_n",            &nb_tc);
