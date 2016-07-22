@@ -99,6 +99,7 @@ public:
     std::vector<float> m_tc_z;
     std::vector< std::vector<int> > m_tc_links;
     std::vector<int> m_tc_secid;
+    std::vector<int> m_tc_pattid;
 
     int nb_tracks=0;
     std::vector<float> m_trk_pt;
@@ -108,6 +109,7 @@ public:
     std::vector<float> m_trk_z;
     std::vector< std::vector<int> > m_trk_links;
     std::vector<int> m_trk_secid;
+    std::vector<int> m_trk_pattid;
 
     std::vector< std::vector<int> > *p_m_patt_links = &m_patt_links;
     std::vector<int> *p_m_patt_secid = &m_patt_secid;
@@ -120,6 +122,7 @@ public:
     std::vector<float> *p_m_tc_z = &m_tc_z;
     std::vector< std::vector<int> > *p_m_tc_links = &m_tc_links;
     std::vector<int> *p_m_tc_secid = &m_tc_secid;
+    std::vector<int> *p_m_tc_pattid = &m_tc_pattid;
 
     std::vector<float> *p_m_trk_pt = &m_trk_pt;
     std::vector<float> *p_m_trk_eta = &m_trk_eta;
@@ -128,6 +131,7 @@ public:
     std::vector<float> *p_m_trk_z = &m_trk_z;
     std::vector< std::vector<int> > *p_m_trk_links = &m_trk_links;
     std::vector<int> *p_m_trk_secid = &m_trk_secid;
+    std::vector<int> *p_m_trk_pattid = &m_trk_pattid;
 
     /////////////////////////////////////////
     
@@ -138,12 +142,13 @@ public:
     PATT->SetBranchAddress("L1PATT_n",           &m_patt);
     PATT->SetBranchAddress("L1PATT_links",       &p_m_patt_links);
     PATT->SetBranchAddress("L1PATT_secid",       &p_m_patt_secid);
-    PATT->SetBranchAddress("L1PATT_id",       &p_m_patt_id);
+    PATT->SetBranchAddress("L1PATT_id",          &p_m_patt_id);
     PATT->SetBranchAddress("L1PATT_nmiss",       &p_m_patt_miss);
     
     PATT->SetBranchAddress("L1TC_n",            &nb_tc);
     PATT->SetBranchAddress("L1TC_links",        &p_m_tc_links);
     PATT->SetBranchAddress("L1TC_secid",        &p_m_tc_secid);
+    PATT->SetBranchAddress("L1TC_pattid",       &p_m_tc_pattid);
     PATT->SetBranchAddress("L1TC_pt",           &p_m_tc_pt);
     PATT->SetBranchAddress("L1TC_phi",          &p_m_tc_phi);
     PATT->SetBranchAddress("L1TC_z",            &p_m_tc_z);
@@ -152,6 +157,7 @@ public:
     PATT->SetBranchAddress("L1TRK_n",            &nb_tracks);
     PATT->SetBranchAddress("L1TRK_links",        &p_m_trk_links);
     PATT->SetBranchAddress("L1TRK_secid",        &p_m_trk_secid);
+    PATT->SetBranchAddress("L1TRK_pattid",       &p_m_trk_pattid);
     PATT->SetBranchAddress("L1TRK_pt",           &p_m_trk_pt);
     PATT->SetBranchAddress("L1TRK_phi",          &p_m_trk_phi);
     PATT->SetBranchAddress("L1TRK_z",            &p_m_trk_z);
@@ -183,7 +189,7 @@ public:
 	cout<<m_tc_links.size()<<" TC(s) found : "<<endl;
 	cout<<endl;
 	for(unsigned int k=0;k<m_tc_links.size();k++){
-	  cout<<m_tc_links[k].size()<<" selected stubs :"<<endl;
+	  cout<<m_tc_links[k].size()<<" selected stubs (from pattern "<<m_tc_pattid[k]<<"):"<<endl;
 	  for(unsigned int l=0;l<m_tc_links[k].size();l++){
 	    int index = m_tc_links[k][l];
 	    float pt = sqrt(m_stub_px_gen[index]*m_stub_px_gen[index]+m_stub_py_gen[index]*m_stub_py_gen[index]);
@@ -197,7 +203,7 @@ public:
 	cout<<m_trk_links.size()<<" tracks(s) found : "<<endl;
 	cout<<endl;
 	for(unsigned int k=0;k<m_trk_links.size();k++){
-	  cout<<m_trk_links[k].size()<<" selected stubs :"<<endl;
+	  cout<<m_trk_links[k].size()<<" selected stubs (from pattern "<<m_trk_pattid[k]<<"):"<<endl;
 	  for(unsigned int l=0;l<m_trk_links[k].size();l++){
 	    int index = m_trk_links[k][l];
 	    float pt = sqrt(m_stub_px_gen[index]*m_stub_px_gen[index]+m_stub_py_gen[index]*m_stub_py_gen[index]);

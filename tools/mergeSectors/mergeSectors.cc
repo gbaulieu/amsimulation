@@ -44,6 +44,7 @@ private:
     std::vector<float> m_tc_z;
     std::vector< std::vector<int> > m_tc_links;
     std::vector<int> m_tc_secid;
+    std::vector<int> m_tc_pattid;
     
     std::vector< std::vector<int> > *p_m_patt_links;
     std::vector< std::vector<int> > *p_m_patt_ss_size;
@@ -59,6 +60,7 @@ private:
     std::vector<float> *p_m_tc_z;
     std::vector< std::vector<int> > *p_m_tc_links;
     std::vector<int> *p_m_tc_secid; 
+    std::vector<int> *p_m_tc_pattid; 
 
     int nb_tracks;
     std::vector<float> m_trk_pt;
@@ -68,6 +70,7 @@ private:
     std::vector<float> m_trk_z;
     std::vector< std::vector<int> > m_trk_links;
     std::vector<int> m_trk_secid;
+    std::vector<int> m_trk_pattid;
     
     std::vector<float> *p_m_trk_pt;
     std::vector<float> *p_m_trk_eta;
@@ -76,6 +79,7 @@ private:
     std::vector<float> *p_m_trk_z;
     std::vector< std::vector<int> > *p_m_trk_links;
     std::vector<int> *p_m_trk_secid; 
+    std::vector<int> *p_m_trk_pattid; 
 
     SectorTree(TTree* t){
       ttree = t;
@@ -95,6 +99,7 @@ private:
       p_m_tc_z = &m_tc_z;
       p_m_tc_links = &m_tc_links;
       p_m_tc_secid = &m_tc_secid;
+      p_m_tc_pattid = &m_tc_pattid;
       p_m_trk_pt = &m_trk_pt;
       p_m_trk_eta = &m_trk_eta;
       p_m_trk_chi2 = &m_trk_chi2;
@@ -102,6 +107,7 @@ private:
       p_m_trk_z = &m_trk_z;
       p_m_trk_links = &m_trk_links;
       p_m_trk_secid = &m_trk_secid;
+      p_m_trk_pattid = &m_trk_pattid;
 
       t->SetBranchAddress("L1evt",              &event_id); // Simple evt number or event ID
       t->SetBranchAddress("L1PATT_n",           &m_patt);
@@ -115,6 +121,7 @@ private:
       t->SetBranchAddress("L1TC_n",            &nb_tc);
       t->SetBranchAddress("L1TC_links",        &p_m_tc_links);
       t->SetBranchAddress("L1TC_secid",        &p_m_tc_secid);
+      t->SetBranchAddress("L1TC_pattid",        &p_m_tc_pattid);
       t->SetBranchAddress("L1TC_pt",           &p_m_tc_pt);
       t->SetBranchAddress("L1TC_phi",          &p_m_tc_phi);
       t->SetBranchAddress("L1TC_z",            &p_m_tc_z);
@@ -122,6 +129,7 @@ private:
       t->SetBranchAddress("L1TRK_n",            &nb_tracks);
       t->SetBranchAddress("L1TRK_links",        &p_m_trk_links);
       t->SetBranchAddress("L1TRK_secid",        &p_m_trk_secid);
+      t->SetBranchAddress("L1TRK_pattid",        &p_m_trk_pattid);
       t->SetBranchAddress("L1TRK_pt",           &p_m_trk_pt);
       t->SetBranchAddress("L1TRK_phi",          &p_m_trk_phi);
       t->SetBranchAddress("L1TRK_z",            &p_m_trk_z);
@@ -197,6 +205,7 @@ public:
     std::vector<float> m_tc_z;
     std::vector< std::vector<int> > m_tc_links;
     std::vector<int> m_tc_secid;
+    std::vector<int> m_tc_pattid;
 
     int nb_tracks=0;
     std::vector<float> m_trk_pt;
@@ -206,6 +215,7 @@ public:
     std::vector<float> m_trk_z;
     std::vector< std::vector<int> > m_trk_links;
     std::vector<int> m_trk_secid;
+    std::vector<int> m_trk_pattid;
 
     std::vector< std::vector<int> > *p_m_patt_links = &m_patt_links;
     std::vector< std::vector<int> > *p_m_patt_ss_size = &m_patt_ss_size;
@@ -221,6 +231,7 @@ public:
     std::vector<float> *p_m_tc_z = &m_tc_z;
     std::vector< std::vector<int> > *p_m_tc_links = &m_tc_links;
     std::vector<int> *p_m_tc_secid = &m_tc_secid;
+    std::vector<int> *p_m_tc_pattid = &m_tc_pattid;
 
     std::vector<float> *p_m_trk_pt = &m_trk_pt;
     std::vector<float> *p_m_trk_eta = &m_trk_eta;
@@ -229,6 +240,7 @@ public:
     std::vector<float> *p_m_trk_z = &m_trk_z;
     std::vector< std::vector<int> > *p_m_trk_links = &m_trk_links;
     std::vector<int> *p_m_trk_secid = &m_trk_secid;
+    std::vector<int> *p_m_trk_pattid = &m_trk_pattid;
 
     /////////////////////////////////////////
     
@@ -248,6 +260,7 @@ public:
     PATT->Branch("L1TC_n",            &nb_tc);
     PATT->Branch("L1TC_links",        &p_m_tc_links);
     PATT->Branch("L1TC_secid",        &p_m_tc_secid);
+    PATT->Branch("L1TC_pattid",        &p_m_tc_pattid);
     PATT->Branch("L1TC_pt",           &p_m_tc_pt);
     PATT->Branch("L1TC_phi",          &p_m_tc_phi);
     PATT->Branch("L1TC_z",            &p_m_tc_z);
@@ -256,6 +269,7 @@ public:
     PATT->Branch("L1TRK_n",            &nb_tracks);
     PATT->Branch("L1TRK_links",        &p_m_trk_links);
     PATT->Branch("L1TRK_secid",        &p_m_trk_secid);
+    PATT->Branch("L1TRK_pattid",        &p_m_trk_pattid);
     PATT->Branch("L1TRK_pt",           &p_m_trk_pt);
     PATT->Branch("L1TRK_phi",          &p_m_trk_phi);
     PATT->Branch("L1TRK_z",            &p_m_trk_z);
@@ -299,6 +313,9 @@ public:
 	  m_tc_secid.push_back(st->m_tc_secid[k]);
 	}
 	for(int k=0;k<st->nb_tc;k++){
+	  m_tc_pattid.push_back(st->m_tc_pattid[k]);
+	}
+	for(int k=0;k<st->nb_tc;k++){
 	  m_tc_pt.push_back(st->m_tc_pt[k]);
 	  m_tc_phi.push_back(st->m_tc_phi[k]);
 	  m_tc_z.push_back(st->m_tc_z[k]);
@@ -310,11 +327,8 @@ public:
 	    vec.push_back(st->m_trk_links[k][l]);
 	  }
 	  m_trk_links.push_back(vec);
-	}
-	for(int k=0;k<st->nb_tracks;k++){
 	  m_trk_secid.push_back(st->m_trk_secid[k]);
-	}
-	for(int k=0;k<st->nb_tracks;k++){
+	  m_trk_pattid.push_back(st->m_trk_pattid[k]);
 	  m_trk_pt.push_back(st->m_trk_pt[k]);
 	  m_trk_phi.push_back(st->m_trk_phi[k]);
 	  m_trk_z.push_back(st->m_trk_z[k]);
@@ -337,12 +351,14 @@ public:
       m_patt_area.clear();
       m_tc_links.clear();
       m_tc_secid.clear();
+      m_tc_pattid.clear();
       m_tc_pt.clear();
       m_tc_phi.clear();
       m_tc_z.clear();
       m_tc_eta.clear();
       m_trk_links.clear();
       m_trk_secid.clear();
+      m_trk_pattid.clear();
       m_trk_pt.clear();
       m_trk_phi.clear();
       m_trk_z.clear();

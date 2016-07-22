@@ -739,7 +739,7 @@ char TCBuilder::transcodeLayer(Hit * pHit)
 // TC builder module
 /* Take as input the list of stubs contained in a matched road */
 
-void TCBuilder::fit(vector<Hit*> originalHits)
+void TCBuilder::fit(vector<Hit*> originalHits, int pattern_id)
 {
 
   //cout<<"trying to fit "<<originalHits.size()<<" points"<<endl;
@@ -951,6 +951,7 @@ void TCBuilder::fit(vector<Hit*> originalHits)
       //Fit the parameters and create the corresponding track object
       Track * fit_track;
       fit_track = createFittedTrack(vecBestCandidateHits);
+      fit_track->setOriginPatternID(pattern_id);
     
       //cout<<"adding one track..."<<endl;
       tracks.push_back(fit_track);
@@ -960,7 +961,7 @@ void TCBuilder::fit(vector<Hit*> originalHits)
 void TCBuilder::fit(){
   for(unsigned int i=0;i<patterns.size();i++){
     vector<Hit*> allHits = patterns[i]->getHits();
-    fit(allHits);
+    fit(allHits, patterns[i]->getOrderInChip());
   }
 }
 

@@ -208,6 +208,7 @@ void PatternFinder::find(int start, int& stop){
   std::vector<float> *m_trk_z        = new  std::vector<float>;
   std::vector< std::vector<int> > *m_trk_links    = new  std::vector< std::vector<int> >;
   std::vector<int> *m_trk_secid    = new  std::vector<int>;
+  std::vector<int> *m_trk_pattid    = new  std::vector<int>;
   std::vector<float> *m_trk_chi2        = new  std::vector<float>;
   /////////////////////////////////////////
 
@@ -236,6 +237,7 @@ void PatternFinder::find(int start, int& stop){
   Out->Branch("L1TRK_n",            &nb_tracks);
   Out->Branch("L1TRK_links",        &m_trk_links);
   Out->Branch("L1TRK_secid",        &m_trk_secid);
+  Out->Branch("L1TRK_pattid",        &m_trk_pattid);
   Out->Branch("L1TRK_pt",           &m_trk_pt);
   Out->Branch("L1TRK_phi",          &m_trk_phi);
   Out->Branch("L1TRK_z",            &m_trk_z);
@@ -279,6 +281,7 @@ void PatternFinder::find(int start, int& stop){
     m_trk_z->clear();
     m_trk_links->clear();
     m_trk_secid->clear();
+    m_trk_pattid->clear();
     m_trk_chi2->clear();
 
     vector<Hit*> hits;
@@ -407,7 +410,7 @@ void PatternFinder::find(int start, int& stop){
 	vector<int> stubsInTrack = tracks[k]->getStubs();
 	m_tc_links->push_back(stubsInTrack);
 	m_tc_secid->push_back(sector_id);
-	m_tc_pattid->push_back(0);
+	m_tc_pattid->push_back(tracks[k]->getOriginPatternID());
 
 	for(unsigned int l=0;l<stubsInTrack.size();l++){
 	  int hit_index = stubsInTrack[l];
@@ -462,6 +465,7 @@ void PatternFinder::find(int start, int& stop){
 	  for(unsigned int l=0;l<stubsInTrack.size();l++){
 	    pca_track->addStubIndex(stubsInTrack[l]);
 	  }
+	  pca_track->setOriginPatternID(tracks[k]->getOriginPatternID());
 	  fit_tracks.push_back(pca_track);
 	}
 	else
@@ -481,6 +485,7 @@ void PatternFinder::find(int start, int& stop){
 	vector<int> stubsInTrack = fit_tracks[k]->getStubs();
 	m_trk_links->push_back(stubsInTrack);
 	m_trk_secid->push_back(sector_id);
+	m_trk_pattid->push_back(fit_tracks[k]->getOriginPatternID());
       }
       fit_tracks.clear();
 
@@ -529,6 +534,7 @@ void PatternFinder::find(int start, int& stop){
   delete m_trk_z;
   delete m_trk_links;
   delete m_trk_secid;  
+  delete m_trk_pattid;  
   delete m_trk_chi2;
 }
 
