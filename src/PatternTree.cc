@@ -359,8 +359,8 @@ void PatternTree::truncate(int nbPatterns, vector<unsigned int> defective_addres
   }
 
   //sort(v_patterns.begin(),v_patterns.end(), comparePatternsbyPT);//sort by PT then popularity
-  sort(v_patterns.begin(),v_patterns.end(), comparePatterns);//sort by popularity then PT
-  /*
+  //sort(v_patterns.begin(),v_patterns.end(), comparePatterns);//sort by popularity then PT
+  
   // Sort by score
   float min_pt=200;
   int min_grade=5000;
@@ -384,7 +384,7 @@ void PatternTree::truncate(int nbPatterns, vector<unsigned int> defective_addres
   grade_span=max_grade-min_grade;
   ScoreComparer sp(min_pt, pt_span, min_grade, grade_span);
   sort(v_patterns.begin(),v_patterns.end(), ScoreComparer(min_pt, pt_span, min_grade, grade_span));//sort by a score computed with PT and Popularity
-  */
+  
   for(unsigned int i=0;i<v_patterns.size();i++){
     v_patterns[i]->setOrderInChip(i);
   }

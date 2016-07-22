@@ -34,6 +34,8 @@ private:
     std::vector<int> m_patt_secid;
     std::vector<int> m_patt_miss;
     std::vector<int> m_patt_id;
+    std::vector<int> m_patt_nbstubs;
+    std::vector<int> m_patt_area;
     
     int nb_tc;
     std::vector<float> m_tc_pt;
@@ -48,6 +50,8 @@ private:
     std::vector<int> *p_m_patt_secid;
     std::vector<int> *p_m_patt_miss;
     std::vector<int> *p_m_patt_id;
+    std::vector<int> *p_m_patt_nbstubs;
+    std::vector<int> *p_m_patt_area;
     
     std::vector<float> *p_m_tc_pt;
     std::vector<float> *p_m_tc_eta;
@@ -83,6 +87,8 @@ private:
       p_m_patt_secid = &m_patt_secid;
       p_m_patt_miss = &m_patt_miss;
       p_m_patt_id = &m_patt_id;
+      p_m_patt_nbstubs = &m_patt_nbstubs;
+      p_m_patt_area = &m_patt_area;
       p_m_tc_pt = &m_tc_pt;
       p_m_tc_eta = &m_tc_eta;
       p_m_tc_phi = &m_tc_phi;
@@ -100,10 +106,12 @@ private:
       t->SetBranchAddress("L1evt",              &event_id); // Simple evt number or event ID
       t->SetBranchAddress("L1PATT_n",           &m_patt);
       t->SetBranchAddress("L1PATT_links",       &p_m_patt_links);
-      t->SetBranchAddress("L1PATT_ss_size",       &p_m_patt_ss_size);
+      t->SetBranchAddress("L1PATT_ss_size",      &p_m_patt_ss_size);
       t->SetBranchAddress("L1PATT_secid",       &p_m_patt_secid);
       t->SetBranchAddress("L1PATT_nmiss",       &p_m_patt_miss);
-      t->SetBranchAddress("L1PATT_id",       &p_m_patt_id);
+      t->SetBranchAddress("L1PATT_id",          &p_m_patt_id);
+      t->SetBranchAddress("L1PATT_nbstubs",          &p_m_patt_nbstubs);
+      t->SetBranchAddress("L1PATT_area",          &p_m_patt_area);
       t->SetBranchAddress("L1TC_n",            &nb_tc);
       t->SetBranchAddress("L1TC_links",        &p_m_tc_links);
       t->SetBranchAddress("L1TC_secid",        &p_m_tc_secid);
@@ -179,6 +187,8 @@ public:
     std::vector<int> m_patt_secid;
     std::vector<int> m_patt_miss;
     std::vector<int> m_patt_id;
+    std::vector<int> m_patt_nbstubs;
+    std::vector<int> m_patt_area;
     
     int nb_tc=0;
     std::vector<float> m_tc_pt;
@@ -202,6 +212,8 @@ public:
     std::vector<int> *p_m_patt_secid = &m_patt_secid;
     std::vector<int> *p_m_patt_miss = &m_patt_miss;
     std::vector<int> *p_m_patt_id = &m_patt_id;
+    std::vector<int> *p_m_patt_nbstubs = &m_patt_nbstubs;
+    std::vector<int> *p_m_patt_area = &m_patt_area;
     
     std::vector<float> *p_m_tc_pt = &m_tc_pt;
     std::vector<float> *p_m_tc_eta = &m_tc_eta;
@@ -230,6 +242,8 @@ public:
     PATT->Branch("L1PATT_secid",       &p_m_patt_secid);
     PATT->Branch("L1PATT_nmiss",       &p_m_patt_miss);
     PATT->Branch("L1PATT_id",       &p_m_patt_id);
+    PATT->Branch("L1PATT_nbstubs",       &p_m_patt_nbstubs);
+    PATT->Branch("L1PATT_area",       &p_m_patt_area);
     
     PATT->Branch("L1TC_n",            &nb_tc);
     PATT->Branch("L1TC_links",        &p_m_tc_links);
@@ -271,6 +285,8 @@ public:
 	  m_patt_secid.push_back(st->m_patt_secid[k]);
 	  m_patt_miss.push_back(st->m_patt_miss[k]);
 	  m_patt_id.push_back(st->m_patt_id[k]);
+	  m_patt_nbstubs.push_back(st->m_patt_nbstubs[k]);
+	  m_patt_area.push_back(st->m_patt_area[k]);
 	}
 	for(int k=0;k<st->nb_tc;k++){
 	  vector<int> vec;
@@ -317,6 +333,8 @@ public:
       m_patt_secid.clear();
       m_patt_miss.clear();
       m_patt_id.clear();
+      m_patt_nbstubs.clear();
+      m_patt_area.clear();
       m_tc_links.clear();
       m_tc_secid.clear();
       m_tc_pt.clear();
