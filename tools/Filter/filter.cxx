@@ -146,16 +146,18 @@ void filter::do_filter(int secid,int hit_lim)
       if (sec_max.size()==0) continue;
       
       bool keepit  = true;
-      
-      for (unsigned int j=0;j<sec_max.size();++j)
-	{
+      if(std::find(sec_max.begin(), sec_max.end(), secid) == sec_max.end()) //This track is not in our sector
+	keepit=false;
+
+      if(keepit){
+	for (unsigned int j=0;j<sec_max.size();++j){
 	  if (secid==sec_max.at(j) && keepit) break;
 	  
 	  if (secid!=sec_max.at(j) && n_hits_max>=6) keepit=false;
 	  if (secid!=sec_max.at(j) && n_hits_max==5 && (sec_max.at(j)<16 || sec_max.at(j)>=32)) keepit=false;
 	}
-      
-      //    if (!isthere) continue; // This track is not in that tower
+      }
+
       if (!keepit) continue; // This track is better in another tower
       
       m_efftree->Fill(); // If yes fill the skimmed tree  
