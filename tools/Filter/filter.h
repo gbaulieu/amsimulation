@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <algorithm>
 #include <map>
 #include <iostream>
 #include <cmath>
@@ -73,11 +74,13 @@ class filter
   std::vector<float> m_stub_strip;
   std::vector<float> m_stub_ptGEN;  
   std::vector<float> m_stub_etaGEN;
+  std::vector<int>   m_stub_pdg;
 
   std::vector<int>   *pm_stub_modid;
   std::vector<float> *pm_stub_strip;
   std::vector<float> *pm_stub_ptGEN;  
   std::vector<float> *pm_stub_etaGEN;
+  std::vector<int>   *pm_stub_pdg;
 
   std::vector<int>   *mf_stub_modid;
   std::vector<float> *mf_stub_strip;

@@ -45,107 +45,123 @@ void filter::do_filter(int secid,int hit_lim)
 
   std::vector<int> list_sec;
 
+  int new_nb_stub;
+
   // Loop over the events
  
   for (int i=0;i<ndat;++i)
   {    
-    filter::reset();
 
     m_L1TT->GetEntry(i);
-
+    
     if (i%100000==0) 
       cout << "Processed " << i << "/" << ndat << endl;
 
-    if (m_stub < 4) continue; // Not enough stubs anyway, don't go further
-
-    mf_stub = m_stub;
-
-    for (int j=0;j<m_nsec;++j)
-    {
-      for (int k=0;k<20;++k) is_sec_there[j][k] = 0;
-      n_hits[j] = 0;
-    }
-
-    list_sec.clear();
-
-    for (int j=0;j<m_stub;++j)
-    {  
-      mf_stub_ptGEN->push_back(m_stub_ptGEN[j]);
-      mf_stub_etaGEN->push_back(m_stub_etaGEN[j]);
-      mf_stub_strip->push_back(m_stub_strip[j]);
-      mf_stub_modid->push_back(m_stub_modid[j]);
-
-      modid  = m_stub_modid[j]; 
-      layer  = int(modid/1000000); 
-      ladder  = int(modid%1000000/10000); 
-      module  = int(modid%10000/100); 
-
-      if(layer<=7)
-	module=module/2;
-
-      //modid  = int(modid/100); 
-      modid  = layer*10000+ladder*100+module; 
-
-      if (m_modules.at(modid).size()>1)
-      {
-	for (unsigned int kk=1;kk<m_modules.at(modid).size();++kk) // In which sector the module is
-	{
-	  ++is_sec_there[m_modules.at(modid).at(kk)][layer-5]; 
-	}
-      }
-    } // End of loop over stubs
-
-    // Check if the sector we are interested in contains the track
-    // in a sufficiently large number of layers
-
-    int n_hits_max=hit_lim;
-    std::vector<int> sec_max;
-    sec_max.clear();
-
-    for (int j=0;j<m_nsec;++j)
-    {
-      n_hits[j]=0;
-
-      for (int k=0;k<20;++k)
-      {
-	if (is_sec_there[j][k]>0) ++n_hits[j]; 
-      }
-
-      if (n_hits[j]>=n_hits_max)
-      {
-	if (n_hits[j]==n_hits_max) sec_max.push_back(j);
-
-	if (n_hits[j]>n_hits_max)
-	{
-	  n_hits_max=n_hits[j];
-	  sec_max.clear();
-	  sec_max.push_back(j);
-	}
-      }
-    } // End of loop on towers
-
-    // sec_max contains the tower(s) containing most of the hits
-    // this size is given by n_hits_max
-
-    // If n_hits_max is equal to 5, we just have to be careful not to give the track to a barrel tower
-
-    if (sec_max.size()==0) continue;
-
-    bool keepit  = true;
-
-    for (unsigned int j=0;j<sec_max.size();++j)
-    {
-      if (secid==sec_max.at(j) && keepit) break;
+    // We have a muon and an anti-muon in each event
+    // We treat each particle on after the other
+    for(int pdg=-13;pdg<14;pdg+=26){
+      new_nb_stub = 0;
+      filter::reset();
       
-      if (secid!=sec_max.at(j) && n_hits_max>=6) keepit=false;
-      if (secid!=sec_max.at(j) && n_hits_max==5 && (sec_max.at(j)<16 || sec_max.at(j)>=32)) keepit=false;
+      if (m_stub < 4) continue; // Not enough stubs anyway, don't go further
+      
+      for (int j=0;j<m_nsec;++j)
+	{
+	  for (int k=0;k<20;++k) is_sec_there[j][k] = 0;
+	  n_hits[j] = 0;
+	}
+      
+      list_sec.clear();
+      
+      for (int j=0;j<m_stub;++j)
+	{  
+	  //Takes only stubs with the correct PDG ID
+	  if(m_stub_pdg[j]!=pdg)
+	    continue;
+
+	  new_nb_stub++;
+	  
+	  mf_stub_ptGEN->push_back(m_stub_ptGEN[j]);
+	  mf_stub_etaGEN->push_back(m_stub_etaGEN[j]);
+	  mf_stub_strip->push_back(m_stub_strip[j]);
+	  mf_stub_modid->push_back(m_stub_modid[j]);
+	  
+	  modid  = m_stub_modid[j]; 
+	  layer  = int(modid/1000000); 
+	  ladder  = int(modid%1000000/10000); 
+	  module  = int(modid%10000/100); 
+	  
+	  if(layer<=7)
+	    module=module/2;
+	  
+	  //modid  = int(modid/100); 
+	  modid  = layer*10000+ladder*100+module; 
+	  
+	  if (m_modules.at(modid).size()>1)
+	    {
+	      for (unsigned int kk=1;kk<m_modules.at(modid).size();++kk) // In which sector the module is
+		{
+		  ++is_sec_there[m_modules.at(modid).at(kk)][layer-5]; 
+		}
+	    }
+	} // End of loop over stubs
+
+      if (new_nb_stub < 4) continue; // Not enough stubs anyway, don't go further
+      mf_stub = new_nb_stub;
+
+      // Check if the sector we are interested in contains the track
+      // in a sufficiently large number of layers
+      
+      int n_hits_max=hit_lim;
+      std::vector<int> sec_max;
+      sec_max.clear();
+      
+      for (int j=0;j<m_nsec;++j)
+	{
+	  n_hits[j]=0;
+	  
+	  for (int k=0;k<20;++k)
+	    {
+	      if (is_sec_there[j][k]>0) ++n_hits[j]; 
+	    }
+	  
+	  if (n_hits[j]>=n_hits_max)
+	    {
+	      if (n_hits[j]==n_hits_max) sec_max.push_back(j);
+	      
+	      if (n_hits[j]>n_hits_max)
+		{
+		  n_hits_max=n_hits[j];
+		  sec_max.clear();
+		  sec_max.push_back(j);
+		}
+	    }
+	} // End of loop on towers
+      
+      // sec_max contains the tower(s) containing most of the hits
+      // this size is given by n_hits_max
+      
+      // If n_hits_max is equal to 5, we just have to be careful not to give the track to a barrel tower
+      
+      if (sec_max.size()==0) continue;
+      
+      bool keepit  = true;
+      if(std::find(sec_max.begin(), sec_max.end(), secid) == sec_max.end()) //This track is not in our sector
+	keepit=false;
+
+      if(keepit){
+	for (unsigned int j=0;j<sec_max.size();++j){
+	  if (secid==sec_max.at(j) && keepit) break;
+	  
+	  if (secid!=sec_max.at(j) && n_hits_max>=6) keepit=false;
+	  if (secid!=sec_max.at(j) && n_hits_max==5 && (sec_max.at(j)<16 || sec_max.at(j)>=32)) keepit=false;
+	}
+      }
+
+      if (!keepit) continue; // This track is better in another tower
+      
+      m_efftree->Fill(); // If yes fill the skimmed tree  
     }
-
-    //    if (!isthere) continue; // This track is not in that tower
-    if (!keepit) continue; // This track is better in another tower
-
-    m_efftree->Fill(); // If yes fill the skimmed tree  
-    
   } // End of loop on tracks 
 
   m_outfile->Write();
@@ -200,12 +216,14 @@ void filter::initTuple(std::string test,std::string out)
   pm_stub_strip=&m_stub_strip;
   pm_stub_ptGEN=&m_stub_ptGEN;
   pm_stub_etaGEN=&m_stub_etaGEN;
+  pm_stub_pdg=&m_stub_pdg;
 
   m_L1TT->SetBranchAddress("STUB_n",         &m_stub);
   m_L1TT->SetBranchAddress("STUB_modid",     &pm_stub_modid);
   m_L1TT->SetBranchAddress("STUB_strip",     &pm_stub_strip);
   m_L1TT->SetBranchAddress("STUB_ptGEN",     &pm_stub_ptGEN);
   m_L1TT->SetBranchAddress("STUB_etaGEN",    &pm_stub_etaGEN);
+  m_L1TT->SetBranchAddress("STUB_pdg",       &pm_stub_pdg);
 
   // Output file definition (see the header)
 
