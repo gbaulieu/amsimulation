@@ -220,15 +220,15 @@ void PatternFinder::find(int start, int& stop){
   Out->Branch("L1PATT_links",       &m_patt_links);
   Out->Branch("L1PATT_secid",       &m_patt_secid);
   Out->Branch("L1PATT_nmiss",       &m_patt_miss);
-  Out->Branch("L1PATT_pattid",          &m_patt_id);
-  Out->Branch("L1PATT_nbstubs",          &m_patt_nbstubs);
+  Out->Branch("L1PATT_pattid",      &m_patt_id);
+  Out->Branch("L1PATT_nbstubs",     &m_patt_nbstubs);
   Out->Branch("L1PATT_area",        &m_patt_area);
   Out->Branch("L1PATT_ss_size",     &m_patt_ss_size);
   
   Out->Branch("L1TC_n",            &nb_tc);
   Out->Branch("L1TC_links",        &m_tc_links);
   Out->Branch("L1TC_secid",        &m_tc_secid);
-  Out->Branch("L1TC_pattid",        &m_tc_pattid);
+  Out->Branch("L1TC_pattid",       &m_tc_pattid);
   Out->Branch("L1TC_pt",           &m_tc_pt);
   Out->Branch("L1TC_phi",          &m_tc_phi);
   Out->Branch("L1TC_z",            &m_tc_z);
@@ -237,12 +237,12 @@ void PatternFinder::find(int start, int& stop){
   Out->Branch("L1TRK_n",            &nb_tracks);
   Out->Branch("L1TRK_links",        &m_trk_links);
   Out->Branch("L1TRK_secid",        &m_trk_secid);
-  Out->Branch("L1TRK_pattid",        &m_trk_pattid);
+  Out->Branch("L1TRK_pattid",       &m_trk_pattid);
   Out->Branch("L1TRK_pt",           &m_trk_pt);
   Out->Branch("L1TRK_phi",          &m_trk_phi);
   Out->Branch("L1TRK_z",            &m_trk_z);
   Out->Branch("L1TRK_eta",          &m_trk_eta);
-  Out->Branch("L1TRK_chi2",          &m_trk_chi2);
+  Out->Branch("L1TRK_chi2",         &m_trk_chi2);
 
 
   int n_entries_TT = TT->GetEntries();
