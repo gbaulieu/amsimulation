@@ -33,7 +33,7 @@ PatternFinder::PatternFinder(int at, SectorTree* st, string f, string of){
 
   tracker.setSectorMaps(sector_list[0]->getLadderCodeMap(),sector_list[0]->getModuleCodeMap());
 
-  converter = new LocalToGlobalConverter(*(sector_list[0]),"./modules_position.txt");
+  converter = new LocalToGlobalConverter(sector_list[0],"./modules_position.txt");
 
   //Link the patterns with the tracker representation
   cout<<"linking..."<<endl;
@@ -420,19 +420,9 @@ void PatternFinder::find(int start, int& stop){
 	    cout<<"Cannot find hit index "<<hit_index<<endl;
 	    break;
 	  }
-	  int hit_layer = current_hit->getLayer();
-	  int hit_ladder = current_hit->getLadder();
-	  int hit_module = current_hit->getModule();	    
-	  bool isPSModule = false;
-	  if((hit_layer>=5 && hit_layer<=7) || (hit_layer>10 && hit_ladder<=8)){
-	    isPSModule=true;
-	  }
-	  int prbf2_layer = CMSPatternLayer::cmssw_layer_to_prbf2_layer(hit_layer,isPSModule);
-	  int prbf2_ladder = pattern_list[i]->getLadderCode(hit_layer, hit_ladder);
-	  int prbf2_module = pattern_list[i]->getModuleCode(hit_layer, hit_ladder, hit_module);
 	  unique_ptr<Hit> global_hit;
 	  try{
-	    vector<float> coords = converter->toGlobal(prbf2_layer, prbf2_ladder, prbf2_module, current_hit->getSegment(), current_hit->getHDStripNumber());
+	    vector<float> coords = converter->toGlobal(current_hit);
 	    global_hit = unique_ptr<Hit>(new Hit(0,0,0,0,0,0,0,0,0,0,0,coords[0],coords[1],coords[2],0,0,0,0));
 	  }
 	  catch(const std::runtime_error& e){
@@ -444,9 +434,9 @@ void PatternFinder::find(int start, int& stop){
 	  tc_for_fit.push_back(global_hit->getPolarPhi());
 	  tc_for_fit.push_back(global_hit->getPolarDistance());
 	  tc_for_fit.push_back(global_hit->getZ());
-	  if(hit_layer>10)
+	  if(current_hit->getLayer()>10)
 	    bit_values.push_back(50);//we do not support endcap layers yet
-	  bit_values.erase(std::remove(bit_values.begin(), bit_values.end(), hit_layer), bit_values.end());
+	  bit_values.erase(std::remove(bit_values.begin(), bit_values.end(), current_hit->getLayer()), bit_values.end());
 	}
       
 	int bits=-1;

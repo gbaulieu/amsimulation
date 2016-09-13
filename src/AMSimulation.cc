@@ -151,6 +151,11 @@ using namespace std;
    \code
    ./AMSimulation --alterBank --maxFS=<max number of fake superstrips in a pattern> --minFS=<min number of fake superstrips in a pattern> --bankFile=<input bank file> --outputFile=<output bank file>
    \endcode
+   You can also truncate your bank:
+   \code
+   ./AMSimulation --alterBank --bankFile=<input bank file> --outputFile=<>output bank file --truncate=<number of patterns in output bank> --sortAlgo=<0,1 or 2>
+   \endcode
+   The option --sortAlgo gives the way the patterns are sort before truncating the bank. 0 means sort by popularity, 1 by PT and 2 is a mix of both. Default is 0.
 
    \subsection view Viewing the content of a pattern bank
    You can display the patterns contained in a patterns bank file using the command:
@@ -1055,6 +1060,7 @@ int main(int av, char** ac){
     ("minFS", po::value<int>(), "Used with --alterBank : only patterns with at least minFS fake stubs will be kept in the new bank")
     ("maxFS", po::value<int>(), "Used with --alterBank : only patterns with at most maxFS fake stubs will be kept in the new bank")
     ("truncate", po::value<int>(), "Used with --alterBank : gives the number of patterns to keep in the new bank, starting with the most used ones. Can be used with --defectiveAddressesFile to manage non working pattern addresses in the chip.")
+    ("sortAlgo", po::value<int>(), "Used with --alterBank : sort algorithm used. 0 to sort by popularity, 1 by PT and 2 for a mix of popularity and PT. Default is popularity.")
     ("defectiveAddressesFile", po::value<string>(), "The file containing the list of defective pattern addresses in the chip (separeted with spaces or - for ranges)")    
     ("nbActiveLayers", po::value<int>(), "Used with --printBankAM05 : only patterns with this exact number of active layers will be printed")
     ;
@@ -1717,6 +1723,7 @@ int main(int av, char** ac){
     int minFS=-1;
     int maxFS=-1;
     int newNbPatterns = -1;
+    int sorting_algo = -1;
     vector<unsigned int> defectiveAddresses;
     if(vm.count("minFS"))
       minFS = vm["minFS"].as<int>();
@@ -1724,6 +1731,8 @@ int main(int av, char** ac){
       maxFS = vm["maxFS"].as<int>();
     if(vm.count("truncate"))
       newNbPatterns = vm["truncate"].as<int>();
+    if(vm.count("sortAlgo"))
+      sorting_algo = vm["sortAlgo"].as<int>();//0:by popularity 1:by PT 2:by score
     if(vm.count("defectiveAddressesFile"))
       defectiveAddresses=loadDefectiveAddresses(vm["defectiveAddressesFile"].as<string>());
       
@@ -1734,6 +1743,9 @@ int main(int av, char** ac){
 
     if(maxFS<0)
       maxFS=1000;
+
+    if(sorting_algo<0 || sorting_algo>2)//if the value is not correct we sort by popularity by default
+      sorting_algo=0;
 
     cout<<"Loading pattern bank..."<<endl;
     {
@@ -1757,35 +1769,28 @@ int main(int av, char** ac){
 
     SectorTree st2(st);
 
-    if(maxFS<0 && minFS<0 && newNbPatterns>0){
-      cout<<"loaded "<<st.getAllSectors()[0]->getLDPatternNumber()<<" patterns for sector "<<st.getAllSectors()[0]->getOfficialID()<<endl;
-      st.getAllSectors()[0]->getPatternTree()->truncate(newNbPatterns);
-      save=&st;
-    }
-    else{
-      cout<<"Altering bank..."<<endl;
-      vector<Sector*> sectors = st.getAllSectors();
-      for(unsigned int i=0;i<sectors.size();i++){
-	Sector* mySector = sectors[i];
-	st2.addSector(*mySector);
-	Sector* newSector = st2.getAllSectors()[i];
-	vector<GradedPattern*> patterns = mySector->getPatternTree()->getLDPatterns();
-	for(unsigned int j=0;j<patterns.size();j++){
-	  GradedPattern* p = patterns[j];
-	  int nbFS = p->getNbFakeSuperstrips();
-	  if(nbFS<=maxFS && nbFS>=minFS){
-	    //add the pattern
-	    for(int k=0;k<p->getGrade();k++){
-	      newSector->getPatternTree()->addPattern(p,NULL,p->getAveragePt());
-	    }
+    cout<<"Altering bank..."<<endl;
+    vector<Sector*> sectors = st.getAllSectors();
+    for(unsigned int i=0;i<sectors.size();i++){
+      Sector* mySector = sectors[i];
+      st2.addSector(*mySector);
+      Sector* newSector = st2.getAllSectors()[i];
+      vector<GradedPattern*> patterns = mySector->getPatternTree()->getLDPatterns();
+      for(unsigned int j=0;j<patterns.size();j++){
+	GradedPattern* p = patterns[j];
+	int nbFS = p->getNbFakeSuperstrips();
+	if(nbFS<=maxFS && nbFS>=minFS){
+	  //add the pattern
+	  for(int k=0;k<p->getGrade();k++){
+	    newSector->getPatternTree()->addPattern(p,NULL,p->getAveragePt());
 	  }
 	}
-	newSector->getPatternTree()->truncate(newNbPatterns,defectiveAddresses);
-	cout<<"Sector "<<mySector->getOfficialID()<<" :\n\tinput bank : "<<mySector->getPatternTree()->getLDPatternNumber()<<" patterns\n\toutput bank : "<<newSector->getPatternTree()->getLDPatternNumber()<<" patterns."<<endl;
       }
-      save=&st2;
+      newSector->getPatternTree()->truncate(newNbPatterns,sorting_algo,defectiveAddresses);
+      cout<<"Sector "<<mySector->getOfficialID()<<" :\n\tinput bank : "<<mySector->getPatternTree()->getLDPatternNumber()<<" patterns\n\toutput bank : "<<newSector->getPatternTree()->getLDPatternNumber()<<" patterns."<<endl;
     }
-
+    save=&st2;
+  
     cout<<"Saving new bank in "<<vm["outputFile"].as<string>().c_str()<<"..."<<endl;
     {
       const SectorTree& ref = *save;
