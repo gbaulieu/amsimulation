@@ -337,6 +337,12 @@ void PatternFinder::find(int start, int& stop){
       TrackFitter* fitter = sector->getFitter();
       if(fitter!=NULL){
 	fitter->setSectorID(pattern_list[i]->getOfficialID());
+	// If this is a TCBuilder instance, add the LocalToGlobal converter
+	try{
+	  TCBuilder& tcb = dynamic_cast<TCBuilder&>(*fitter);
+	  tcb.setLocalToGlobalConverter(converter);
+	}
+	catch (const std::bad_cast& e){}
 	for(unsigned int l=0;l<pl.size();l++){
 	  fitter->addPattern(pl[l]);
 	}
