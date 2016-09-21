@@ -123,7 +123,7 @@ void TCBuilder::updateThresholds(){
     //Electron-friendly tuning
 
     //BARREL Thresholds
-    /*
+    
     addThresholds( 0,  1,  2, SEC_BARREL, 0.002430, 0.258545);
     addThresholds( 0,  1,  8, SEC_BARREL, 0.007214, 2.565430);
     addThresholds( 0,  1,  9, SEC_BARREL, 0.013851, 2.884277);
@@ -134,8 +134,8 @@ void TCBuilder::updateThresholds(){
     addThresholds( 1,  2,  8, SEC_BARREL, 0.002102, 2.533447);
     addThresholds( 1,  2,  9, SEC_BARREL, 0.006767, 2.750977);
     addThresholds( 1,  2, 10, SEC_BARREL, 0.010689, 2.840576);
-    */
     
+    /*
     // FIRMWARE VERSION
     addThresholds( 0, 1 , 2,  SEC_BARREL, 0.0019989013672, 0.29882812500 );
     addThresholds( 0, 1 , 8,  SEC_BARREL, 0.0053253173828, 2.69580078125 );
@@ -147,7 +147,7 @@ void TCBuilder::updateThresholds(){
     addThresholds( 1, 2 , 8,  SEC_BARREL, 0.0012397766113, 2.56298828125 );
     addThresholds( 1, 2 , 9,  SEC_BARREL, 0.0041351318359, 2.70092773438 );
     addThresholds( 1, 2 , 10, SEC_BARREL, 0.0070762634277, 2.89257812500 );
-    
+    */
 
     //HYBRID Thresholds
 
