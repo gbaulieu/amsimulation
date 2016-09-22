@@ -8,6 +8,7 @@ PatternFinder::PatternFinder(int at, SectorTree* st, string f, string of){
   sectors = st;
   eventsFilename = f;
   outputFileName = of;
+  hardware_limitations=false;
 
   //we don't need the map of patterns, a vector will be enough and uses less memory
   sectors->getAllSectors()[0]->getPatternTree()->switchToVector();
@@ -90,6 +91,14 @@ void PatternFinder::setSectorTree(SectorTree* s){
 
 void PatternFinder::setMaxRoadNumber(unsigned int m){
   max_road_number=m;
+}
+
+void PatternFinder::setHardwareLimitations(bool b){
+  hardware_limitations = b;
+  if(hardware_limitations)
+    Detector::setHWPatternLimitations(HW_LIMIT_PATTERN_LAYER_STUBS);
+  else
+    Detector::setHWPatternLimitations(0);
 }
 
 void PatternFinder::setEventsFile(string f){
@@ -254,7 +263,7 @@ void PatternFinder::find(int start, int& stop){
 
   //TAMU PCA
   string dataDir = "./tamu_data/";
-  LinearizedTrackFitter linearizedTrackFitter(dataDir.c_str(), true, true);  
+  LinearizedTrackFitter linearizedTrackFitter(dataDir.c_str(), true, true);
 
   while(num_evt<n_entries_TT && num_evt<=stop){
     TT->GetEntry(num_evt);
@@ -318,6 +327,9 @@ void PatternFinder::find(int start, int& stop){
       if(sectors->getSector(*h)!=NULL){
 	hits.push_back(h);
 	hits_map[i]=h;
+	if(hardware_limitations && hits_map.size()>=HW_LIMIT_TOTAL_STUBS)
+	  // The harware cannot handle more than HW_LIMIT_TOTAL_STUBS stubs
+	  break;
       }
       else
 	delete(h);

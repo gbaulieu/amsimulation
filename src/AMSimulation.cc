@@ -125,6 +125,8 @@ using namespace std;
 
    If you add the option --verbose to the previous command, for each stub in the trigger tower the program will display the stub's informations along with the corresponding superstrip value. The format is one line per stub + one line per superstrip (the first value is the layer's ID, the second value is the superstrip value in hexadecimal). 
 
+   The --hardware_limits option will use hardware limitations for the pattern recognition step (maximum number of stubs in event, maximum number of stubs per pattern layer, ...).
+
    \subsection output Using the output
    If you run the pattern recognition on the same events using different sectors, you will end up with several L1tracks_secX TTree in your input file. You can then use the mergeSectors utility to merge these TTrees into a single L1tracks TTree containing all the informations from the different sectors. The utility is located in the ./tools/mergeSectors/ folder of the AMSimulation package. 
    \code
@@ -1063,6 +1065,7 @@ int main(int av, char** ac){
     ("sortAlgo", po::value<int>(), "Used with --alterBank : sort algorithm used. 0 to sort by popularity, 1 by PT and 2 for a mix of popularity and PT. Default is popularity.")
     ("defectiveAddressesFile", po::value<string>(), "The file containing the list of defective pattern addresses in the chip (separeted with spaces or - for ranges)")    
     ("nbActiveLayers", po::value<int>(), "Used with --printBankAM05 : only patterns with this exact number of active layers will be printed")
+    ("hardware_limits", "Use hardware limitations during pattern recognition")
     ;
      
   po::variables_map vm;
@@ -1439,6 +1442,9 @@ int main(int av, char** ac){
 	}
 	if(vm.count("verbose")){
 	    pf.setVerboseMode(true);
+	}
+	if(vm.count("hardware_limits")){
+	  pf.setHardwareLimitations(true);
 	}
 	pf.find(start, stop);
 	cout<<"Time used to analyse "<<stop-start+1<<" events : "<<endl;
