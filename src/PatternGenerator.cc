@@ -111,18 +111,21 @@ TChain* PatternGenerator::createTChain(string directoryName, string tchainName){
   }
 
   p_m_stub_modid = &m_stub_modid; 
+  p_m_stub_detid = &m_stub_detid; 
   p_m_stub_strip = &m_stub_strip;
   p_m_stub_ptGEN = &m_stub_ptGEN;  
   p_m_stub_etaGEN = &m_stub_etaGEN;  
   
   TT->SetBranchAddress("STUB_n",         &m_stub);
   TT->SetBranchAddress("STUB_modid",     &p_m_stub_modid);
+  TT->SetBranchAddress("STUB_detid",     &p_m_stub_detid);
   TT->SetBranchAddress("STUB_strip",     &p_m_stub_strip);
   TT->SetBranchAddress("STUB_ptGEN",     &p_m_stub_ptGEN);
   TT->SetBranchAddress("STUB_etaGEN",    &p_m_stub_etaGEN);
   TT->SetBranchStatus("*",0);
   TT->SetBranchStatus("STUB_n",1);
   TT->SetBranchStatus("STUB_modid",1);
+  TT->SetBranchStatus("STUB_detid",1);
   TT->SetBranchStatus("STUB_strip",1); 
   TT->SetBranchStatus("STUB_ptGEN",1); 
   TT->SetBranchStatus("STUB_etaGEN",1);
@@ -156,7 +159,7 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
   while(nbModuleOk<evtNumber && (*evtIndex)<n_entries_TT){
     TT->GetEntry((*evtIndex));
     (*evtIndex)++;
-
+    
     //cout<<"index "<<*evtIndex<<endl;
 
     //initialize arrays
@@ -189,7 +192,7 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
       }
 
       int value = m_stub_modid[j];
-      //cout<<value<<endl;
+      //cout<<detid<<" / "<<value<<endl;
       int layer = value/1000000;
       value = value-layer*1000000;
       int ladder = value/10000;
@@ -394,8 +397,8 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
     
     delete p;
     if(lowDef_p!=NULL)
-        delete lowDef_p;
-
+      delete lowDef_p;
+    
   }
 
   *nbTrackUsed=nbModuleOk;

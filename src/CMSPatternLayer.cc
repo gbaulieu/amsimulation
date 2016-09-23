@@ -510,9 +510,9 @@ int CMSPatternLayer::getLadderCode(int layerID, int ladderID){
    if(layerID<5 || layerID>24)
      return -1;
    switch(layerID){
-   case 5 : return 16;
-   case 6 : return 24;
-   case 7 : return 34;
+   case 5 : return 18;
+   case 6 : return 26;
+   case 7 : return 36;
    case 8 : return 48;
    case 9 : return 62;
    case 10 : return 76;
@@ -522,31 +522,31 @@ int CMSPatternLayer::getLadderCode(int layerID, int ladderID){
 
 int CMSPatternLayer::getNbModules(int layerID, int ladderID){
   if(layerID==5)
-    return 64;
+    return 29;
   if(layerID==6)
-    return 56;
+    return 35;
   if(layerID==7)
-    return 54;
+    return 41;
   if(layerID>=8 && layerID<=10)
     return 24;
   if(layerID>=11 && layerID<=24){
     switch(ladderID){
     case 0:return 20;
     case 1:return 24;
-    case 2:return 28;
+    case 2:return 24;
     case 3:return 28;
     case 4:return 32;
-    case 5:return 36;
+    case 5:return 32;
     case 6:return 36;
     case 7:return 40;
     case 8:return 40;
-    case 9:return 52;
+    case 9:return 48;
     case 10:return 56;
-    case 11:return 64;
-    case 12:return 68;
-    case 13:return 76;
-    case 14:return 80;
-    default:return 80;
+    case 11:return 60;
+    case 12:return 64;
+    case 13:return 72;
+    case 14:return 76;
+    default:return 76;
     }
   }
   return -1;
@@ -554,22 +554,22 @@ int CMSPatternLayer::getNbModules(int layerID, int ladderID){
 
 map<int, pair<float,float> > CMSPatternLayer::getLayerDefInEta(){
   map<int,pair<float,float> > eta;
-  eta[5]=pair<float,float>(-2.2,2.2);
-  eta[6]=pair<float,float>(-1.72,1.72);
-  eta[7]=pair<float,float>(-1.4,1.4);
+  eta[5]=pair<float,float>(-2.25,2.25);
+  eta[6]=pair<float,float>(-1.85,1.85);
+  eta[7]=pair<float,float>(-1.5,1.5);
   eta[8]=pair<float,float>(-1.2,1.2);
-  eta[9]=pair<float,float>(-1.1,1.1);
+  eta[9]=pair<float,float>(-1.05,1.05);
   eta[10]=pair<float,float>(-0.9,0.9);
-  eta[11]=pair<float,float>(1.08,2.24);
-  eta[12]=pair<float,float>(1.21,2.45);
-  eta[13]=pair<float,float>(1.36,2.5);
-  eta[14]=pair<float,float>(1.49,2.5);
-  eta[15]=pair<float,float>(1.65,2.5);
-  eta[18]=pair<float,float>(-2.24,-1.08);
-  eta[19]=pair<float,float>(-2.45,-1.21);
-  eta[20]=pair<float,float>(-2.5,-1.36);
-  eta[21]=pair<float,float>(-2.5,-1.49);
-  eta[22]=pair<float,float>(-2.5,-1.65);
+  eta[11]=pair<float,float>(1.08,2.42);
+  eta[12]=pair<float,float>(1.21,2.47);
+  eta[13]=pair<float,float>(1.36,2.47);
+  eta[14]=pair<float,float>(1.49,2.47);
+  eta[15]=pair<float,float>(1.63,2.47);
+  eta[18]=pair<float,float>(-2.42,-1.08);
+  eta[19]=pair<float,float>(-2.47,-1.21);
+  eta[20]=pair<float,float>(-2.47,-1.36);
+  eta[21]=pair<float,float>(-2.47,-1.49);
+  eta[22]=pair<float,float>(-2.47,-1.63);
   return eta;
 }
 

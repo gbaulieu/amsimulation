@@ -891,14 +891,40 @@ vector<unsigned int> loadDefectiveAddresses(string name){
   return addresses;
 }
 
-void createSectorFromRootFile(SectorTree* st, string fileName, vector<int> layers, int sector_id){
+void createSectorFromRootFile(SectorTree* st, string fileName, string detidFileName, vector<int> layers, int sector_id){
 
   Sector s(layers);
   TChain* tree = NULL;
   vector<int> modules;
   vector<float> coords;
+  map<int,int> detid_map;
 
   if(fileName.substr(fileName.length()-4,fileName.length()).compare(".csv")==0){
+
+    ifstream detid_is(detidFileName.c_str());
+    string detid_line;
+     if (detid_is.is_open()){
+      while ( detid_is.good() ){
+	getline (detid_is,detid_line);
+	std::stringstream ss(detid_line);
+	std::string item;
+	bool first = true;
+	int detid=0;
+	int modid=0;
+	while (std::getline(ss, item, ',')) {
+	  std::istringstream ss( item );
+	  if(first)
+	    ss >> detid;
+	  else{
+	    ss >> modid;
+	    detid_map[detid]=modid;
+	  }
+	  first=!first;
+	}
+      }
+      detid_is.close();
+     }
+
     ifstream is(fileName.c_str());
     string line;
     int line_index=0;
@@ -915,8 +941,11 @@ void createSectorFromRootFile(SectorTree* st, string fileName, vector<int> layer
 	      std::istringstream ss( item );
 	      ss >> number;
 	      if(number!=0){
-		//cout<<number<<endl;
-		modules.push_back(number);
+		int detid = detid_map[number];
+		if(detid==0)
+		  cout<<"ERROR : DETID "<<number<<"not found in "<<detidFileName<<"!"<<endl;
+		else
+		  modules.push_back(detid_map[number]);
 	      }
 	    }
 	    column_index++;
@@ -962,12 +991,12 @@ void createSectorFromRootFile(SectorTree* st, string fileName, vector<int> layer
     ladder = CMSPatternLayer::getLadderCode(layer,ladder);
 
     ////// TMP FIX FOR TKLAYOUT NUMBERING (10 JUL 2013)
-    
+    /*
     if(layer<11){
       int tmp_nb_ladders = CMSPatternLayer::getNbLadders(layer);
       ladder = (ladder+tmp_nb_ladders*1/4) % tmp_nb_ladders;
     } 
-
+    */
     //////////////////////////////////////////////////
 
     istringstream ss_module(oss.str().substr(4,2));
@@ -1263,7 +1292,7 @@ int main(int av, char** ac){
 	end_index=bankFileName.length()-4;
       rootFileName = bankFileName.substr(0,end_index)+"_report.root";
       threshold=vm["coverage"].as<float>();
-      createSectorFromRootFile(&st,vm["sector_file"].as<string>(), active_layers, sector_tklayout_id);
+      createSectorFromRootFile(&st,vm["sector_file"].as<string>(), "detids.txt", active_layers, sector_tklayout_id);
     }
     catch(boost::bad_any_cast e){
       cout<<"At least one option is missing! Please check : "<<endl;
