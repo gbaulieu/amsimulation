@@ -4,6 +4,8 @@
 #include <math.h>
 #include "Sector.h"
 
+enum HW_SIGN_TYPE {UNSIGNED, SIGNED};
+
 using namespace std;
 
 /**
@@ -61,5 +63,9 @@ class LocalToGlobalConverter{
      \return A vector of 3 float containing the X/Y/Z cartesian coordinates
    **/
   vector<float> toGlobal(const Hit* h) const throw (std::runtime_error);
+
+
+  //Duplicated function from TCBuilder, emulate the binning of the HW TestBench
+  double binning(double, int, int, HW_SIGN_TYPE) const;
 };
 #endif

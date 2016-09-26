@@ -11,7 +11,6 @@
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/export.hpp>
 
-enum HW_SIGN_TYPE {UNSIGNED, SIGNED};
 
 enum SEC_TYPE {SEC_BARREL, SEC_HYBRID, SEC_ENDCAP};
 
