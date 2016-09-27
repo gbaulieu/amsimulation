@@ -1,10 +1,8 @@
 #ifndef _LOCALTOGLOBALCONVERTER_H_
 #define _LOCALTOGLOBALCONVERTER_H_
 
-#include <math.h>
 #include "Sector.h"
-
-enum HW_SIGN_TYPE {UNSIGNED, SIGNED};
+#include "CommonTools.h"
 
 using namespace std;
 
@@ -64,8 +62,5 @@ class LocalToGlobalConverter{
    **/
   vector<float> toGlobal(const Hit* h) const throw (std::runtime_error);
 
-
-  //Duplicated function from TCBuilder, emulate the binning of the HW TestBench
-  double binning(double, int, int, HW_SIGN_TYPE) const;
 };
 #endif

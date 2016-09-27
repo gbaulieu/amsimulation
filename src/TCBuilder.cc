@@ -14,7 +14,6 @@ TCBuilder::TCBuilder(int nb):TrackFitter(nb)
 {
   l2gConverter=NULL;
   m_nMissingHits = 1;                 //Maximum number of missing layers in a TC (from the number of layers in the pattern)
-  m_bHardwareSimulation = false;      //Define if the Hardware binning and overflows are emulated
   updateThresholds();
 }
 
@@ -32,13 +31,13 @@ void TCBuilder::setLocalToGlobalConverter(LocalToGlobalConverter* l){
 
 void TCBuilder::setHardwareEmulation(bool hardwareEmulation)
 {
-  m_bHardwareSimulation = hardwareEmulation;
+  CommonTools::hardwareSimulation = hardwareEmulation;
   updateThresholds();
 }
 
 void TCBuilder::updateThresholds(){
 
-  if (m_bHardwareSimulation){
+  if (CommonTools::hardwareSimulation){
     //// Hardware format LUT constants ////
     /*
     //Barrel
@@ -123,7 +122,7 @@ void TCBuilder::updateThresholds(){
     //Electron-friendly tuning
 
     //BARREL Thresholds
-    
+   /* 
     addThresholds( 0,  1,  2, SEC_BARREL, 0.002430, 0.258545);
     addThresholds( 0,  1,  8, SEC_BARREL, 0.007214, 2.565430);
     addThresholds( 0,  1,  9, SEC_BARREL, 0.013851, 2.884277);
@@ -134,8 +133,7 @@ void TCBuilder::updateThresholds(){
     addThresholds( 1,  2,  8, SEC_BARREL, 0.002102, 2.533447);
     addThresholds( 1,  2,  9, SEC_BARREL, 0.006767, 2.750977);
     addThresholds( 1,  2, 10, SEC_BARREL, 0.010689, 2.840576);
-    
-    /*
+    */
     // FIRMWARE VERSION
     addThresholds( 0, 1 , 2,  SEC_BARREL, 0.0019989013672, 0.29882812500 );
     addThresholds( 0, 1 , 8,  SEC_BARREL, 0.0053253173828, 2.69580078125 );
@@ -147,7 +145,6 @@ void TCBuilder::updateThresholds(){
     addThresholds( 1, 2 , 8,  SEC_BARREL, 0.0012397766113, 2.56298828125 );
     addThresholds( 1, 2 , 9,  SEC_BARREL, 0.0041351318359, 2.70092773438 );
     addThresholds( 1, 2 , 10, SEC_BARREL, 0.0070762634277, 2.89257812500 );
-    */
 
     //HYBRID Thresholds
 
@@ -444,30 +441,30 @@ Track* TCBuilder::createFittedTrack(vector <Hit*> &bestTC)
 
   // Now get the coordinates in the conformal space.
 
-  double sqR1  = binning((x1-x0)*(x1-x0)+(y1-y0)*(y1-y0), 13, 18, UNSIGNED);
-  double sqR2  = binning((x2-x0)*(x2-x0)+(y2-y0)*(y2-y0), 13, 18, UNSIGNED);
+  double sqR1  = CommonTools::binning((x1-x0)*(x1-x0)+(y1-y0)*(y1-y0), 13, 18, UNSIGNED);
+  double sqR2  = CommonTools::binning((x2-x0)*(x2-x0)+(y2-y0)*(y2-y0), 13, 18, UNSIGNED);
 
-  x1 = binning((x1-x0)/sqR1, -3, 18, SIGNED);
-  y1 = binning((y1-y0)/sqR1, -3, 18, SIGNED);
+  x1 = CommonTools::binning((x1-x0)/sqR1, -3, 18, SIGNED);
+  y1 = CommonTools::binning((y1-y0)/sqR1, -3, 18, SIGNED);
 
-  x2 = binning((x2-x0)/sqR2, -3, 18, SIGNED);
-  y2 = binning((y2-y0)/sqR2, -3, 18, SIGNED);
+  x2 = CommonTools::binning((x2-x0)/sqR2, -3, 18, SIGNED);
+  y2 = CommonTools::binning((y2-y0)/sqR2, -3, 18, SIGNED);
 
 
-  double mult_x1_y2 = binning(x1*y2, -8, 18, SIGNED);
-  double mult_x2_y1 = binning(x2*y1, -8, 18, SIGNED);
+  double mult_x1_y2 = CommonTools::binning(x1*y2, -8, 18, SIGNED);
+  double mult_x2_y1 = CommonTools::binning(x2*y1, -8, 18, SIGNED);
 
   // Now we got everything for the r/phi plane   
 
-  double sub_of_mult = binning(mult_x1_y2 - mult_x2_y1, -11, 18, SIGNED);
+  double sub_of_mult = CommonTools::binning(mult_x1_y2 - mult_x2_y1, -11, 18, SIGNED);
 
-  double divA = binning((y1-y2)/sub_of_mult, 17, 18, SIGNED);
-  double divB = binning((x2-x1)/sub_of_mult, 17, 18, SIGNED);
+  double divA = CommonTools::binning((y1-y2)/sub_of_mult, 17, 18, SIGNED);
+  double divB = CommonTools::binning((x2-x1)/sub_of_mult, 17, 18, SIGNED);
 
-  double a = binning(x0-0.5*divA, 17, 18, SIGNED);
-  double b = binning(y0-0.5*divB, 17, 18, SIGNED);
+  double a = CommonTools::binning(x0-0.5*divA, 17, 18, SIGNED);
+  double b = CommonTools::binning(y0-0.5*divB, 17, 18, SIGNED);
 
-  double a2_b2 = binning(a*a + b*b, 29, 18, UNSIGNED);
+  double a2_b2 = CommonTools::binning(a*a + b*b, 29, 18, UNSIGNED);
 
   pt_est  = 0.003*3.833*sqrt(a2_b2);
 
@@ -536,81 +533,6 @@ Track* TCBuilder::createFittedTrack(vector <Hit*> &bestTC)
   return fit_track;
 }
 
-/* Function which simulate the HardWare representation of the values : manage UNSIGNED and SIGNED (2's complement) overflows and accuracy according to the available dynamic of the binary word */
-double TCBuilder::binning(double fNumber, int nMSBpowOfTwo, int nBits, HW_SIGN_TYPE signType)
-{
-  if (!m_bHardwareSimulation)
-    //If the Hardware binning simulation is not asked, return directly the original number
-    return fNumber;
-
-  if (signType == UNSIGNED && fNumber < 0)
-    {
-      //Bad interpretation, a negative number is stored in an UNSIGNED format (sign lost)
-      fNumber = -fNumber;
-    }
-  
-  int nLSBpowOfTwo;
-	
-  //Process the power of two of the LSB for the binary representation
-  if (signType == UNSIGNED)
-    {
-      //If UNSIGNED
-      nLSBpowOfTwo = nMSBpowOfTwo - (nBits-1);
-    }	
-  else
-    {
-      //If SIGNED, 1 bit is used for the sign
-      nLSBpowOfTwo = nMSBpowOfTwo - (nBits-2);
-    }
-
-  /* Accuracy Simulation */
-
-  //Divide the number by the power of two of the LSB => the integer part of the new number is the value we are looking for
-  fNumber = fNumber / pow(2, nLSBpowOfTwo);
-	
-  //Remove the fractionnal part by rounding down (for both positive and negative values), this simulate the HW truncature
-  fNumber = floor(fNumber);
-	
-  //Multiply the number by the power of two of the LSB to get the correct float value
-  fNumber = fNumber * pow(2, nLSBpowOfTwo);
-
-
-  double fBinnedNumber = fNumber;
-
-  /* Overflow Simulation */
-
-  if (signType == UNSIGNED)
-    {
-      //If the number is in UNSIGNED representation
-      fNumber = fmod(fNumber, pow(2, nMSBpowOfTwo+1));
-    }
-  else
-    {
-      //If the number is in SIGNED representation (2's complement)
-      
-      double fTempResult = fNumber - pow(2, nMSBpowOfTwo+1); //substract the possible range to the number
-
-      if (fTempResult >= 0)
-        {
-          //If there is an overflow, it's a positive one
-          fNumber = fmod(fTempResult, pow(2, nMSBpowOfTwo+2)) - pow(2, nMSBpowOfTwo+1);
-        }
-      else
-        {
-          //If there is an overflow, it's a negative one (2's complement format has an asymetric range for positive and negative values)
-          fNumber = fmod(fTempResult + pow(2, nLSBpowOfTwo), pow(2, nMSBpowOfTwo+2)) - pow(2, nLSBpowOfTwo) + pow(2, nMSBpowOfTwo+1);
-        }
-    }
-
-  //If the new number is different from the previous one, an HW overflow occured
-  if (fNumber != fBinnedNumber)
-    {
-      cout<<"WARNING HW overflow for the value : "<<fBinnedNumber<<" resulting value : "<<fNumber<<" (diff= "<<fBinnedNumber-fNumber<<")"<<endl;
-    }
-	
-  return fNumber;
-}
-
 /* Process the alignment scores (on RPHI and on RZ plan) between the 2 seeds and an other stub */
 void TCBuilder::alignScore(Hit& hSeed1, Hit& hSeed2, Hit& hTestStub, double tScores[])
 {
@@ -635,25 +557,25 @@ void TCBuilder::alignScore(Hit& hSeed1, Hit& hSeed2, Hit& hTestStub, double tSco
   Y3 = hTestStub.getY();
   Z3 = hTestStub.getZ();
 	
-  R1 = binning(sqrt(X1*X1 + Y1*Y1), 6, 18, SIGNED);
-  R2 = binning(sqrt(X2*X2 + Y2*Y2), 6, 18, SIGNED);
-  R3 = binning(sqrt(X3*X3 + Y3*Y3), 6, 18, SIGNED);
+  R1 = CommonTools::binning(sqrt(X1*X1 + Y1*Y1), 6, 18, SIGNED);
+  R2 = CommonTools::binning(sqrt(X2*X2 + Y2*Y2), 6, 18, SIGNED);
+  R3 = CommonTools::binning(sqrt(X3*X3 + Y3*Y3), 6, 18, SIGNED);
 
   //RPHI plan
-  PHI1 = binning(atan(Y1/X1), 4, 18, SIGNED);
-  PHI2 = binning(atan(Y2/X2), 4, 18, SIGNED);
-  PHI3 = binning(atan(Y3/X3), 4, 18, SIGNED);
+  PHI1 = CommonTools::binning(atan(Y1/X1), 4, 18, SIGNED);
+  PHI2 = CommonTools::binning(atan(Y2/X2), 4, 18, SIGNED);
+  PHI3 = CommonTools::binning(atan(Y3/X3), 4, 18, SIGNED);
 
-  RPHI_S1 = binning((PHI2 - PHI1) * (R3 - R2), 8, 20, SIGNED);
-  RPHI_S2 = binning((PHI2 - PHI3) * (R2 - R1), 8, 20, SIGNED);
+  RPHI_S1 = CommonTools::binning((PHI2 - PHI1) * (R3 - R2), 8, 20, SIGNED);
+  RPHI_S2 = CommonTools::binning((PHI2 - PHI3) * (R2 - R1), 8, 20, SIGNED);
 
-  fRPHI_Score = binning(fabs(RPHI_S1 + RPHI_S2), 7, 18, UNSIGNED);
+  fRPHI_Score = CommonTools::binning(fabs(RPHI_S1 + RPHI_S2), 7, 18, UNSIGNED);
 
   //RZ plan
-  RZ_S1 = binning((Z2 - Z1) * (R3 - R2), 12, 20, SIGNED);
-  RZ_S2 = binning((Z2 - Z3) * (R2 - R1), 12, 20, SIGNED);
+  RZ_S1 = CommonTools::binning((Z2 - Z1) * (R3 - R2), 12, 20, SIGNED);
+  RZ_S2 = CommonTools::binning((Z2 - Z3) * (R2 - R1), 12, 20, SIGNED);
 
-  fRZ_Score = binning(fabs(RZ_S1 + RZ_S2), 10, 18, UNSIGNED);
+  fRZ_Score = CommonTools::binning(fabs(RZ_S1 + RZ_S2), 10, 18, UNSIGNED);
 
   tScores[0] = fRPHI_Score;
   tScores[1] = fRZ_Score;
@@ -822,9 +744,9 @@ void TCBuilder::fit(vector<Hit*> originalHits, int pattern_id)
 			  pOrigHit->getParticuleIP(),
 			  pOrigHit->getParticuleETA(),
 			  pOrigHit->getParticulePHI0(),
-			  binning(rotatedX, 6, 18, SIGNED),
-			  binning(rotatedY, 6, 18, SIGNED),
-			  binning((double)coords[2], 8, 18, SIGNED),
+			  CommonTools::binning(rotatedX, 6, 18, SIGNED),
+			  CommonTools::binning(rotatedY, 6, 18, SIGNED),
+			  CommonTools::binning((double)coords[2], 8, 18, SIGNED),
 			  pOrigHit->getX0(),
 			  pOrigHit->getY0(),
 			  pOrigHit->getZ0(),
@@ -868,7 +790,7 @@ void TCBuilder::fit(vector<Hit*> originalHits, int pattern_id)
       //We have a correct Seed1
 
       //Get the radius of the seed1
-      double fRseed1 = binning(sqrt(hSeed1.getX()*hSeed1.getX() + hSeed1.getY()*hSeed1.getY()), 6, 18, SIGNED);
+      double fRseed1 = CommonTools::binning(sqrt(hSeed1.getX()*hSeed1.getX() + hSeed1.getY()*hSeed1.getY()), 6, 18, SIGNED);
 
       for (unsigned int seed2Index = seed1Index+1; seed2Index<hits.size(); seed2Index++)
 	{
@@ -882,7 +804,7 @@ void TCBuilder::fit(vector<Hit*> originalHits, int pattern_id)
 	  //We have a correct Seed1/Seed2 combination !!!
 
 	  //Get the radius of the seed2
-	  double fRseed2 = binning(sqrt(hSeed2.getX()*hSeed2.getX() + hSeed2.getY()*hSeed2.getY()), 6, 18, SIGNED);
+	  double fRseed2 = CommonTools::binning(sqrt(hSeed2.getX()*hSeed2.getX() + hSeed2.getY()*hSeed2.getY()), 6, 18, SIGNED);
 
 	  //Current candidate initialization (the 2 seeds)
 	  vecCurrentCandidateHits.clear();
@@ -912,8 +834,8 @@ void TCBuilder::fit(vector<Hit*> originalHits, int pattern_id)
 
 
 	      //Process the real thresholds from the normalized one stored in the LUT
-	      double fThreshRPHI = binning(fabs(tabNormThresh[0] * (fRseed2 - fRseed1)), 4, 18, SIGNED);
-	      double fThreshRZ = binning(fabs(tabNormThresh[1] * (fRseed2 - fRseed1)), 8, 18, SIGNED);
+	      double fThreshRPHI = CommonTools::binning(fabs(tabNormThresh[0] * (fRseed2 - fRseed1)), 4, 18, SIGNED);
+	      double fThreshRZ = CommonTools::binning(fabs(tabNormThresh[1] * (fRseed2 - fRseed1)), 8, 18, SIGNED);
 
 	      if (tabScore[0] <= fThreshRPHI && tabScore[1] <= fThreshRZ)
 		{

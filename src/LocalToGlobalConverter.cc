@@ -128,15 +128,15 @@ LocalToGlobalConverter::LocalToGlobalConverter(const Sector* sectorDefinition, s
 	  }
 
     //Apply the HW binning to the coefficients 
-    module_pos[prbf2_layer][local_ladder][local_module][0] = binning(module_pos[prbf2_layer][local_ladder][local_module][0], 6, 18, SIGNED);
-    module_pos[prbf2_layer][local_ladder][local_module][1] = binning(module_pos[prbf2_layer][local_ladder][local_module][1], 6, 18, SIGNED);
-    module_pos[prbf2_layer][local_ladder][local_module][2] = binning(module_pos[prbf2_layer][local_ladder][local_module][2], 8, 18, SIGNED);
-    module_pos[prbf2_layer][local_ladder][local_module][3] = binning(module_pos[prbf2_layer][local_ladder][local_module][3], -7, 18, SIGNED);
-    module_pos[prbf2_layer][local_ladder][local_module][4] = binning(module_pos[prbf2_layer][local_ladder][local_module][4], -7, 18, SIGNED);
-    module_pos[prbf2_layer][local_ladder][local_module][5] = binning(module_pos[prbf2_layer][local_ladder][local_module][5], -7, 18, SIGNED);
-    module_pos[prbf2_layer][local_ladder][local_module][6] = binning(module_pos[prbf2_layer][local_ladder][local_module][6], 2, 18, SIGNED);
-    module_pos[prbf2_layer][local_ladder][local_module][7] = binning(module_pos[prbf2_layer][local_ladder][local_module][7], 2, 18, SIGNED);
-    module_pos[prbf2_layer][local_ladder][local_module][8] = binning(module_pos[prbf2_layer][local_ladder][local_module][8], 2, 18, SIGNED);
+    module_pos[prbf2_layer][local_ladder][local_module][0] = CommonTools::binning(module_pos[prbf2_layer][local_ladder][local_module][0], 6, 18, SIGNED);
+    module_pos[prbf2_layer][local_ladder][local_module][1] = CommonTools::binning(module_pos[prbf2_layer][local_ladder][local_module][1], 6, 18, SIGNED);
+    module_pos[prbf2_layer][local_ladder][local_module][2] = CommonTools::binning(module_pos[prbf2_layer][local_ladder][local_module][2], 8, 18, SIGNED);
+    module_pos[prbf2_layer][local_ladder][local_module][3] = CommonTools::binning(module_pos[prbf2_layer][local_ladder][local_module][3], -7, 18, SIGNED);
+    module_pos[prbf2_layer][local_ladder][local_module][4] = CommonTools::binning(module_pos[prbf2_layer][local_ladder][local_module][4], -7, 18, SIGNED);
+    module_pos[prbf2_layer][local_ladder][local_module][5] = CommonTools::binning(module_pos[prbf2_layer][local_ladder][local_module][5], -7, 18, SIGNED);
+    module_pos[prbf2_layer][local_ladder][local_module][6] = CommonTools::binning(module_pos[prbf2_layer][local_ladder][local_module][6], 2, 18, SIGNED);
+    module_pos[prbf2_layer][local_ladder][local_module][7] = CommonTools::binning(module_pos[prbf2_layer][local_ladder][local_module][7], 2, 18, SIGNED);
+    module_pos[prbf2_layer][local_ladder][local_module][8] = CommonTools::binning(module_pos[prbf2_layer][local_ladder][local_module][8], 2, 18, SIGNED);
 
 	}
       }
@@ -211,94 +211,22 @@ vector<float> LocalToGlobalConverter::toGlobal(int layer, int ladder, int module
   Z = positions[2];
 
   if(!tracker_side && !isBarrel){
-    X -= binning(relatStrip*positions[3], 6, 18, SIGNED);
-    Y -= binning(relatStrip*positions[4], 6, 18, SIGNED);
+    X -= CommonTools::binning(relatStrip*positions[3], 6, 18, SIGNED);
+    Y -= CommonTools::binning(relatStrip*positions[4], 6, 18, SIGNED);
   }
   else {
-    X += binning(relatStrip*positions[3], 6, 18, SIGNED);
-    Y += binning(relatStrip*positions[4], 6, 18, SIGNED);
+    X += CommonTools::binning(relatStrip*positions[3], 6, 18, SIGNED);
+    Y += CommonTools::binning(relatStrip*positions[4], 6, 18, SIGNED);
   }
-  Z += binning(relatStrip*positions[5], 8, 18, SIGNED);
+  Z += CommonTools::binning(relatStrip*positions[5], 8, 18, SIGNED);
 
-  X += binning(relatSeg*positions[6], 6, 18, SIGNED);
-  Y += binning(relatSeg*positions[7], 6, 18, SIGNED);
-  Z += binning(relatSeg*positions[8], 6, 18, SIGNED);
+  X += CommonTools::binning(relatSeg*positions[6], 6, 18, SIGNED);
+  Y += CommonTools::binning(relatSeg*positions[7], 6, 18, SIGNED);
+  Z += CommonTools::binning(relatSeg*positions[8], 6, 18, SIGNED);
 
-  res.push_back(binning(X, 6, 18, SIGNED));
-  res.push_back(binning(Y, 6, 18, SIGNED));
-  res.push_back(binning(Z, 8, 18, SIGNED));
+  res.push_back(CommonTools::binning(X, 6, 18, SIGNED));
+  res.push_back(CommonTools::binning(Y, 6, 18, SIGNED));
+  res.push_back(CommonTools::binning(Z, 8, 18, SIGNED));
 
   return res;
-}
-
-/* Function which simulate the HardWare representation of the values : manage UNSIGNED and SIGNED (2's complement) overflows and accuracy according to the available dynamic of the binary word */
-double LocalToGlobalConverter::binning(double fNumber, int nMSBpowOfTwo, int nBits, HW_SIGN_TYPE signType) const
-{
-
-  if (signType == UNSIGNED && fNumber < 0)
-    {
-      //Bad interpretation, a negative number is stored in an UNSIGNED format (sign lost)
-      fNumber = -fNumber;
-    }
-  
-  int nLSBpowOfTwo;
-	
-  //Process the power of two of the LSB for the binary representation
-  if (signType == UNSIGNED)
-    {
-      //If UNSIGNED
-      nLSBpowOfTwo = nMSBpowOfTwo - (nBits-1);
-    }	
-  else
-    {
-      //If SIGNED, 1 bit is used for the sign
-      nLSBpowOfTwo = nMSBpowOfTwo - (nBits-2);
-    }
-
-  /* Accuracy Simulation */
-
-  //Divide the number by the power of two of the LSB => the integer part of the new number is the value we are looking for
-  fNumber = fNumber / pow(2, nLSBpowOfTwo);
-	
-  //Remove the fractionnal part by rounding down (for both positive and negative values), this simulate the HW truncature
-  fNumber = floor(fNumber);
-	
-  //Multiply the number by the power of two of the LSB to get the correct float value
-  fNumber = fNumber * pow(2, nLSBpowOfTwo);
-
-
-  double fBinnedNumber = fNumber;
-
-  /* Overflow Simulation */
-
-  if (signType == UNSIGNED)
-    {
-      //If the number is in UNSIGNED representation
-      fNumber = fmod(fNumber, pow(2, nMSBpowOfTwo+1));
-    }
-  else
-    {
-      //If the number is in SIGNED representation (2's complement)
-      
-      double fTempResult = fNumber - pow(2, nMSBpowOfTwo+1); //substract the possible range to the number
-
-      if (fTempResult >= 0)
-        {
-          //If there is an overflow, it's a positive one
-          fNumber = fmod(fTempResult, pow(2, nMSBpowOfTwo+2)) - pow(2, nMSBpowOfTwo+1);
-        }
-      else
-        {
-          //If there is an overflow, it's a negative one (2's complement format has an asymetric range for positive and negative values)
-          fNumber = fmod(fTempResult + pow(2, nLSBpowOfTwo), pow(2, nMSBpowOfTwo+2)) - pow(2, nLSBpowOfTwo) + pow(2, nMSBpowOfTwo+1);
-        }
-    }
-
-  //If the new number is different from the previous one, an HW overflow occured
-  if (fNumber != fBinnedNumber)
-    {
-      cout<<"WARNING HW overflow for the value : "<<fBinnedNumber<<" resulting value : "<<fNumber<<" (diff= "<<fBinnedNumber-fNumber<<")"<<endl;
-    }
-	
-  return fNumber;
 }
