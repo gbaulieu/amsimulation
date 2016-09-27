@@ -113,19 +113,31 @@ LocalToGlobalConverter::LocalToGlobalConverter(const Sector* sectorDefinition, s
 	  if(layer<11){
 	    module_pos[prbf2_layer][local_ladder][local_module][3]=fStripPitch * sin(PhiMod);
 	    module_pos[prbf2_layer][local_ladder][local_module][4]=-fStripPitch * cos(PhiMod);
-	    module_pos[prbf2_layer][local_ladder][local_module][5]=0;
-	    module_pos[prbf2_layer][local_ladder][local_module][6]=0;
-	    module_pos[prbf2_layer][local_ladder][local_module][7]=0;
+	    module_pos[prbf2_layer][local_ladder][local_module][5]=0.0;
+	    module_pos[prbf2_layer][local_ladder][local_module][6]=0.0;
+	    module_pos[prbf2_layer][local_ladder][local_module][7]=0.0;
 	    module_pos[prbf2_layer][local_ladder][local_module][8]=-fSegmentPitch;
 	  }
 	  else{
 	    module_pos[prbf2_layer][local_ladder][local_module][3]=fStripPitch * sin(PhiMod);
 	    module_pos[prbf2_layer][local_ladder][local_module][4]=-fStripPitch * cos(PhiMod);
-	    module_pos[prbf2_layer][local_ladder][local_module][5]=0;
+	    module_pos[prbf2_layer][local_ladder][local_module][5]=0.0;
 	    module_pos[prbf2_layer][local_ladder][local_module][6]=-fSegmentPitch * cos(PhiMod);
 	    module_pos[prbf2_layer][local_ladder][local_module][7]=-fSegmentPitch * sin(PhiMod);
-	    module_pos[prbf2_layer][local_ladder][local_module][8]=0;
+	    module_pos[prbf2_layer][local_ladder][local_module][8]=0.0;
 	  }
+
+    //Apply the HW binning to the coefficients 
+    module_pos[prbf2_layer][local_ladder][local_module][0] = CommonTools::binning(module_pos[prbf2_layer][local_ladder][local_module][0], 6, 18, SIGNED);
+    module_pos[prbf2_layer][local_ladder][local_module][1] = CommonTools::binning(module_pos[prbf2_layer][local_ladder][local_module][1], 6, 18, SIGNED);
+    module_pos[prbf2_layer][local_ladder][local_module][2] = CommonTools::binning(module_pos[prbf2_layer][local_ladder][local_module][2], 8, 18, SIGNED);
+    module_pos[prbf2_layer][local_ladder][local_module][3] = CommonTools::binning(module_pos[prbf2_layer][local_ladder][local_module][3], -7, 18, SIGNED);
+    module_pos[prbf2_layer][local_ladder][local_module][4] = CommonTools::binning(module_pos[prbf2_layer][local_ladder][local_module][4], -7, 18, SIGNED);
+    module_pos[prbf2_layer][local_ladder][local_module][5] = CommonTools::binning(module_pos[prbf2_layer][local_ladder][local_module][5], -7, 18, SIGNED);
+    module_pos[prbf2_layer][local_ladder][local_module][6] = CommonTools::binning(module_pos[prbf2_layer][local_ladder][local_module][6], 2, 18, SIGNED);
+    module_pos[prbf2_layer][local_ladder][local_module][7] = CommonTools::binning(module_pos[prbf2_layer][local_ladder][local_module][7], 2, 18, SIGNED);
+    module_pos[prbf2_layer][local_ladder][local_module][8] = CommonTools::binning(module_pos[prbf2_layer][local_ladder][local_module][8], 2, 18, SIGNED);
+
 	}
       }
     }
@@ -173,10 +185,11 @@ vector<float> LocalToGlobalConverter::toGlobal(int layer, int ladder, int module
   }
 
   bool isPS = (layer<8);
-  float relatStrip=0;
-  float relatSeg=0;
+  float relatStrip=0.0;
+  float relatSeg=0.0;
   float X;
   float Y;
+  float Z;
   
   bool isBarrel = ((layer&0x7)<3);
 
@@ -192,17 +205,28 @@ vector<float> LocalToGlobalConverter::toGlobal(int layer, int ladder, int module
   vector<float> res;
   vector<float> positions = module_pos[layer][ladder][module];
 
+
+  X = positions[0];
+  Y = positions[1];
+  Z = positions[2];
+
   if(!tracker_side && !isBarrel){
-    X = positions[0] - relatStrip*positions[3] + relatSeg*positions[6];
-    Y = positions[1] - relatStrip*positions[4] + relatSeg*positions[7];
+    X -= CommonTools::binning(relatStrip*positions[3], 6, 18, SIGNED);
+    Y -= CommonTools::binning(relatStrip*positions[4], 6, 18, SIGNED);
   }
-  else{
-    X = positions[0] + relatStrip*positions[3] + relatSeg*positions[6];
-    Y = positions[1] + relatStrip*positions[4] + relatSeg*positions[7];
+  else {
+    X += CommonTools::binning(relatStrip*positions[3], 6, 18, SIGNED);
+    Y += CommonTools::binning(relatStrip*positions[4], 6, 18, SIGNED);
   }
-  res.push_back(X);//X
-  res.push_back(Y);//Y
-  res.push_back(positions[2] + relatStrip*positions[5] + relatSeg*positions[8]);//Z
+  Z += CommonTools::binning(relatStrip*positions[5], 8, 18, SIGNED);
+
+  X += CommonTools::binning(relatSeg*positions[6], 6, 18, SIGNED);
+  Y += CommonTools::binning(relatSeg*positions[7], 6, 18, SIGNED);
+  Z += CommonTools::binning(relatSeg*positions[8], 6, 18, SIGNED);
+
+  res.push_back(CommonTools::binning(X, 6, 18, SIGNED));
+  res.push_back(CommonTools::binning(Y, 6, 18, SIGNED));
+  res.push_back(CommonTools::binning(Z, 8, 18, SIGNED));
 
   return res;
 }

@@ -32,7 +32,7 @@ ifeq ($(CUDA_ENABLED),true)
 	PrincipalFitGenerator.o MultiDimFitData.o KarimakiTrackFitter.o TCBuilder.o PCATrackFitter.o HoughFitter.o SeedClusteringFitter.o \
 	ComputerHough.o	Retina.o RetinaTrackFitter.o libhoughCPU.o FileEventProxy.o GPUPooler.o gpu.o \
 	LinearizedTrackFitter.o BuildTestFunctions.o CombinationIndexListBuilder.o L1TrackTriggerTree.o MatrixReader.o \
-	CombinationIndex.o GetVariables.o StubsCombination.o
+	CombinationIndex.o GetVariables.o StubsCombination.o CommonTools.o
 else
 	OBJECTS=SuperStrip.o Hit.o Pattern.o PatternLayer.o GradedPattern.o PatternTrunk.o PatternTree.o \
 	PatternGenerator.o Sector.o LocalToGlobalConverter.o SectorTree.o CMSPatternLayer.o Segment.o Module.o \
@@ -41,7 +41,7 @@ else
 	Retina.o RetinaTrackFitter.o KarimakiTrackFitter.o TCBuilder.o PCATrackFitter.o HoughFitter.o SeedClusteringFitter.o \
 	ComputerHough.o libhoughCPU.o \
 	LinearizedTrackFitter.o BuildTestFunctions.o CombinationIndexListBuilder.o L1TrackTriggerTree.o MatrixReader.o \
-	CombinationIndex.o GetVariables.o StubsCombination.o
+	CombinationIndex.o GetVariables.o StubsCombination.o CommonTools.o
 endif
 
 AMSimulation:$(OBJECTS) AMSimulation.o
@@ -154,6 +154,9 @@ FileEventProxy.o:${SRC}/FileEventProxy.h ${SRC}/FileEventProxy.cc
 
 GPUPooler.o:${SRC}/GPUPooler.h ${SRC}/GPUPooler.cc
 	g++ -c ${FLAG} ${INC} ${CUDA_INC} ${SRC}/GPUPooler.cc
+
+CommonTools.o:${SRC}/CommonTools.cc ${SRC}/CommonTools.h
+	g++ -c ${FLAG} ${INC} ${SRC}/CommonTools.cc
 
 AMSimulation.o:${SRC}/AMSimulation.cc
 	g++ -c ${FLAG} ${INC} ${SRC}/AMSimulation.cc
