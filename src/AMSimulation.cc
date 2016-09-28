@@ -270,6 +270,76 @@ void getSectors(const vector<int> &layers, SectorTree &st){
   }
 }
 
+
+int modIDFromDetID(int det_id){
+  std::bitset<32> detid(det_id); // Le detid
+  
+  int rmodid; // Le modid que l'on utilise
+  int lay=0;
+  int lad=0;
+  int mod=0;
+  int disk=0;
+  int type=0;
+  
+  int n_tilted_rings[6];
+  int n_flat_rings[6];
+  int limits[6][3];
+
+  for (int i=0; i < 6; ++i) n_tilted_rings[i]=0;
+  for (int i=0; i < 6; ++i) n_flat_rings[i]=0;
+  
+  n_tilted_rings[0]=11;
+  n_tilted_rings[1]=12;
+  n_tilted_rings[2]=13;
+  n_flat_rings[0]=7;
+  n_flat_rings[1]=11;
+  n_flat_rings[2]=15;
+  
+  for (int i=0; i < 6; ++i){
+    for (int j=0; j < 3; ++j){
+      limits[i][j]=0;
+      
+      if (n_tilted_rings[i]==0) continue;
+
+      limits[i][j]=(j%2)*n_flat_rings[i]+(j>0)*n_tilted_rings[i];
+    }
+  }
+
+  if (detid[25]){ // barrel;
+    lay  = 8*detid[23]+4*detid[22]+2*detid[21]+detid[20]+4;
+    type = 2*detid[19]+detid[18];
+    
+    if (type==3){ // Not tilted
+      lad  = 128*detid[17]+64*detid[16]+32*detid[15]+16*detid[14]+
+	8*detid[13]+4*detid[12]+2*detid[11]+detid[10]-1;
+      mod  = 128*detid[9]+64*detid[8]+32*detid[7]+16*detid[6]+
+	8*detid[5]+4*detid[4]+2*detid[3]+detid[2]-1+limits[lay-5][type-1];
+    }
+    else{ // tilted
+      mod  = 128*detid[17]+64*detid[16]+32*detid[15]+16*detid[14]+
+	8*detid[13]+4*detid[12]+2*detid[11]+detid[10]-1+limits[lay-5][type-1];
+      lad  = 128*detid[9]+64*detid[8]+32*detid[7]+16*detid[6]+
+	8*detid[5]+4*detid[4]+2*detid[3]+detid[2]-1;
+    }
+  }
+  else{ // endcap
+    disk  = 8*detid[21]+4*detid[20]+2*detid[19]+detid[18];
+    lay   = 10+disk+abs(2-(2*detid[24]+detid[23]))*7;
+    lad   = 32*detid[17]+16*detid[16]+8*detid[15]+4*detid[14]+2*detid[13]+detid[12]-1;
+    
+    if (disk>=3){
+      //3 inner rings are removed -> we keep the same numbering so 0->2
+      lad += 2;
+    }
+    
+    mod  = 128*detid[9]+64*detid[8]+32*detid[7]+16*detid[6]+
+      8*detid[5]+4*detid[4]+2*detid[3]+detid[2]-1;
+  }
+  
+  rmodid = 10000*lay+100*lad+mod;
+  return rmodid;
+}
+
 vector< vector<int> > getRestrictions(const vector<int> &layers){
   vector<vector<int> > res;
   for(unsigned int i=0;i<layers.size();i++){
@@ -891,40 +961,14 @@ vector<unsigned int> loadDefectiveAddresses(string name){
   return addresses;
 }
 
-void createSectorFromRootFile(SectorTree* st, string fileName, string detidFileName, vector<int> layers, int sector_id){
+void createSectorFromRootFile(SectorTree* st, string fileName, vector<int> layers, int sector_id){
 
   Sector s(layers);
   TChain* tree = NULL;
   vector<int> modules;
   vector<float> coords;
-  map<int,int> detid_map;
 
   if(fileName.substr(fileName.length()-4,fileName.length()).compare(".csv")==0){
-
-    ifstream detid_is(detidFileName.c_str());
-    string detid_line;
-     if (detid_is.is_open()){
-      while ( detid_is.good() ){
-	getline (detid_is,detid_line);
-	std::stringstream ss(detid_line);
-	std::string item;
-	bool first = true;
-	int detid=0;
-	int modid=0;
-	while (std::getline(ss, item, ',')) {
-	  std::istringstream ss( item );
-	  if(first)
-	    ss >> detid;
-	  else{
-	    ss >> modid;
-	    detid_map[detid]=modid;
-	  }
-	  first=!first;
-	}
-      }
-      detid_is.close();
-     }
-
     ifstream is(fileName.c_str());
     string line;
     int line_index=0;
@@ -941,11 +985,8 @@ void createSectorFromRootFile(SectorTree* st, string fileName, string detidFileN
 	      std::istringstream ss( item );
 	      ss >> number;
 	      if(number!=0){
-		int detid = detid_map[number];
-		if(detid==0)
-		  cout<<"ERROR : DETID "<<number<<"not found in "<<detidFileName<<"!"<<endl;
-		else
-		  modules.push_back(detid_map[number]);
+		int detid = modIDFromDetID(number);
+		modules.push_back(detid);
 	      }
 	    }
 	    column_index++;
@@ -989,15 +1030,6 @@ void createSectorFromRootFile(SectorTree* st, string fileName, string detidFileN
     istringstream ss_ladder(oss.str().substr(2,2));
     ss_ladder>>ladder;
     ladder = CMSPatternLayer::getLadderCode(layer,ladder);
-
-    ////// TMP FIX FOR TKLAYOUT NUMBERING (10 JUL 2013)
-    /*
-    if(layer<11){
-      int tmp_nb_ladders = CMSPatternLayer::getNbLadders(layer);
-      ladder = (ladder+tmp_nb_ladders*1/4) % tmp_nb_ladders;
-    } 
-    */
-    //////////////////////////////////////////////////
 
     istringstream ss_module(oss.str().substr(4,2));
     ss_module>>module;
@@ -1292,7 +1324,7 @@ int main(int av, char** ac){
 	end_index=bankFileName.length()-4;
       rootFileName = bankFileName.substr(0,end_index)+"_report.root";
       threshold=vm["coverage"].as<float>();
-      createSectorFromRootFile(&st,vm["sector_file"].as<string>(), "detids.txt", active_layers, sector_tklayout_id);
+      createSectorFromRootFile(&st,vm["sector_file"].as<string>(), active_layers, sector_tklayout_id);
     }
     catch(boost::bad_any_cast e){
       cout<<"At least one option is missing! Please check : "<<endl;

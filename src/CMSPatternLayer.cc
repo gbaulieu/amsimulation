@@ -514,8 +514,8 @@ int CMSPatternLayer::getLadderCode(int layerID, int ladderID){
    case 6 : return 26;
    case 7 : return 36;
    case 8 : return 48;
-   case 9 : return 62;
-   case 10 : return 76;
+   case 9 : return 60;
+   case 10 : return 78;
    default : return 15;
    }
  }
@@ -526,7 +526,7 @@ int CMSPatternLayer::getNbModules(int layerID, int ladderID){
   if(layerID==6)
     return 35;
   if(layerID==7)
-    return 41;
+    return 39;
   if(layerID>=8 && layerID<=10)
     return 24;
   if(layerID>=11 && layerID<=24){
@@ -557,8 +557,8 @@ map<int, pair<float,float> > CMSPatternLayer::getLayerDefInEta(){
   eta[5]=pair<float,float>(-2.25,2.25);
   eta[6]=pair<float,float>(-1.85,1.85);
   eta[7]=pair<float,float>(-1.5,1.5);
-  eta[8]=pair<float,float>(-1.2,1.2);
-  eta[9]=pair<float,float>(-1.05,1.05);
+  eta[8]=pair<float,float>(-1.28,1.28);
+  eta[9]=pair<float,float>(-1.07,1.07);
   eta[10]=pair<float,float>(-0.9,0.9);
   eta[11]=pair<float,float>(1.08,2.42);
   eta[12]=pair<float,float>(1.21,2.47);
