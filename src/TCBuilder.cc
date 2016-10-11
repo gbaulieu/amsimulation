@@ -640,9 +640,9 @@ void TCBuilder::alignScore(Hit& hSeed1, Hit& hSeed2, Hit& hTestStub, double tSco
   R3 = binning(sqrt(X3*X3 + Y3*Y3), 6, 18, SIGNED);
 
   //RPHI plan
-  PHI1 = binning(atan(Y1/X1), 4, 18, SIGNED);
-  PHI2 = binning(atan(Y2/X2), 4, 18, SIGNED);
-  PHI3 = binning(atan(Y3/X3), 4, 18, SIGNED);
+  PHI1 = binning(atan(Y1/X1), 0, 17, SIGNED);
+  PHI2 = binning(atan(Y2/X2), 0, 17, SIGNED);
+  PHI3 = binning(atan(Y3/X3), 0, 17, SIGNED);
 
   RPHI_S1 = binning((PHI2 - PHI1) * (R3 - R2), 8, 20, SIGNED);
   RPHI_S2 = binning((PHI2 - PHI3) * (R2 - R1), 8, 20, SIGNED);
