@@ -475,9 +475,9 @@ void createAnalysis(SectorTree &st){
   }
 
   TGraph* bank_eff = new TGraph(allPatterns.size(),patts,scores);
-  bank_eff->SetTitle("Efficiency evolution");
+  bank_eff->SetTitle("Popularity");
   bank_eff->GetXaxis()->SetTitle("Patterns bank size");
-  bank_eff->GetYaxis()->SetTitle("Efficiency (%)");
+  bank_eff->GetYaxis()->SetTitle("Integrated popularity (%)");
   bank_eff->Write();
   delete bank_eff;
   delete patts;

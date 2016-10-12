@@ -15,7 +15,7 @@
 #include "gpu.h"
 #endif
 
-#define HW_LIMIT_TOTAL_STUBS 512
+#define HW_LIMIT_TOTAL_STUBS 1024
 #define HW_LIMIT_PATTERN_LAYER_STUBS 4
 
 using namespace std;

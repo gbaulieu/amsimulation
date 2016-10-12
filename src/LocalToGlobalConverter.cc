@@ -90,6 +90,19 @@ LocalToGlobalConverter::LocalToGlobalConverter(const Sector* sectorDefinition, s
 	  val >> coef_value;
 	  module_pos[prbf2_layer][local_ladder][local_module][2]=coef_value;
 
+	  //Process the starting phi of the tower
+	  double sec_phi = (sectorDefinition->getOfficialID()%8) * M_PI / 4.0 - 0.4;
+	  
+	  //cos and sin values for a rotation of an angle -sec_phi
+	  double ci = cos(-sec_phi);
+	  double si = sin(-sec_phi);
+
+	  //Rotates the module center to the first sector
+	  double rotatedX = module_pos[prbf2_layer][local_ladder][local_module][0] * ci - module_pos[prbf2_layer][local_ladder][local_module][1] * si;
+	  double rotatedY = module_pos[prbf2_layer][local_ladder][local_module][0] * si + module_pos[prbf2_layer][local_ladder][local_module][1] * ci;
+	  module_pos[prbf2_layer][local_ladder][local_module][0] = rotatedX;
+	  module_pos[prbf2_layer][local_ladder][local_module][1] = rotatedY;
+
 	  //Computes the angle between X axis and the module center
 	  float PhiMod = atan2(module_pos[prbf2_layer][local_ladder][local_module][1],module_pos[prbf2_layer][local_ladder][local_module][0]);//atan2(y,x)
 	  float fModuleWidth,fModuleHeight,nModuleStrips,nModuleSegments;
@@ -127,17 +140,17 @@ LocalToGlobalConverter::LocalToGlobalConverter(const Sector* sectorDefinition, s
 	    module_pos[prbf2_layer][local_ladder][local_module][8]=0.0;
 	  }
 
-    //Apply the HW binning to the coefficients 
-    module_pos[prbf2_layer][local_ladder][local_module][0] = CommonTools::binning(module_pos[prbf2_layer][local_ladder][local_module][0], 6, 18, SIGNED);
-    module_pos[prbf2_layer][local_ladder][local_module][1] = CommonTools::binning(module_pos[prbf2_layer][local_ladder][local_module][1], 6, 18, SIGNED);
-    module_pos[prbf2_layer][local_ladder][local_module][2] = CommonTools::binning(module_pos[prbf2_layer][local_ladder][local_module][2], 8, 18, SIGNED);
-    module_pos[prbf2_layer][local_ladder][local_module][3] = CommonTools::binning(module_pos[prbf2_layer][local_ladder][local_module][3], -7, 18, SIGNED);
-    module_pos[prbf2_layer][local_ladder][local_module][4] = CommonTools::binning(module_pos[prbf2_layer][local_ladder][local_module][4], -7, 18, SIGNED);
-    module_pos[prbf2_layer][local_ladder][local_module][5] = CommonTools::binning(module_pos[prbf2_layer][local_ladder][local_module][5], -7, 18, SIGNED);
-    module_pos[prbf2_layer][local_ladder][local_module][6] = CommonTools::binning(module_pos[prbf2_layer][local_ladder][local_module][6], 2, 18, SIGNED);
-    module_pos[prbf2_layer][local_ladder][local_module][7] = CommonTools::binning(module_pos[prbf2_layer][local_ladder][local_module][7], 2, 18, SIGNED);
-    module_pos[prbf2_layer][local_ladder][local_module][8] = CommonTools::binning(module_pos[prbf2_layer][local_ladder][local_module][8], 2, 18, SIGNED);
-
+	  //Apply the HW binning to the coefficients 
+	  module_pos[prbf2_layer][local_ladder][local_module][0] = CommonTools::binning(module_pos[prbf2_layer][local_ladder][local_module][0], 6, 18, SIGNED);
+	  module_pos[prbf2_layer][local_ladder][local_module][1] = CommonTools::binning(module_pos[prbf2_layer][local_ladder][local_module][1], 6, 18, SIGNED);
+	  module_pos[prbf2_layer][local_ladder][local_module][2] = CommonTools::binning(module_pos[prbf2_layer][local_ladder][local_module][2], 8, 18, SIGNED);
+	  module_pos[prbf2_layer][local_ladder][local_module][3] = CommonTools::binning(module_pos[prbf2_layer][local_ladder][local_module][3], -7, 18, SIGNED);
+	  module_pos[prbf2_layer][local_ladder][local_module][4] = CommonTools::binning(module_pos[prbf2_layer][local_ladder][local_module][4], -7, 18, SIGNED);
+	  module_pos[prbf2_layer][local_ladder][local_module][5] = CommonTools::binning(module_pos[prbf2_layer][local_ladder][local_module][5], -7, 18, SIGNED);
+	  module_pos[prbf2_layer][local_ladder][local_module][6] = CommonTools::binning(module_pos[prbf2_layer][local_ladder][local_module][6], 2, 18, SIGNED);
+	  module_pos[prbf2_layer][local_ladder][local_module][7] = CommonTools::binning(module_pos[prbf2_layer][local_ladder][local_module][7], 2, 18, SIGNED);
+	  module_pos[prbf2_layer][local_ladder][local_module][8] = CommonTools::binning(module_pos[prbf2_layer][local_ladder][local_module][8], 2, 18, SIGNED);
+	  
 	}
       }
     }

@@ -135,17 +135,18 @@ void TCBuilder::updateThresholds(){
     addThresholds( 1,  2, 10, SEC_BARREL, 0.010689, 2.840576);
     */
     // FIRMWARE VERSION
-    addThresholds( 0, 1 , 2,  SEC_BARREL, 0.0019989013672, 0.29882812500 );
-    addThresholds( 0, 1 , 8,  SEC_BARREL, 0.0053253173828, 2.69580078125 );
-    addThresholds( 0, 1 , 9,  SEC_BARREL, 0.0101089477539, 2.86108398438 );
-    addThresholds( 0, 1 , 10, SEC_BARREL, 0.0125579833984, 3.11596679688 );
-    addThresholds( 0, 2 , 8,  SEC_BARREL, 0.0021095275879, 2.53564453125 );
-    addThresholds( 0, 2 , 9,  SEC_BARREL, 0.0047416687012, 2.57861328125 );
-    addThresholds( 0, 2 , 10, SEC_BARREL, 0.0076522827148, 2.76562500000 );
-    addThresholds( 1, 2 , 8,  SEC_BARREL, 0.0012397766113, 2.56298828125 );
-    addThresholds( 1, 2 , 9,  SEC_BARREL, 0.0041351318359, 2.70092773438 );
-    addThresholds( 1, 2 , 10, SEC_BARREL, 0.0070762634277, 2.89257812500 );
-
+    cout<<"here"<<endl;
+    addThresholds( 0,  1,  2, SEC_BARREL, 0.00199890136718750000 , 0.29882812500000000000);
+    addThresholds( 0,  1,  8, SEC_BARREL, 0.00532531738281250000 , 2.69580078125000000000);
+    addThresholds( 0,  1,  9, SEC_BARREL, 0.01010894775390625000 , 2.86108398437500000000);
+    addThresholds( 0,  1, 10, SEC_BARREL, 0.01255798339843750000 , 3.11596679687500000000);
+    addThresholds( 0,  2,  8, SEC_BARREL, 0.00210952758789062500 , 2.53564453125000000000);
+    addThresholds( 0,  2,  9, SEC_BARREL, 0.00474166870117187500 , 2.57861328125000000000);
+    addThresholds( 0,  2, 10, SEC_BARREL, 0.00765228271484375000 , 2.76562500000000000000);
+    addThresholds( 1,  2,  8, SEC_BARREL, 0.00123977661132812500 , 2.56298828125000000000);
+    addThresholds( 1,  2,  9, SEC_BARREL, 0.00413513183593750000 , 2.70092773437500000000);
+    addThresholds( 1,  2, 10, SEC_BARREL, 0.00707626342773437500 , 2.89257812500000000000);
+    
     //HYBRID Thresholds
 
     addThresholds( 0,  1,  2, SEC_HYBRID, 0.003571, 0.342285);
@@ -566,6 +567,10 @@ void TCBuilder::alignScore(Hit& hSeed1, Hit& hSeed2, Hit& hTestStub, double tSco
   PHI2 = CommonTools::binning(atan(Y2/X2), 0, 17, SIGNED);
   PHI3 = CommonTools::binning(atan(Y3/X3), 0, 17, SIGNED);
 
+  cout<<"Polar "<<hSeed1.getID()<<" : "<<R1<<"/"<<PHI1<<"/"<<Z1<<endl;
+  cout<<"Polar "<<hSeed2.getID()<<" : "<<R2<<"/"<<PHI2<<"/"<<Z2<<endl;
+  cout<<"Polar "<<hTestStub.getID()<<" : "<<R3<<"/"<<PHI3<<"/"<<Z3<<endl;
+
   RPHI_S1 = CommonTools::binning((PHI2 - PHI1) * (R3 - R2), 8, 20, SIGNED);
   RPHI_S2 = CommonTools::binning((PHI2 - PHI3) * (R2 - R1), 8, 20, SIGNED);
 
@@ -718,19 +723,23 @@ void TCBuilder::fit(vector<Hit*> originalHits, int pattern_id)
       
       /**************** FROM LOCAL TO GLOBAL COORDINATES ****************/
       vector<float> coords;
-      if(l2gConverter!=NULL)
+      if(l2gConverter!=NULL){
 	coords = l2gConverter->toGlobal(pOrigHit);
+	rotatedX = coords[0];
+	rotatedY = coords[1];
+      }
       else{
 	// If we do not have a converter, use the coordinates from CMSSW
 	coords.push_back(pOrigHit->getX());
 	coords.push_back(pOrigHit->getY());
 	coords.push_back(pOrigHit->getZ());
+	//Process the rotated coordinnates
+	rotatedX = coords[0] * ci - coords[1] * si;
+	rotatedY = coords[0] * si + coords[1] * ci;
       }
       /*****************************************************************/
 
-      //Process the rotated coordinnates
-      rotatedX = coords[0] * ci - coords[1] * si;
-      rotatedY = coords[0] * si + coords[1] * ci;
+      //cout<<"Cartesian "<<pOrigHit->getID()<<" : "<<CommonTools::binning(rotatedX, 6, 18, SIGNED)<<"/"<<CommonTools::binning(rotatedY, 6, 18, SIGNED)<<"/"<<CommonTools::binning((double)coords[2], 8, 18, SIGNED)<<endl;
 
       //Add the modified hit to the hits vector
       hits.push_back( Hit(transcodeLayer(pOrigHit),
@@ -752,7 +761,6 @@ void TCBuilder::fit(vector<Hit*> originalHits, int pattern_id)
 			  pOrigHit->getZ0(),
 			  pOrigHit->getBend())
 		      );
-
     }
 
   //Sort the hits by ascending order of layerID
