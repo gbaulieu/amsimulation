@@ -414,6 +414,8 @@ void PatternFinder::find(int start, int& stop){
 	delete pl[j];
       }
 
+      double sec_phi = (pattern_list[i]->getOfficialID()%8) * M_PI / 4.0 - 0.4;
+
       // loop over TC
       nb_tc = (int)tracks.size();
       vector<double> tc_for_fit;
@@ -468,7 +470,10 @@ void PatternFinder::find(int start, int& stop){
 	  const std::vector<double> pars = linearizedTrackFitter.estimatedPars();
 	  float pt=1.0/fabs(pars[0]);
 	  float pz=pt*pars[2];
-	  float phi=pars[1];
+	  float phi=pars[1]+sec_phi;
+	  if(phi>M_PI)
+	    phi=phi-2*M_PI;
+
 	  shared_ptr<Track> pca_track = make_shared<Track>(pt,0,phi,asinh(pz/pt),pars[3],0,-1,-1,normChi2);
 	  for(unsigned int l=0;l<stubsInTrack.size();l++){
 	    pca_track->addStubIndex(stubsInTrack[l]);
