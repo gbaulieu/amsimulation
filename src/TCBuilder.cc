@@ -543,6 +543,8 @@ void TCBuilder::alignScore(Hit& hSeed1, Hit& hSeed2, Hit& hTestStub, double tSco
   double X2, Y2, Z2, R2, PHI2;
   double X3, Y3, Z3, R3, PHI3;
 
+  double result_R, result_PHI;
+
   double RPHI_S1, RPHI_S2, RZ_S1, RZ_S2;
 
   //Coordinates X, Y, Z are already binned
@@ -558,6 +560,10 @@ void TCBuilder::alignScore(Hit& hSeed1, Hit& hSeed2, Hit& hTestStub, double tSco
   Y3 = hTestStub.getY();
   Z3 = hTestStub.getZ();
 	
+  /*
+
+  //Old way
+
   R1 = CommonTools::binning(sqrt(X1*X1 + Y1*Y1), 6, 18, SIGNED);
   R2 = CommonTools::binning(sqrt(X2*X2 + Y2*Y2), 6, 18, SIGNED);
   R3 = CommonTools::binning(sqrt(X3*X3 + Y3*Y3), 6, 18, SIGNED);
@@ -566,6 +572,20 @@ void TCBuilder::alignScore(Hit& hSeed1, Hit& hSeed2, Hit& hTestStub, double tSco
   PHI1 = CommonTools::binning(atan(Y1/X1), 0, 17, SIGNED);
   PHI2 = CommonTools::binning(atan(Y2/X2), 0, 17, SIGNED);
   PHI3 = CommonTools::binning(atan(Y3/X3), 0, 17, SIGNED);
+  */
+
+  //New bitwise way to get the polar coordinates
+  CommonTools::binCordic(X1, Y1, result_R, result_PHI);
+  R1 = result_R;
+  PHI1 = result_PHI;
+  
+  CommonTools::binCordic(X2, Y2, result_R, result_PHI);
+  R2 = result_R;
+  PHI2 = result_PHI;
+
+  CommonTools::binCordic(X3, Y3, result_R, result_PHI);
+  R3 = result_R;
+  PHI3 = result_PHI;
 
   cout<<"Polar "<<hSeed1.getID()<<" : "<<R1<<"/"<<PHI1<<"/"<<Z1<<endl;
   cout<<"Polar "<<hSeed2.getID()<<" : "<<R2<<"/"<<PHI2<<"/"<<Z2<<endl;

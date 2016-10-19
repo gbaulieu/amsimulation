@@ -14,6 +14,7 @@ class CommonTools{
  public:
   static bool hardwareSimulation;
   static double binning(double fNumber, int nMSBpowOfTwo, int nBits, HW_SIGN_TYPE signType);
+  static void binCordic(double X, double Y, double &result_R, double &result_PHI);
 };
 
 #endif
