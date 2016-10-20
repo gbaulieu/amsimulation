@@ -80,62 +80,61 @@ double CommonTools::binning(double fNumber, int nMSBpowOfTwo, int nBits, HW_SIGN
 /*Bitwise emulation of the firmware CORDIC module (process the translation between cartesian and polar coordinates)*/
 void CommonTools::binCordic(double X, double Y, double &result_R, double &result_PHI)
 {
-	//Number of iterations for the CORDIC algorithm
-	int nIter = 17;
+  //Number of iterations for the CORDIC algorithm
+  int nIter = 17;
   
-	//Factor used to process R (depends on the number of iterations)
-	double fScaleFactor = 0.60725289583206176757812500;
+  //Factor used to process R (depends on the number of iterations)
+  double fScaleFactor = 0.60725289583206176757812500;
   
   //Micro-rotation values for the iterations
   double tfCorrec[17] = {
-	0.78540039062500000000,
-	0.46365356445312500000,
-	0.24497985839843750000,
-	0.12435913085937500000,
-	0.06242370605468750000,
-	0.03123474121093750000,
-	0.01562500000000000000,
-	0.00781250000000000000,
-	0.00390625000000000000,
-	0.00195312500000000000,
-	0.00097656250000000000,
-	0.00048828125000000000,
-	0.00024414062500000000,
-	0.00012207031250000000,
-	0.00006103515625000000,
-	0.00003051757812500000,
-	0.00001525878906250000};
+    0.78540039062500000000,
+    0.46365356445312500000,
+    0.24497985839843750000,
+    0.12435913085937500000,
+    0.06242370605468750000,
+    0.03123474121093750000,
+    0.01562500000000000000,
+    0.00781250000000000000,
+    0.00390625000000000000,
+    0.00195312500000000000,
+    0.00097656250000000000,
+    0.00048828125000000000,
+    0.00024414062500000000,
+    0.00012207031250000000,
+    0.00006103515625000000,
+    0.00003051757812500000,
+    0.00001525878906250000};
 
-	//Initialization
+  //Initialization
   double nextX, nextY;
-	double Xcordic = binning(X, 6, 18, SIGNED);
-	double Ycordic = binning(Y, 6, 18, SIGNED);
-	double angle = 0.0;
+  double Xcordic = binning(X, 6, 18, SIGNED);
+  double Ycordic = binning(Y, 6, 18, SIGNED);
+  double angle = 0.0;
 
-	//Iterations
-	for (int i =0; i<nIter; i++)
-  {
-	
-		if (Ycordic >= 0.0)
+  //Iterations
+  for (int i =0; i<nIter; i++)
     {
-			nextX = Xcordic + binning(Ycordic * pow(2,-i), 7, 26, SIGNED);
-			nextY = Ycordic - binning(Xcordic * pow(2,-i), 7, 26, SIGNED);
-			angle += tfCorrec[i];
+      if (Ycordic >= 0.0)
+	{
+	  nextX = Xcordic + binning(Ycordic * pow(2,-i), 7, 26, SIGNED);
+	  nextY = Ycordic - binning(Xcordic * pow(2,-i), 7, 26, SIGNED);
+	  angle += tfCorrec[i];
+	}
+      else
+	{
+	  nextX = Xcordic - binning(Ycordic * pow(2,-i), 7, 26, SIGNED);
+	  nextY = Ycordic + binning(Xcordic * pow(2,-i), 7, 26, SIGNED);
+	  angle -= tfCorrec[i];
+	}
+      Xcordic = binning(nextX, 7, 26, SIGNED);
+      Ycordic = binning(nextY, 7, 26, SIGNED);
     }
-		else
-    {
-			nextX = Xcordic - binning(Ycordic * pow(2,-i), 7, 26, SIGNED);
-			nextY = Ycordic + binning(Xcordic * pow(2,-i), 7, 26, SIGNED);
-			angle -= tfCorrec[i];
-		}
-		Xcordic = binning(nextX, 7, 26, SIGNED);
-		Ycordic = binning(nextY, 7, 26, SIGNED);
-  }
 	
   //Apply the scale factor
-	result_R = Xcordic * fScaleFactor;
+  result_R = Xcordic * fScaleFactor;
 	
   //Binning of the results
   result_R = binning(result_R, 6, 18, SIGNED);
-	result_PHI = binning(angle, 0, 18, SIGNED);
+  result_PHI = binning(angle, 0, 18, SIGNED);
 }

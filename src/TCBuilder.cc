@@ -135,7 +135,6 @@ void TCBuilder::updateThresholds(){
     addThresholds( 1,  2, 10, SEC_BARREL, 0.010689, 2.840576);
     */
     // FIRMWARE VERSION
-    cout<<"here"<<endl;
     addThresholds( 0,  1,  2, SEC_BARREL, 0.00199890136718750000 , 0.29882812500000000000);
     addThresholds( 0,  1,  8, SEC_BARREL, 0.00532531738281250000 , 2.69580078125000000000);
     addThresholds( 0,  1,  9, SEC_BARREL, 0.01010894775390625000 , 2.86108398437500000000);
