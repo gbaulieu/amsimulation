@@ -197,6 +197,11 @@ vector<float> LocalToGlobalConverter::toGlobal(int layer, int ladder, int module
     throw std::runtime_error("Modules position lookup table not found");
   }
 
+  //Correction of a strip number bug (when strip decimal is not zero, it has to be 0.5)
+  if (strip != floor(strip)){
+    strip = floor(strip)+0.5;
+  }
+
   bool isPS = (layer<8);
   float relatStrip=0.0;
   float relatSeg=0.0;
@@ -235,7 +240,7 @@ vector<float> LocalToGlobalConverter::toGlobal(int layer, int ladder, int module
 
   X += CommonTools::binning(relatSeg*positions[6], 6, 18, SIGNED);
   Y += CommonTools::binning(relatSeg*positions[7], 6, 18, SIGNED);
-  Z += CommonTools::binning(relatSeg*positions[8], 6, 18, SIGNED);
+  Z += CommonTools::binning(relatSeg*positions[8], 8, 18, SIGNED);
 
   res.push_back(CommonTools::binning(X, 6, 18, SIGNED));
   res.push_back(CommonTools::binning(Y, 6, 18, SIGNED));
