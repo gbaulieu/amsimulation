@@ -198,7 +198,7 @@ vector<float> LocalToGlobalConverter::toGlobal(int layer, int ladder, int module
   }
 
   //Correction of a strip number bug (when strip decimal is not zero, it has to be 0.5)
-  if strip != floor(strip){
+  if (strip != floor(strip)){
     strip = floor(strip)+0.5;
   }
 
