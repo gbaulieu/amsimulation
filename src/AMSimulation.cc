@@ -153,7 +153,7 @@ using namespace std;
    \endcode
    You can also truncate your bank:
    \code
-   ./AMSimulation --alterBank --bankFile=<input bank file> --outputFile=<>output bank file --truncate=<number of patterns in output bank> --sortAlgo=<0,1 or 2>
+   ./AMSimulation --alterBank --bankFile=<input bank file> --outputFile=<output bank file> --truncate=<number of patterns in output bank> --sortAlgo=<0,1 or 2>
    \endcode
    The option --sortAlgo gives the way the patterns are sort before truncating the bank. 0 means sort by popularity, 1 by PT and 2 is a mix of both. Default is 0.
 
