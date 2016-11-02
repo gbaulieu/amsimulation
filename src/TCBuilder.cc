@@ -586,9 +586,9 @@ void TCBuilder::alignScore(Hit& hSeed1, Hit& hSeed2, Hit& hTestStub, double tSco
   R3 = result_R;
   PHI3 = result_PHI;
 
-  cout<<"Polar "<<hSeed1.getID()<<" : "<<R1<<"/"<<PHI1<<"/"<<Z1<<endl;
-  cout<<"Polar "<<hSeed2.getID()<<" : "<<R2<<"/"<<PHI2<<"/"<<Z2<<endl;
-  cout<<"Polar "<<hTestStub.getID()<<" : "<<R3<<"/"<<PHI3<<"/"<<Z3<<endl;
+  //cout<<"Polar "<<hSeed1.getID()<<" : "<<R1<<"/"<<PHI1<<"/"<<Z1<<endl;
+  //cout<<"Polar "<<hSeed2.getID()<<" : "<<R2<<"/"<<PHI2<<"/"<<Z2<<endl;
+  //cout<<"Polar "<<hTestStub.getID()<<" : "<<R3<<"/"<<PHI3<<"/"<<Z3<<endl;
 
   RPHI_S1 = CommonTools::binning((PHI2 - PHI1) * (R3 - R2), 8, 20, SIGNED);
   RPHI_S2 = CommonTools::binning((PHI2 - PHI3) * (R2 - R1), 8, 20, SIGNED);

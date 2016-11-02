@@ -43,7 +43,8 @@ PatternFinder::PatternFinder(int at, SectorTree* st, string f, string of){
 }
 
 PatternFinder::~PatternFinder(){
-  delete converter;
+  if(converter!=NULL)
+    delete converter;
 }
 
 #ifdef USE_CUDA
@@ -442,12 +443,14 @@ void PatternFinder::find(int start, int& stop){
 	  }
 	  unique_ptr<Hit> global_hit;
 	  try{
+	    if(converter==NULL)
+	      throw std::runtime_error("No local to global converter");
 	    vector<float> coords = converter->toGlobal(current_hit);
 	    global_hit = unique_ptr<Hit>(new Hit(0,0,0,0,0,0,0,0,0,0,0,coords[0],coords[1],coords[2],0,0,0,0));
 	  }
 	  catch(const std::runtime_error& e){
-	    cout<<e.what()<<endl;
-	    cout<<"Using CMSSW cartesian coordinates instead..."<<endl;
+	    //cout<<e.what()<<endl;
+	    //cout<<"Using CMSSW cartesian coordinates instead..."<<endl;
 	    global_hit = unique_ptr<Hit>(new Hit(0,0,0,0,0,0,0,0,0,0,0,current_hit->getX(),current_hit->getY(),current_hit->getZ(),0,0,0,0));
 	  }
 	  //cout<<"Polar coordinates : PHI="<<global_hit.getPolarPhi()<<", R="<<global_hit.getPolarDistance()<<", Z="<<global_hit.getZ()<<endl;
