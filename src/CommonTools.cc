@@ -80,6 +80,14 @@ double CommonTools::binning(double fNumber, int nMSBpowOfTwo, int nBits, HW_SIGN
 /*Bitwise emulation of the firmware CORDIC module (process the translation between cartesian and polar coordinates)*/
 void CommonTools::binCordic(double X, double Y, double &result_R, double &result_PHI)
 {
+
+  if (!hardwareSimulation){
+    //Floating point computing
+    result_R = sqrt(X*X + Y*Y);
+    result_PHI = atan(Y/X);
+    return;
+  }
+
   //Number of iterations for the CORDIC algorithm
   int nIter = 17;
   
