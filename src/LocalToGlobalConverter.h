@@ -1,8 +1,8 @@
 #ifndef _LOCALTOGLOBALCONVERTER_H_
 #define _LOCALTOGLOBALCONVERTER_H_
 
-#include <math.h>
 #include "Sector.h"
+#include "CommonTools.h"
 
 using namespace std;
 
@@ -61,5 +61,6 @@ class LocalToGlobalConverter{
      \return A vector of 3 float containing the X/Y/Z cartesian coordinates
    **/
   vector<float> toGlobal(const Hit* h) const throw (std::runtime_error);
+
 };
 #endif
