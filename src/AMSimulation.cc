@@ -126,6 +126,7 @@ using namespace std;
    If you add the option --verbose to the previous command, for each stub in the trigger tower the program will display the stub's informations along with the corresponding superstrip value. The format is one line per stub + one line per superstrip (the first value is the layer's ID, the second value is the superstrip value in hexadecimal). 
 
    The --hardware_limits option will use hardware limitations for the pattern recognition step (maximum number of stubs in event, maximum number of stubs per pattern layer, ...).
+   The --hardware_precision option will use hardware computing precision (binning of values, cordic module for trigonometry, ...) when applicable.
 
    \subsection output Using the output
    If you run the pattern recognition on the same events using different sectors, you will end up with several L1tracks_secX TTree in your input file. You can then use the mergeSectors utility to merge these TTrees into a single L1tracks TTree containing all the informations from the different sectors. The utility is located in the ./tools/mergeSectors/ folder of the AMSimulation package. 
@@ -1066,6 +1067,7 @@ int main(int av, char** ac){
     ("defectiveAddressesFile", po::value<string>(), "The file containing the list of defective pattern addresses in the chip (separeted with spaces or - for ranges)")    
     ("nbActiveLayers", po::value<int>(), "Used with --printBankAM05 : only patterns with this exact number of active layers will be printed")
     ("hardware_limits", "Use hardware limitations during pattern recognition")
+    ("hardware_precision", "Use hardware computing precision when applicable")
     ;
      
   po::variables_map vm;
@@ -1375,7 +1377,12 @@ int main(int av, char** ac){
       if(sectors[i]->getFitter()==NULL){
 	//TrackFitter* fitter = new KarimakiTrackFitter(sectors[i]->getNbLayers());
 	TrackFitter* fitter = new TCBuilder(sectors[i]->getNbLayers());
-	((TCBuilder*)fitter)->setHardwareEmulation(true);
+	if(vm.count("hardware_precision")){
+	  ((TCBuilder*)fitter)->setHardwareEmulation(true);
+	}
+	else{
+	  ((TCBuilder*)fitter)->setHardwareEmulation(false);
+	}
 	sectors[i]->setFitter(fitter);
 	sectors[i]->updateFitterPhiRotation();
       }
