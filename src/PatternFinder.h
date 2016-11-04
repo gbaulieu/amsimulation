@@ -8,7 +8,7 @@
 #include <TROOT.h>
 #include <memory>
 #include "SectorTree.h"
-#include "LocalToGlobalConverter.h"
+#include "PRBF2LocalToGlobalConverter.h"
 #include "TAMU_PCA/interface/LinearizedTrackFitter.h"
 
 #ifdef USE_CUDA
