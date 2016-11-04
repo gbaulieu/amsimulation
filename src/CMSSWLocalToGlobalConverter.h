@@ -27,6 +27,7 @@ class CMSSWLocalToGlobalConverter:public LocalToGlobalConverter{
      seg_pitch_Z
      ]
   **/
+  map<int, map<int, map<int, vector<float>>>> module_pos;
 
  public:
   /**
