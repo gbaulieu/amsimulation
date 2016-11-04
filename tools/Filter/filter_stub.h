@@ -1,5 +1,5 @@
-#ifndef FILTER_H
-#define FILTER_H
+#ifndef FILTERSTUB_H
+#define FILTERSTUB_H
 
 #include <string>
 #include <vector>
@@ -7,7 +7,6 @@
 #include <map>
 #include <iostream>
 #include <cmath>
-#include <bitset>
 #include <stdio.h>  
 #include <stdlib.h> 
 
@@ -25,18 +24,13 @@
 //
 // Base class for bank root files filtering 
 //
-// The role of this class is to select events belonging to a given 
-// sector in a muons bank file. The result is a skimmed root file with exactly
-// the same format, but containing tracks belonging to the sectors 
-// (with more than 4 good stubs in the sector, to be precise)
+// The role of this class is to select stubs belonging to a given trigger tower
 //
 // filename    : the name and directory of the input ROOT file to filter
 // secfilename : the name and directory of the csv file containing the sectors definition
 // outfile     : the name of the output ROOT file containing the filtered events
 //           
 // secid       : the sector number
-// hit_lim     : the minimum number of layer/disks with stubs in the sector
-// format      : format of the filtered output: for AM of for PCA (0 or 1)
 //
 // Info about the sector definition:
 //
@@ -46,16 +40,16 @@
 
 using namespace std;
 
-class filter
+class filter_stub
 {
  public:
 
-  filter(std::string filename, std::string secfilename, 
-	 std::string outfile, int secid, int hit_lim, int format);
+  filter_stub(std::string filename, std::string secfilename, 
+	      std::string outfile, int secid);
 
-  void   do_filter(int secid, int hit_lim);    
-  void   initTuple(std::string test,std::string out, int format);
-  bool   convert(std::string sectorfilename); 
+  void   do_filter(int secid);    
+  void   initTuple(std::string test,std::string out);
+  bool   convert(std::string sectorfilename, int secid); 
   void   reset();
     
  private:
@@ -71,10 +65,6 @@ class filter
 
   int m_stub;
   int mf_stub;
-
-  bool m_tilted;
-
-  int limits[6][3];
 
   std::vector<float>  m_stub_ptGEN;  // pt generated of stub i (in GeV/c)
   std::vector<float>  m_stub_etaGEN; // eta generated of stub i (in GeV/c)
@@ -114,6 +104,8 @@ class filter
   std::vector<float>  *mf_stub_x;      // x coord of stub i 
   std::vector<float>  *mf_stub_y;      // x coord of stub i 
   std::vector<float>  *mf_stub_z;      // x coord of stub i 
+  std::vector<float>  *mf_stub_eta;      //  
+  std::vector<float>  *mf_stub_phi;      // 
   std::vector<float>  *mf_stub_bend;   // bend of stub i 
   std::vector<float>  *mf_stub_X0;
   std::vector<float>  *mf_stub_Y0;

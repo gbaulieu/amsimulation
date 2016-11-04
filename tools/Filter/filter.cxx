@@ -7,13 +7,48 @@
 
 
 filter::filter(std::string filename, std::string secfilename, 
-	       std::string outfile, int secid, int hit_lim)
+	       std::string outfile, int secid, int hit_lim, int format)
 {  
-  filter::initTuple(filename,outfile);
+
+  m_tilted=true;
+
+  int n_tilted_rings[6];
+  int n_flat_rings[6];
+
+  for (int i=0; i < 6; ++i) n_tilted_rings[i]=0;
+  for (int i=0; i < 6; ++i) n_flat_rings[i]=0;
+
+  if (m_tilted)
+  {
+    n_tilted_rings[0]=11;
+    n_tilted_rings[1]=12;
+    n_tilted_rings[2]=13;
+    n_flat_rings[0]=7;
+    n_flat_rings[1]=11;
+    n_flat_rings[2]=15;
+  }
+
+  for (int i=0; i < 6; ++i)
+  {
+    for (int j=0; j < 3; ++j)
+    {
+      limits[i][j]=0;
+
+      if (n_tilted_rings[i]==0) continue;
+
+      limits[i][j]=(j%2)*n_flat_rings[i]+(j>0)*n_tilted_rings[i];
+    }
+  }
+
+
+  filter::initTuple(filename,outfile,format);
 
   if (!filter::convert(secfilename)) return; // Don't go further if there is no sector file
 
   filter::do_filter(secid,hit_lim); // Launch the filter loop
+
+  m_outfile->Write();
+  m_outfile->Close();      
 }
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -38,14 +73,15 @@ void filter::do_filter(int secid,int hit_lim)
   int modid;
   int layer;
 
-  int ladder;
-  int module;
-
   int n_hits[m_nsec];
 
   std::vector<int> list_sec;
 
   int new_nb_stub;
+
+  int nentr=0;
+
+  bool insec;
 
   // Loop over the events
  
@@ -59,54 +95,66 @@ void filter::do_filter(int secid,int hit_lim)
 
     // We have a muon and an anti-muon in each event
     // We treat each particle on after the other
-    for(int pdg=-13;pdg<14;pdg+=26){
+    for(int pdg=-13;pdg<14;pdg+=26)
+    {
       new_nb_stub = 0;
       filter::reset();
-      
+
       if (m_stub < 4) continue; // Not enough stubs anyway, don't go further
-      
+
       for (int j=0;j<m_nsec;++j)
-	{
-	  for (int k=0;k<20;++k) is_sec_there[j][k] = 0;
-	  n_hits[j] = 0;
-	}
+      {
+	for (int k=0;k<20;++k) is_sec_there[j][k] = 0;
+	n_hits[j] = 0;
+      }
       
       list_sec.clear();
       
       for (int j=0;j<m_stub;++j)
-	{  
-	  //Takes only stubs with the correct PDG ID
-	  if(m_stub_pdg[j]!=pdg)
-	    continue;
+      {  
+	insec=false;
+	
+	//Takes only stubs with the correct PDG ID
+	if(m_stub_pdg[j]!=pdg)
+	  continue;
+	
+	modid  = int(m_stub_modid[j]/100); 
+	layer  = int(m_stub_modid[j]/1000000); 
+	
+	//	cout << modid << " / " << m_modules.at(modid).size() << endl;
 
-	  new_nb_stub++;
-	  
-	  mf_stub_ptGEN->push_back(m_stub_ptGEN[j]);
-	  mf_stub_etaGEN->push_back(m_stub_etaGEN[j]);
-	  mf_stub_strip->push_back(m_stub_strip[j]);
-	  mf_stub_modid->push_back(m_stub_modid[j]);
-	  
-	  modid  = m_stub_modid[j]; 
-	  layer  = int(modid/1000000); 
-	  ladder  = int(modid%1000000/10000); 
-	  module  = int(modid%10000/100); 
-	  
-	  if(layer<=7)
-	    module=module/2;
-	  
-	  //modid  = int(modid/100); 
-	  modid  = layer*10000+ladder*100+module; 
-	  
-	  if (m_modules.at(modid).size()>1)
-	    {
-	      for (unsigned int kk=1;kk<m_modules.at(modid).size();++kk) // In which sector the module is
-		{
-		  ++is_sec_there[m_modules.at(modid).at(kk)][layer-5]; 
-		}
-	    }
-	} // End of loop over stubs
+	if (m_modules.at(modid).size()==0) continue;
+
+	for (unsigned int kk=0;kk<m_modules.at(modid).size();++kk) // In which sector the module is
+	{
+	  if (m_modules.at(modid).at(kk)==secid) insec=true;
+	  //if (insec) cout << m_modules.at(modid).at(kk) << " / " << layer-5 << " / " << m_stub_detid[j] << " / " << insec << endl;
+	  ++is_sec_there[m_modules.at(modid).at(kk)][layer-5]; 
+	}
+
+	if (!insec) continue; // Just write the stubs which are in the tower
+
+	new_nb_stub++;
+	mf_stub++;
+	
+	mf_stub_ptGEN->push_back(m_stub_ptGEN[j]);
+	mf_stub_etaGEN->push_back(m_stub_etaGEN[j]);
+	mf_stub_strip->push_back(m_stub_strip[j]);
+	mf_stub_modid->push_back(m_stub_modid[j]);
+	mf_stub_detid->push_back(m_stub_detid[j]);
+	mf_stub_x->push_back(m_stub_x[j]); 
+	mf_stub_y->push_back(m_stub_y[j]); 
+	mf_stub_z->push_back(m_stub_z[j]); 
+	mf_stub_bend->push_back(m_stub_bend[j]); 
+	mf_stub_X0->push_back(m_stub_X0[j]); 
+	mf_stub_Y0->push_back(m_stub_Y0[j]); 
+	mf_stub_Z0->push_back(m_stub_Z0[j]); 
+	mf_stub_PHI0->push_back(m_stub_PHI0[j]);
+
+      } // End of loop over stubs
 
       if (new_nb_stub < 4) continue; // Not enough stubs anyway, don't go further
+
       mf_stub = new_nb_stub;
 
       // Check if the sector we are interested in contains the track
@@ -117,26 +165,26 @@ void filter::do_filter(int secid,int hit_lim)
       sec_max.clear();
       
       for (int j=0;j<m_nsec;++j)
+      {
+	n_hits[j]=0;
+	  
+	for (int k=0;k<20;++k)
 	{
-	  n_hits[j]=0;
+	  if (is_sec_there[j][k]>0) ++n_hits[j]; 
+	}
 	  
-	  for (int k=0;k<20;++k)
-	    {
-	      if (is_sec_there[j][k]>0) ++n_hits[j]; 
-	    }
+	if (n_hits[j]>=n_hits_max)
+	{
+	  if (n_hits[j]==n_hits_max) sec_max.push_back(j);
 	  
-	  if (n_hits[j]>=n_hits_max)
-	    {
-	      if (n_hits[j]==n_hits_max) sec_max.push_back(j);
-	      
-	      if (n_hits[j]>n_hits_max)
-		{
-		  n_hits_max=n_hits[j];
-		  sec_max.clear();
-		  sec_max.push_back(j);
-		}
-	    }
-	} // End of loop on towers
+	  if (n_hits[j]>n_hits_max)
+	  {
+	    n_hits_max=n_hits[j];
+	    sec_max.clear();
+	    sec_max.push_back(j);
+	  }
+	}
+      } // End of loop on towers
       
       // sec_max contains the tower(s) containing most of the hits
       // this size is given by n_hits_max
@@ -144,13 +192,20 @@ void filter::do_filter(int secid,int hit_lim)
       // If n_hits_max is equal to 5, we just have to be careful not to give the track to a barrel tower
       
       if (sec_max.size()==0) continue;
-      
+
       bool keepit  = true;
+
       if(std::find(sec_max.begin(), sec_max.end(), secid) == sec_max.end()) //This track is not in our sector
 	keepit=false;
 
-      if(keepit){
-	for (unsigned int j=0;j<sec_max.size();++j){
+      if (!keepit) continue; // This track is better in another tower
+
+      if(keepit)
+      {
+	for (unsigned int j=0;j<sec_max.size();++j)
+	{
+	  //	  cout << j << " / " << sec_max.at(j) << " / " << n_hits_max << endl;
+
 	  if (secid==sec_max.at(j) && keepit) break;
 	  
 	  if (secid!=sec_max.at(j) && n_hits_max>=6) keepit=false;
@@ -158,14 +213,15 @@ void filter::do_filter(int secid,int hit_lim)
 	}
       }
 
+      //      cout << keepit << endl;
+
       if (!keepit) continue; // This track is better in another tower
-      
+      ++nentr;
       m_efftree->Fill(); // If yes fill the skimmed tree  
     }
   } // End of loop on tracks 
 
-  m_outfile->Write();
-  m_outfile->Close();
+  cout << ">>> " << nentr << endl;
 }
 
 
@@ -178,7 +234,7 @@ void filter::do_filter(int secid,int hit_lim)
 /////////////////////////////////////////////////////////////////////////////////
 
 
-void filter::initTuple(std::string test,std::string out)
+void filter::initTuple(std::string test,std::string out, int format)
 {
   m_L1TT   = new TChain("BankStubs"); 
 
@@ -217,13 +273,32 @@ void filter::initTuple(std::string test,std::string out)
   pm_stub_ptGEN=&m_stub_ptGEN;
   pm_stub_etaGEN=&m_stub_etaGEN;
   pm_stub_pdg=&m_stub_pdg;
+  pm_stub_detid=&m_stub_detid;  
+  pm_stub_x=&m_stub_x;      
+  pm_stub_y=&m_stub_y;     
+  pm_stub_z=&m_stub_z;    
+  pm_stub_bend=&m_stub_bend;  
+  pm_stub_X0=&m_stub_X0;
+  pm_stub_Y0=&m_stub_Y0;
+  pm_stub_Z0=&m_stub_Z0;
+  pm_stub_PHI0=&m_stub_PHI0;
+
 
   m_L1TT->SetBranchAddress("STUB_n",         &m_stub);
   m_L1TT->SetBranchAddress("STUB_modid",     &pm_stub_modid);
+  m_L1TT->SetBranchAddress("STUB_detid",     &pm_stub_detid);
   m_L1TT->SetBranchAddress("STUB_strip",     &pm_stub_strip);
   m_L1TT->SetBranchAddress("STUB_ptGEN",     &pm_stub_ptGEN);
   m_L1TT->SetBranchAddress("STUB_etaGEN",    &pm_stub_etaGEN);
   m_L1TT->SetBranchAddress("STUB_pdg",       &pm_stub_pdg);
+  m_L1TT->SetBranchAddress("STUB_x",           &pm_stub_x);
+  m_L1TT->SetBranchAddress("STUB_y",           &pm_stub_y);
+  m_L1TT->SetBranchAddress("STUB_z",           &pm_stub_z);
+  m_L1TT->SetBranchAddress("STUB_bend",        &pm_stub_bend);
+  m_L1TT->SetBranchAddress("STUB_X0",          &pm_stub_X0);
+  m_L1TT->SetBranchAddress("STUB_Y0",          &pm_stub_Y0);
+  m_L1TT->SetBranchAddress("STUB_Z0",          &pm_stub_Z0);
+  m_L1TT->SetBranchAddress("STUB_PHI0",        &pm_stub_PHI0);
 
   // Output file definition (see the header)
 
@@ -231,18 +306,41 @@ void filter::initTuple(std::string test,std::string out)
 
   m_efftree = new TTree("BankStubs","Stubs for bank");
 
-  mf_stub_etaGEN = new std::vector<float>;
-  mf_stub_strip  = new std::vector<float>;
-  mf_stub_ptGEN  = new std::vector<float>;
-  mf_stub_modid  = new std::vector<int>; 
+  mf_stub_etaGEN  = new  std::vector<float>; 
+  mf_stub_strip   = new  std::vector<float>; 
+  mf_stub_ptGEN   = new  std::vector<float>;  
+  mf_stub_x       = new  std::vector<float>;  
+  mf_stub_y       = new  std::vector<float>;  
+  mf_stub_z       = new  std::vector<float>;
+  mf_stub_bend    = new  std::vector<float>;    
+  mf_stub_modid   = new  std::vector<int>;  
+  mf_stub_detid   = new  std::vector<int>;
+  mf_stub_X0      = new  std::vector<float>;  
+  mf_stub_Y0      = new  std::vector<float>;  
+  mf_stub_Z0      = new  std::vector<float>;
+  mf_stub_PHI0    = new  std::vector<float>;
 
   filter::reset();
 
-  m_efftree->Branch("STUB_n",      &mf_stub);
-  m_efftree->Branch("STUB_ptGEN",  &mf_stub_ptGEN);
-  m_efftree->Branch("STUB_etaGEN", &mf_stub_etaGEN);
-  m_efftree->Branch("STUB_modid",  &mf_stub_modid);
-  m_efftree->Branch("STUB_strip",  &mf_stub_strip);
+
+  m_efftree->Branch("STUB_n",           &mf_stub);
+  m_efftree->Branch("STUB_ptGEN",       &mf_stub_ptGEN);
+  m_efftree->Branch("STUB_etaGEN",      &mf_stub_etaGEN);
+  m_efftree->Branch("STUB_modid",       &mf_stub_modid);
+  m_efftree->Branch("STUB_detid",       &mf_stub_detid);
+  m_efftree->Branch("STUB_strip",       &mf_stub_strip);
+ 
+  if (format==1)
+  {
+    m_efftree->Branch("STUB_x",           &mf_stub_x);
+    m_efftree->Branch("STUB_y",           &mf_stub_y);
+    m_efftree->Branch("STUB_z",           &mf_stub_z);
+    m_efftree->Branch("STUB_bend",        &mf_stub_bend);
+    m_efftree->Branch("STUB_X0",          &mf_stub_X0);
+    m_efftree->Branch("STUB_Y0",          &mf_stub_Y0);
+    m_efftree->Branch("STUB_Z0",          &mf_stub_Z0);
+    m_efftree->Branch("STUB_PHI0",        &mf_stub_PHI0);
+  }
 }
 
 
@@ -261,9 +359,9 @@ void filter::initTuple(std::string test,std::string out)
 
 bool filter::convert(std::string sectorfilename) 
 {
-  int n_rods[6] = {16,24,34,48,62,76};
+  int modid,lay,lad,mod,disk,type;
 
-  int modid,lay,lad,mod;
+  //  std::cout << "Starting the conversion" << std::endl;
 
   m_sec_mult = 0;
 
@@ -271,13 +369,12 @@ bool filter::convert(std::string sectorfilename)
 
   m_modules.clear();
 
-  for (int i=0;i<230000;++i)
+  for (unsigned int i=0;i<230000;++i)
   {
     module.clear();
-    module.push_back(-1);
     m_modules.push_back(module);
   }
-
+ 
   std::string STRING;
   std::ifstream in(sectorfilename.c_str());
   if (!in) 
@@ -297,6 +394,7 @@ bool filter::convert(std::string sectorfilename)
 
     std::istringstream ss(STRING);
     npar = 0;
+
     while (ss)
     {
       std::string s;
@@ -306,28 +404,61 @@ bool filter::convert(std::string sectorfilename)
       if (npar<=2) continue;
 
       modid = atoi(s.c_str());
-      
-      lay   = int(modid/10000); 
-      modid-= 10000*lay;
-      lad   = int(modid/100); 
-      modid-= 100*lad;
-      mod   = modid; 
 
-      ///////
-      // This hack is temporary and is due to a numbering problem in the TkLayout tool
-      if (lay<=10) lad = (lad+n_rods[lay-5]/4)%(n_rods[lay-5]);
-      if (lay<=7)  mod = mod/2;
-      ///////
+      std::bitset<32> detid = modid; // Le detid
 
-      modid = 10000*lay+100*lad+mod;
+      int rmodid; // Le modid que l'on utilise
 
-      m_modules.at(modid).push_back(m_sec_mult-2);
+      if (detid[25]) // barrel;
+      {
+	lay  = 8*detid[23]+4*detid[22]+2*detid[21]+detid[20]+4;
+	type = 2*detid[19]+detid[18];
+
+	if (type==3) // Pas tilté
+	{
+	  lad  = 128*detid[17]+64*detid[16]+32*detid[15]+16*detid[14]+
+	    8*detid[13]+4*detid[12]+2*detid[11]+detid[10]-1;
+	  mod  = 128*detid[9]+64*detid[8]+32*detid[7]+16*detid[6]+
+	    8*detid[5]+4*detid[4]+2*detid[3]+detid[2]-1+limits[lay-5][type-1];
+	}
+	else // tilté
+	{
+	  mod  = 128*detid[17]+64*detid[16]+32*detid[15]+16*detid[14]+
+	    8*detid[13]+4*detid[12]+2*detid[11]+detid[10]-1+limits[lay-5][type-1];
+	  lad  = 128*detid[9]+64*detid[8]+32*detid[7]+16*detid[6]+
+	    8*detid[5]+4*detid[4]+2*detid[3]+detid[2]-1;
+	}
+      }
+      else // endcap
+      {
+	disk  = 8*detid[21]+4*detid[20]+2*detid[19]+detid[18];
+	lay   = 10+disk+abs(2-(2*detid[24]+detid[23]))*7;
+	lad   = 32*detid[17]+16*detid[16]+8*detid[15]+4*detid[14]+2*detid[13]+detid[12]-1;
+
+	if (disk>=3 && m_tilted) lad += 2;
+
+	mod  = 128*detid[9]+64*detid[8]+32*detid[7]+16*detid[6]+
+	  8*detid[5]+4*detid[4]+2*detid[3]+detid[2]-1;
+      }
+
+
+      rmodid = 10000*lay+100*lad+mod;
+
+      //      if (m_sec_mult-2==0)
+      //	std::cout << modid << " / " << rmodid << std::endl; 
+
+      module = m_modules.at(rmodid);
+      module.push_back(m_sec_mult-2);
+
+      m_modules.at(rmodid) = module;
     }
   }
 
+  //  std::cout << "Found " << m_modules.size() << " modules" << endl;
+
   in.close();
 
-  m_sec_mult -= 1;
+  m_sec_mult -= 2;
 
   return true;
 }
@@ -337,10 +468,18 @@ void filter::reset()
 {
   mf_stub = 0;
 
-  mf_stub_ptGEN->clear();  
   mf_stub_etaGEN->clear();  
-  mf_stub_strip->clear();  
-  mf_stub_modid->clear();  
-
+  mf_stub_strip->clear();   
+  mf_stub_ptGEN->clear();   
+  mf_stub_x->clear();       
+  mf_stub_y->clear();       
+  mf_stub_z->clear();       
+  mf_stub_bend->clear();    
+  mf_stub_modid->clear();   
+  mf_stub_detid->clear();   
+  mf_stub_X0->clear();      
+  mf_stub_Y0->clear();      
+  mf_stub_Z0->clear();      
+  mf_stub_PHI0->clear();    
 
 }

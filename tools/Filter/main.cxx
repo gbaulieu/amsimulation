@@ -5,6 +5,7 @@
 // Internal includes
 
 #include "filter.h"
+#include "filter_stub.h"
 #include "jobparams.h"
 #include "TROOT.h"
 
@@ -53,9 +54,17 @@ int main(int argc, char** argv) {
   if (params.option()=="filter")
   {
     filter* my_test = new filter(params.inputfile(),params.sector(),
-				 params.outfile(),params.nsec(),params.lim());
+				 params.outfile(),params.nsec(),params.lim(),1);
     delete my_test;
   }
   
+
+  if (params.option()=="stub_filter")
+  {
+    filter_stub* my_test = new filter_stub(params.inputfile(),params.sector(),
+					   params.outfile(),params.nsec());
+    delete my_test;
+  }
+
   return 0;
 }
