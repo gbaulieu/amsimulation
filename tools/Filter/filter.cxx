@@ -202,7 +202,7 @@ void filter::do_filter(int secid,int hit_lim)
       {
 	if (secid<16) // -Z side Hybrid>Endcap
 	{
-	  for (unsigned int j=sec_max.size()-1;j>=0;--j)
+	  for (int j=sec_max.size()-1;j>=0;--j)
 	  {
 	    if (secid==sec_max.at(j) && keepit) break;
 	  

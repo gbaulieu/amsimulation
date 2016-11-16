@@ -1,6 +1,6 @@
 CXX = g++
 LD  = g++
-CFLAGS = -Wall -g -std=c++11
+CFLAGS = -Wall -g -std=c++11 -Werror=type-limits
 
 INCS = $(ROOTSYS)/include/ $(PWD)/tclap-1.2.1/include/ .
 
@@ -17,4 +17,4 @@ AM_filter:main.o filter.o filter_stub.o jobparams.o
 all : AM_filter
 
 clean: 
-	\rm *.o	
+	\rm *.o
