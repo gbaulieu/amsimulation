@@ -149,13 +149,45 @@ void filter::do_filter(int secid,int hit_lim)
       if(std::find(sec_max.begin(), sec_max.end(), secid) == sec_max.end()) //This track is not in our sector
 	keepit=false;
 
-      if(keepit){
-	for (unsigned int j=0;j<sec_max.size();++j){
-	  if (secid==sec_max.at(j) && keepit) break;
+      if(keepit)
+      {
+	if (secid<16) // -Z side Hybrid>Endcap
+	{
+	  for (unsigned int j=sec_max.size()-1;j>=0;--j)
+	  {
+	    if (secid==sec_max.at(j) && keepit) break;
 	  
-	  if (secid!=sec_max.at(j) && n_hits_max>=6) keepit=false;
-	  if (secid!=sec_max.at(j) && n_hits_max==5 && (sec_max.at(j)<16 || sec_max.at(j)>=32)) keepit=false;
+	    // There is a tower before the one (higher id) we are looking for which has 6 layers, barrel has priority
+	    if (secid!=sec_max.at(j) && n_hits_max>=6) keepit=false;
+	
+	    // Max is 5 stubs and a tower with larger ID is before, we give the priority (hybrid goes first)
+	    if (secid!=sec_max.at(j) && n_hits_max==5 && (sec_max.at(j)<16 || sec_max.at(j)>=32)) keepit=false;
+	  }
 	}
+	else if (secid>=32) // +Z side Hybrid>Endcap
+	{
+	  for (unsigned int j=0;j<sec_max.size();++j)
+	  {
+	    if (secid==sec_max.at(j) && keepit) break;
+	  
+	    // There is a tower before the one we are looking for which has 6 layers, barrel has priority
+	    if (secid!=sec_max.at(j) && n_hits_max>=6) keepit=false;
+	
+	    //  Max is 5 stubs and a tower with lower ID is before, we give the priority (hybrid goes first)
+	    if (secid!=sec_max.at(j) && n_hits_max==5 && (sec_max.at(j)<16 || sec_max.at(j)>=32)) keepit=false;
+	  }
+	}
+	else // Barrel
+	{
+	  for (unsigned int j=0;j<sec_max.size();++j)
+	  {
+	    if (secid==sec_max.at(j) && keepit) break;
+	  
+	    // There is a barrel tower before the one we are looking for which has 6 layers, barrel+ has priority
+	    if (secid!=sec_max.at(j) && n_hits_max>=6  && (sec_max.at(j)>=16 && sec_max.at(j)<32)) keepit=false;
+	  }
+	}
+
       }
 
       if (!keepit) continue; // This track is better in another tower
