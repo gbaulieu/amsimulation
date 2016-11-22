@@ -1079,7 +1079,7 @@ int main(int av, char** ac){
   if (vm.count("help")) {
     cout << desc << "\n";
 
-    return 1;
+    return 0;
   }
 
   if (vm.count("analyseBank")) {
