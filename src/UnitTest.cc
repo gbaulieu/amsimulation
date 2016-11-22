@@ -59,14 +59,14 @@ BOOST_AUTO_TEST_CASE( CMSPatternLayer_constructor_test )
 
 BOOST_AUTO_TEST_CASE( bank_compatibility_test ){
 
-  const int BANK_SIZE = 139922;
+  const int BANK_SIZE = 131072;
   int* pattern100[6];
-  int patternLayer0[4] = {0,0,0,0};
+  int patternLayer0[4] = {0,0,0,1};
   int patternLayer1[4] = {0,0,1,6};
-  int patternLayer2[4] = {1,0,2,6};
-  int patternLayer3[4] = {2,1,1,1};
-  int patternLayer4[4] = {2,0,3,4};
-  int patternLayer5[4] = {3,0,3,0};
+  int patternLayer2[4] = {0,0,2,25};
+  int patternLayer3[4] = {0,1,1,6};
+  int patternLayer4[4] = {0,1,3,15};
+  int patternLayer5[4] = {0,1,3,1};
   
   pattern100[0] = patternLayer0;
   pattern100[1] = patternLayer1;
@@ -139,19 +139,20 @@ BOOST_AUTO_TEST_CASE( pattern_finding_test ){
   }
 
   ///////////////////////////////////////////////////////////////
-  // If we don't have a fitter -> create a Hough default one
+  // If we don't have a fitter -> create a TCBuilder default one
   vector<Sector*> sectors = st.getAllSectors();
   for(unsigned int i=0;i<sectors.size();i++){
     if(sectors[i]->getFitter()==NULL){
       //TrackFitter* fitter = new KarimakiTrackFitter(sectors[i]->getNbLayers());
-      TrackFitter* fitter = new HoughFitter(sectors[i]->getNbLayers());
+      TrackFitter* fitter = new TCBuilder(sectors[i]->getNbLayers());
+      ((TCBuilder*)fitter)->setHardwareEmulation(false);
       sectors[i]->setFitter(fitter);
       sectors[i]->updateFitterPhiRotation();
     }
   }
   ///////////////////////////////////////////////////////////////
 
-  PatternFinder pf(5, &st,  "test_data/PU4T_620SLHC7_light.root",  "test_data/output.root");
+  PatternFinder pf(0, &st,  "test_data/PU4T_sample.root",  "test_data/output.root");
   {
     pf.useMissingHitThreshold(1);
     int stop = 10;

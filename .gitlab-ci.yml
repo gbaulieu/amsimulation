@@ -10,14 +10,19 @@ build:
     - export ROOTSYS=/opt/root/
     - export PATH=/opt/root/bin/:$PATH
     - export LD_LIBRARY_PATH=/opt/root/lib/:$LD_LIBRARY_PATH
+    - make -j 4
+    - make tests
+    - cd tools/mergeSectors
     - make
+    - cd ../comparePatterns
+    - make
+    - cd ../..
   artifacts:
     paths:
       - AMSimulation
-  # depending on your build setup it's most likely a good idea to cache outputs to reduce the build time
-  # cache:
-  #   paths:
-  #     - "*.o"
+      - UnitTest
+      - tools/mergeSectors/mergeSectors
+      - tools/comparePatterns/comparePatterns
 
 # run tests using the binary built before
 test:
@@ -27,3 +32,6 @@ test:
     - export PATH=/opt/root/bin/:$PATH
     - export LD_LIBRARY_PATH=/opt/root/lib/:$LD_LIBRARY_PATH
     - ./AMSimulation --help
+    - ./UnitTest
+    - ./tools/mergeSectors/mergeSectors ./test_data/PU4T_sample.root
+    - ./tools/comparePatterns/comparePatterns test_data/PU4T_ref.root test_data/PU4T_sample.root
