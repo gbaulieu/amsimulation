@@ -13,8 +13,10 @@ build:
     - make -j 4
     - make tests
     - cd tools/mergeSectors
+    - sed -i s/CMSSW_ENABLED=true/CMSSW_ENABLED=false/ Makefile
     - make
     - cd ../comparePatterns
+    - sed -i s/CMSSW_ENABLED=true/CMSSW_ENABLED=false/ Makefile
     - make
     - cd ../..
   artifacts:
