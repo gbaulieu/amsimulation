@@ -3,6 +3,7 @@ UNAME := $(shell uname)
 SRC=src
 
 CUDA_ENABLED=false
+CMSSW_ENABLED=true
 CUDA_ROOTDIR=/usr/local/cuda/
 CUDA_EXAMPLEDIR=${CUDA_ROOTDIR}/samples/common/
 
@@ -18,9 +19,15 @@ ifeq ($(CUDA_ENABLED),true)
 	INC =-I `root-config --incdir` -I ${SRC} -I ${CUDA_EXAMPLEDIR}/inc -I${CUDA_ROOTDIR}/include/
 	LIBS =-L ${ROOTSYS}/lib -L${CUDA_ROOTDIR}/lib64 -lcuda -lcudart
 else
-	FLAG=-O3 -Wall -std=c++11 -Werror=type-limits
-	INC =-I `root-config --incdir` -I `scram tool tag boost INCLUDE` -I`scram tool tag eigen INCLUDE` -I ${SRC}
-	LIBS =-L ${ROOTSYS}/lib -L `scram tool tag boost LIBDIR`
+	ifeq ($(CMSSW_ENABLED),true)
+		FLAG=-O3 -Wall -std=c++11 -Werror=type-limits
+		INC =-I `root-config --incdir` -I `scram tool tag boost INCLUDE` -I`scram tool tag eigen INCLUDE` -I ${SRC}
+		LIBS =-L ${ROOTSYS}/lib -L `scram tool tag boost LIBDIR`
+	else
+		FLAG=-O3 -Wall -std=c++11 -Werror=type-limits
+		INC =-I `root-config --incdir` -I ${SRC}
+		LIBS =-L ${ROOTSYS}/lib
+	endif
 endif
    BOOSTLIBS = -lboost_serialization -lboost_program_options -lboost_iostreams
 endif
