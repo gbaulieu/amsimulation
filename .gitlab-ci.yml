@@ -1,10 +1,7 @@
 image: gbaulieu/ubuntu-root:v2
 
 build:
-  stage: build
-  # instead of calling g++ directly you can also use some build toolkit like make
-  # install the necessary build tools when needed
-  before_script: 
+#Adapt the makefile to be able to compile outside CMSSW
   script: 
     - sed -i s/CMSSW_ENABLED=true/CMSSW_ENABLED=false/ Makefile
     - export ROOTSYS=/opt/root/
@@ -27,8 +24,7 @@ build:
       - tools/comparePatterns/comparePatterns
 
 # run tests using the binary built before
-test:
-  stage: test
+functionality:
   script:
     - export ROOTSYS=/opt/root/
     - export PATH=/opt/root/bin/:$PATH
@@ -36,4 +32,15 @@ test:
     - ./AMSimulation --help
     - ./UnitTest
     - ./tools/mergeSectors/mergeSectors ./test_data/PU4T_sample.root
+  artifacts:
+    paths:
+      - tools/comparePatterns/comparePatterns
+      - test_data/PU4T_sample.root
+
+# check the accuracy of the previous results
+accuracy:
+  script:
+    - export ROOTSYS=/opt/root/
+    - export PATH=/opt/root/bin/:$PATH
+    - export LD_LIBRARY_PATH=/opt/root/lib/:$LD_LIBRARY_PATH
     - ./tools/comparePatterns/comparePatterns test_data/PU4T_ref.root test_data/PU4T_sample.root
