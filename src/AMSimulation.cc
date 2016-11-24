@@ -293,7 +293,7 @@ int modIDFromDetID(int det_id){
   
   n_tilted_rings[0]=11;
   n_tilted_rings[1]=12;
-  n_tilted_rings[2]=13;
+  n_tilted_rings[2]=12;
   n_flat_rings[0]=7;
   n_flat_rings[1]=11;
   n_flat_rings[2]=15;
