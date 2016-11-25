@@ -9,6 +9,7 @@
 #include <memory>
 #include "SectorTree.h"
 #include "PRBF2LocalToGlobalConverter.h"
+#include "CMSSWLocalToGlobalConverter.h"
 #include "TAMU_PCA/interface/LinearizedTrackFitter.h"
 
 #ifdef USE_CUDA
