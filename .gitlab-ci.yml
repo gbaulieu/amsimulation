@@ -1,4 +1,4 @@
-image: gbaulieu/ubuntu-root:v2
+image: gitlab-registry.in2p3.fr/ipnl_fasttrack/amsimulation:latest
 
 stages:
     - build
