@@ -1667,7 +1667,7 @@ int main(int av, char** ac){
       cout<<"** LOCAL LAYER/LADDER -> Superstrip Size "<<endl;
       displaySuperstripSizesWithLocalID(st);
       cout<<"**"<<endl;
-      cout<<"** The 8 input buses are used for the following layers (CMS IDs - Symmetric layrs in -Z) : ";
+      cout<<"** The 8 input buses are used for the following layers (CMS IDs - Symmetric layers in -Z) : ";
       for(unsigned int j=0;j<layers.size();j++){
 	if(hybrid_sector && layers[j]==biggestID )
 	  continue;
