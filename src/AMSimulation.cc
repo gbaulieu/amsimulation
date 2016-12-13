@@ -1667,12 +1667,12 @@ int main(int av, char** ac){
       cout<<"** LOCAL LAYER/LADDER -> Superstrip Size "<<endl;
       displaySuperstripSizesWithLocalID(st);
       cout<<"**"<<endl;
-      cout<<"** The 8 input buses are used for the following layers (CMS IDs) : ";
+      cout<<"** The 8 input buses are used for the following layers (CMS IDs - Symmetric layrs in -Z) : ";
       for(unsigned int j=0;j<layers.size();j++){
-	if(hybrid_sector && layers[j]==9)
+	if(hybrid_sector && layers[j]==biggestID )
 	  continue;
-	if(hybrid_sector && layers[j]==biggestID)
-	  cout<<9<<"/"<<biggestID;
+	if(hybrid_sector && layers[j]==9)
+	  cout<<9<<"/"<<biggestID<<" - ";
 	else
 	  cout<<layers[j]<<" - ";
       }
@@ -1699,21 +1699,21 @@ int main(int av, char** ac){
 	for(int k=0;k<p->getNbLayers();k++){
 
 	  bool tagLayer = false;
-	  if(hybrid_sector && k==4){ // this is layer 9 -> in hybrid sector we set it on bus 7
-	    continue;
-	  }
-
 	  PatternLayer* mp = p->getLayerStrip(k);
 
-	  if(k==4 && !endcap_sector && !mp->isFake()) // this is layer 9 and not a fake superstrip -> we tag it
+	  if(hybrid_sector && k==4){ // this is layer 9 -> in hybrid sectors it shares the same bus than layers 13/20
+	    if(mp->isFake()) // if we have a fake superstrip on this layer -> we use the value of last layer (13/20)
+	      mp = p->getLayerStrip(8);
+	    else
+	      tagLayer = true;//we need to tag the layer to distinguish layer 9 from the endcap layer sharing the same bus
+	  }
+
+	  if(k==4 && !endcap_sector && !hybrid_sector && !mp->isFake()){ // this is layer 9 on barrel sector and not a fake superstrip -> we tag it
 	    tagLayer = true;
+	  }
 	  
-	  if(hybrid_sector && k==p->getNbLayers()-1){ // this is the last layer -> set its data on last bus along with data from layer 9
-	    if(mp->isFake()){ // if we have a fake superstrip on this layer -> we use the value of layer 9
-	      mp = p->getLayerStrip(4);
-	      if (!mp->isFake())
-		tagLayer = true;//we need to tag the layer to distinguish layer 9 from the endcap layer sharing the same bus
-	    }
+	  if(hybrid_sector && k==p->getNbLayers()-1){ // this is the last layer -> it has already been treated along with layer 9
+	    continue;
 	  }
 	  
 	  cout<<((CMSPatternLayer*)mp)->toAM05Format(tagLayer)<<endl;
