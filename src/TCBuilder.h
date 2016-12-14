@@ -41,7 +41,7 @@ class TCBuilder:public TrackFitter{
   double m_tabHybridThresholds[2][3][14][2];  //Hybrid LayMaxSeed1 = 1, LayMaxSeed2 = 2, LayMaxTestStub = 13
   double m_tabEndcapThresholds[4][5][16][2];  //Endcap LayMaxSeed1 = 3, LayMaxSeed2 = 4, LayMaxTestStub = 15
 
-  int m_nMissingHits;
+  unsigned int m_minimum_number_for_TC;
   LocalToGlobalConverter* l2gConverter;
 
   /**

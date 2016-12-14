@@ -13,7 +13,7 @@ TCBuilder::TCBuilder():TrackFitter(0){
 TCBuilder::TCBuilder(int nb):TrackFitter(nb)
 {
   l2gConverter=NULL;
-  m_nMissingHits = 1;                 //Maximum number of missing layers in a TC (from the number of layers in the pattern)
+  m_minimum_number_for_TC = 0;                 //Minimum number of layers with stub to a create a TC (defined per pattern)
   updateThresholds();
 }
 
@@ -685,14 +685,12 @@ void TCBuilder::fit(vector<Hit*> originalHits, int pattern_id)
   sort(hits.begin(), hits.end(), [ ]( const Hit& lhs, const Hit& rhs ) { return lhs.getLayer() < rhs.getLayer(); });
 
 
-  int nLayersCurrentPattern = 0;
   int lastAddedLayer = -1;
   //Count the number of layers present in the pattern
   for (unsigned int hitIndex=0; hitIndex < hits.size(); hitIndex++)
     {
       if (lastAddedLayer != hits[hitIndex].getLayer())
 	{
-	  nLayersCurrentPattern++;
 	  lastAddedLayer = hits[hitIndex].getLayer();
 	}
     }
@@ -790,7 +788,7 @@ void TCBuilder::fit(vector<Hit*> originalHits, int pattern_id)
 
 	  //All the stubs have been tested for the current Seeds combination
 
-	  if (int(vecCurrentCandidateHits.size()) >= nLayersCurrentPattern - m_nMissingHits)
+	  if (vecCurrentCandidateHits.size() >= m_minimum_number_for_TC)
 	    {
 	      //The current candidate has enough stubs to be a candidate
  
@@ -814,7 +812,7 @@ void TCBuilder::fit(vector<Hit*> originalHits, int pattern_id)
 
   //All the Seeds combinations have been tested
 
-  if ( (currentSec == SEC_HYBRID && vecBestCandidateHits.size() >= 4) || vecBestCandidateHits.size() >= 5 )
+  if ( vecBestCandidateHits.size() >= m_minimum_number_for_TC )
     {
       //If there is a recorded best candidate
 
@@ -839,6 +837,7 @@ void TCBuilder::fit(vector<Hit*> originalHits, int pattern_id)
 void TCBuilder::fit(){
   for(unsigned int i=0;i<patterns.size();i++){
     vector<Hit*> allHits = patterns[i]->getHits();
+    m_minimum_number_for_TC = patterns[i]->getNbLayers()-patterns[i]->getNbFakeSuperstrips()-1;
     fit(allHits, patterns[i]->getOrderInChip());
   }
 }
