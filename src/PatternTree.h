@@ -3,6 +3,7 @@
 
 #include <map>
 #include <vector>
+#include <set>
 #include "PatternTrunk.h"
 #include "CMSPatternLayer.h"
 
@@ -17,6 +18,11 @@ class PatternTree{
   **/
   PatternTree();
   ~PatternTree();
+
+  /**
+     \brief Remove all patterns from the current PatternTree
+   **/
+  void clear();
  /**
      \brief Add a copy of the pattern to the structure or increment the grade of the already stored pattern
      \param ldp The low definition pattern (will be copied)
@@ -115,8 +121,16 @@ class PatternTree{
      \brief Delete the least used patterns to match the given pattern number
      \param nbPatterns The number of patterns to keep
      \param sorting_algo Algorithm used to sort the patterns (0:by popularity, 1:by PT, 2:by mixed score+PT)
+     \param defective_patterns A list of non working addresses in the chip : this addresses will be populated with non activable placeholder patterns
   **/
   void truncate(int nbPatterns, int sorting_algo=0, vector<unsigned int> defective_patterns=vector<unsigned int>());
+
+  /**
+     \brief Replaces the existing PatternTree with a copy of the one in argument with fake superstrips on defective modules.
+     \param ref_pt The reference patterns tree
+     \param defective_modules A list of non working modules in the detector : the superstrips belonging to these modules will be replaced with Fake Superstrips (always active)
+  **/
+  void desactivateModules(PatternTree* ref_pt, set<unsigned int> defective_modules);
 
  private:
   map<string, PatternTrunk*> patterns;
