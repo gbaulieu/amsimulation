@@ -11,10 +11,6 @@ SectorTree::SectorTree(){
 SectorTree::SectorTree(const SectorTree& st){
   srand ( time(NULL) );
   mapNeedsUpdate=true;
-  //copy the superstrip sizes
-  for(map<string, int>::iterator it=st.superstripSize_lut.begin();it!=superstripSize_lut.end();it++){
-    this->superstripSize_lut[it->first]=it->second;
-  }
 }
 
 SectorTree::~SectorTree(){
