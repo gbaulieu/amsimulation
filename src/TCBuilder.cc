@@ -779,13 +779,6 @@ void TCBuilder::fit(vector<Hit*> originalHits, int pattern_id)
 		}
 	    }
 
-	  //If the current candidate own more than 6 stubs, the lasts (outtermost) are removed
-	  while (vecCurrentCandidateHits.size() > 6)
-	    {
-	      vecCurrentCandidateHits.pop_back();
-	      vecCurrentCandidateScore.pop_back();
-	    }
-
 	  //All the stubs have been tested for the current Seeds combination
 
 	  if (vecCurrentCandidateHits.size() >= m_minimum_number_for_TC)
@@ -815,6 +808,11 @@ void TCBuilder::fit(vector<Hit*> originalHits, int pattern_id)
   if ( vecBestCandidateHits.size() >= m_minimum_number_for_TC )
     {
       //If there is a recorded best candidate
+
+      //If the candidate owns more than 6 stubs, the outtermost ones are removed
+      while (vecBestCandidateHits.size() > 6){
+	vecBestCandidateHits.pop_back();
+      }
 
       // If we have a 6 stubs TC with a stub on the last endcap disk -> we remove it
       // The 5 stubs TC will be easier to handle for the PCA
