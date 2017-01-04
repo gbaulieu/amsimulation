@@ -916,9 +916,12 @@ set<unsigned int> loadDefectiveModules(const Sector& s, string name){
 	  unsigned int ladder = (v-layer*10000)/100;
 	  unsigned int module = (v-layer*10000-ladder*100);
 	  //Convertion from global to local numbering
-	  unsigned int local_layer = s.getLayerIndex(layer);
-	  unsigned int local_ladder = s.getLadderCode(layer, ladder);
-	  unsigned int local_module = s.getModuleCode(layer, ladder, module);
+	  int local_layer = s.getLayerIndex(layer);
+	  int local_ladder = s.getLadderCode(layer, ladder);
+	  int local_module = s.getModuleCode(layer, ladder, module);
+
+	  if(local_module==-1 || local_ladder==-1)
+	    continue;
 
 	  bool isPSModule = false;
 	  if((layer>=5 && layer<=7) || (layer>10 && CMSPatternLayer::getLadderCode(layer,ladder)<=8)){
