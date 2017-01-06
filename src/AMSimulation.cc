@@ -1795,7 +1795,7 @@ int main(int av, char** ac){
 	if(nbFS<=maxFS && nbFS>=minFS){
 	  //add the pattern
 	  for(int k=0;k<p->getGrade();k++){
-	    newSector->getPatternTree()->addPattern(p,NULL,p->getAveragePt());
+	    newSector->getPatternTree()->addPattern(p,NULL,p->getAveragePt(), p->getSign());
 	  }
 	}
       }

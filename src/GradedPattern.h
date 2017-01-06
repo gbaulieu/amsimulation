@@ -33,14 +33,19 @@ class GradedPattern : public Pattern{
   **/
   float getAveragePt() const;
   /**
+     \brief Get the sign of the generating particles
+     \return -1 for PDG<0, 1 for PDG>0, 0 if different sign were used
+  **/
+  int getSign() const;
+  /**
      Increment the grade (tracks occurences + 1)
   **/
   void increment();
   /**
-     Increment the grade (tracks occurences + 1) and add a Pt value to the average Pt
+     Increment the grade (tracks occurences + 1), add a Pt value to the average Pt, add the sign according to the PDG
      @param pt The Pt value of the last track
   **/
-  void increment(float pt);
+  void increment(float pt, int pdg);
   /**
      \brief Allows to compare 2 patterns on their grade
      \param gp The second pattern
@@ -51,6 +56,7 @@ class GradedPattern : public Pattern{
  private:
   int grade;
   float averagePt;
+  int sign;
 
   friend class boost::serialization::access;
   
@@ -58,15 +64,20 @@ class GradedPattern : public Pattern{
     ar << boost::serialization::base_object<Pattern>(*this);
     ar << grade;
     ar << averagePt;
+    ar << sign;
   }
   
   template<class Archive> void load(Archive & ar, const unsigned int version){
     ar >> boost::serialization::base_object<Pattern>(*this);
     ar >> grade;
     ar >> averagePt;
+    if(version>0){
+      ar >> sign;
+    }
   }
   
   BOOST_SERIALIZATION_SPLIT_MEMBER()
 
 };
+BOOST_CLASS_VERSION(GradedPattern, 1)
 #endif

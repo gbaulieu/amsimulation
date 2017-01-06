@@ -45,7 +45,7 @@ class PatternTrunk{
      \brief Add a new full definition pattern to the structure and update the average pt of this pattern
      Increment the low definition pattern grade. If the FD pattern is already contained, increments the grade.
   **/
-  void addFDPattern(Pattern* p, float pt);
+  void addFDPattern(Pattern* p, float pt, int pdg);
 
 
   /**

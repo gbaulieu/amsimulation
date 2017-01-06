@@ -28,8 +28,9 @@ class PatternTree{
      \param ldp The low definition pattern
      \param fdp The corresponding full definition pattern (can be NULL if only one definition level is used)
      \param new_pt The Pt of the track generating the pattern
+     \param new_pdg The PDG of the track generating the pattern
   **/
-  void addPattern(Pattern* ldp, Pattern* fdp, float new_pt);
+  void addPattern(Pattern* ldp, Pattern* fdp, float new_pt, int new_pdg);
 
  /**
      \brief Get a copy of the full definition patterns

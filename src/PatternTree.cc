@@ -33,18 +33,18 @@ void PatternTree::addPattern(Pattern* ldp, Pattern* fdp){
   }
 }
 
-void PatternTree::addPattern(Pattern* ldp, Pattern* fdp, float new_pt){
+void PatternTree::addPattern(Pattern* ldp, Pattern* fdp, float new_pt, int new_pdg){
   if(patterns.size()==0)
     switchToMap();
   string key = ldp->getKey();
   map<string, PatternTrunk*>::iterator it = patterns.find(key);
   if(it==patterns.end()){//not found
     PatternTrunk* pt = new PatternTrunk(ldp);
-    pt->addFDPattern(fdp, new_pt);
+    pt->addFDPattern(fdp, new_pt, new_pdg);
     patterns[key]=pt;
   }
   else{
-    (it->second)->addFDPattern(fdp, new_pt);
+    (it->second)->addFDPattern(fdp, new_pt, new_pdg);
   }
 }
 
@@ -262,14 +262,14 @@ void PatternTree::addPatternForMerging(GradedPattern* ldp){
   if(it==patterns.end()){//not found
     PatternTrunk* pt = new PatternTrunk(ldp);
     for(int i=0;i<ldp->getGrade();i++){
-      pt->addFDPattern(NULL, ldp->getAveragePt());
+      pt->addFDPattern(NULL, ldp->getAveragePt(), ldp->getSign());
     }
     patterns[key]=pt;
   }
   else{
     (it->second)->updateDCBits(ldp);
     for(int i=0;i<ldp->getGrade();i++){
-      (it->second)->addFDPattern(NULL, ldp->getAveragePt());
+      (it->second)->addFDPattern(NULL, ldp->getAveragePt(), ldp->getSign());
     }
   }
 }

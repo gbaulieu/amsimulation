@@ -31,18 +31,18 @@ void PatternTrunk::addFDPattern(Pattern* p){
   }
 }
 
-void PatternTrunk::addFDPattern(Pattern* p, float pt){
-  lowDefPattern->increment(pt);
+void PatternTrunk::addFDPattern(Pattern* p, float pt, int pdg){
+  lowDefPattern->increment(pt,pdg);
   if(p!=NULL){
     string key=p->getKey();
     map<string, GradedPattern*>::iterator it = fullDefPatterns.find(key);
     if(it==fullDefPatterns.end()){//not found
       GradedPattern* gp = new GradedPattern(*p);
-      gp->increment(pt);
+      gp->increment(pt,pdg);
       fullDefPatterns[key]=gp;
     }
     else{
-      (it->second)->increment(pt);
+      (it->second)->increment(pt,pdg);
     }
   }
 }
