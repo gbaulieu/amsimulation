@@ -49,7 +49,7 @@ void filter::do_filter(int secid,int hit_lim)
 
   // Loop over the events
  
-  for (int i=0;i<200000;++i)
+  for (int i=0;i<ndat;++i)
   {    
 
     m_L1TT->GetEntry(i);
