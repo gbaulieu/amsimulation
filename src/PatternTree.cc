@@ -262,14 +262,14 @@ void PatternTree::addPatternForMerging(GradedPattern* ldp){
   if(it==patterns.end()){//not found
     PatternTrunk* pt = new PatternTrunk(ldp);
     for(int i=0;i<ldp->getGrade();i++){
-      pt->addFDPattern(NULL, ldp->getAveragePt(), ldp->getSign());
+      pt->addFDPattern(NULL, ldp->getAveragePt(), ldp->getCharge());
     }
     patterns[key]=pt;
   }
   else{
     (it->second)->updateDCBits(ldp);
     for(int i=0;i<ldp->getGrade();i++){
-      (it->second)->addFDPattern(NULL, ldp->getAveragePt(), ldp->getSign());
+      (it->second)->addFDPattern(NULL, ldp->getAveragePt(), ldp->getCharge());
     }
   }
 }

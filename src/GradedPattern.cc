@@ -3,13 +3,17 @@
 GradedPattern::GradedPattern():Pattern(){
   grade=0;
   averagePt=0;
-  sign = -2;
+  minPT=200;
+  maxPT=0;
+  charge = -2;
 }
 
 GradedPattern::GradedPattern(const Pattern& p):Pattern(p){
   grade=0;
   averagePt=0;
-  sign = -2;
+  minPT=200;
+  maxPT=0;
+  charge = -2;
 }
 
 int GradedPattern::getGrade() const{
@@ -20,8 +24,16 @@ float GradedPattern::getAveragePt() const{
   return averagePt;
 }
 
-int GradedPattern::getSign() const{
-  return sign;
+float GradedPattern::getMinPt() const{
+  return minPT;
+}
+
+float GradedPattern::getMaxPt() const{
+  return maxPT;
+}
+
+int GradedPattern::getCharge() const{
+  return charge;
 }
 
 void GradedPattern::increment(){
@@ -30,11 +42,15 @@ void GradedPattern::increment(){
 
 void GradedPattern::increment(float pt, int pdg){
   averagePt=(averagePt*grade+pt)/(grade+1);
-  int partSign = (pdg>0)?1:-1;
-  if(sign==-2)//this is a new pattern
-    sign=partSign;
-  else if(sign!=partSign)
-    sign = 0;
+  if(pt>maxPT)
+    maxPT=pt;
+  if(pt<minPT)
+    minPT=pt;
+  int partCharge = (pdg>0)?1:-1;
+  if(charge==-2)//this is a new pattern
+    charge=partCharge;
+  else if(charge!=partCharge)
+    charge = 0;
   grade++;
 }
 
