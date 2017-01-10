@@ -246,13 +246,12 @@ void PatternTree::addPatternsFromTree(PatternTree* p){
   vector<GradedPattern*> ld = p->getLDPatterns();
   for(unsigned int i=0;i<ld.size();i++){
     GradedPattern* patt = ld[i];
-    
+
     addPatternForMerging(patt);
     
     delete patt;
   }
 }
-
 
 void PatternTree::addPatternForMerging(GradedPattern* ldp){
   if(patterns.size()==0)
@@ -261,16 +260,10 @@ void PatternTree::addPatternForMerging(GradedPattern* ldp){
   map<string, PatternTrunk*>::iterator it = patterns.find(key);
   if(it==patterns.end()){//not found
     PatternTrunk* pt = new PatternTrunk(ldp);
-    for(int i=0;i<ldp->getGrade();i++){
-      pt->addFDPattern(NULL, ldp->getAveragePt(), ldp->getCharge());
-    }
     patterns[key]=pt;
   }
   else{
-    (it->second)->updateDCBits(ldp);
-    for(int i=0;i<ldp->getGrade();i++){
-      (it->second)->addFDPattern(NULL, ldp->getAveragePt(), ldp->getCharge());
-    }
+    (it->second)->updateWithPattern(ldp);
   }
 }
 
@@ -374,7 +367,7 @@ void PatternTree::truncate(int nbPatterns, int sorting_algo, vector<unsigned int
     for(unsigned int k=0;k<defective_addresses.size();k++){
       //Creating an invalid pattern to fill the defective addresses of the chip
       int nbLayers = v_patterns[0]->getLDPattern()->getNbLayers();
-      Pattern* pat = new Pattern(nbLayers);
+      Pattern* pat = new GradedPattern(nbLayers);
       for(int i=0;i<nbLayers;i++){
 	CMSPatternLayer pl;
 	pl.computeSuperstrip(5, 31, k/128, k%128, 0, 1, false, false);

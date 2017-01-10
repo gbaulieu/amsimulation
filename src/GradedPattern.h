@@ -19,9 +19,16 @@ class GradedPattern : public Pattern{
   **/
   GradedPattern();
   /**
+     \brief Constructor
+  **/
+  GradedPattern(int nbLayers);
+  /**
      \brief Copy Constructor
   **/
   GradedPattern(const Pattern& p);
+  GradedPattern(const GradedPattern& p);
+
+  virtual ~GradedPattern(){};
   /**
      \brief Get the grade of the Pattern
      \return The number of tracks having generated the pattern
@@ -62,6 +69,10 @@ class GradedPattern : public Pattern{
      \return -1 if the pattern has a lower grade
   **/
   int operator<(const GradedPattern& gp);
+  /**
+     \brief Update the data of the pattern according to the data of the argument
+   **/
+  void mergeData(const GradedPattern& gp);
 
  private:
   int grade;

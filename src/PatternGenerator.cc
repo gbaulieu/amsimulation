@@ -301,11 +301,11 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
 
     float last_pt = 0;
     int ladder_ori = -1;
-    Pattern* p = new Pattern(tracker_layers.size());
+    Pattern* p = new GradedPattern(tracker_layers.size());
     Pattern* lowDef_p=NULL;
     
     if(getVariableResolutionState()){ // we use variable resolution patterns so we create 2 patterns with different resolution
-      lowDef_p = new Pattern(tracker_layers.size());
+      lowDef_p = new GradedPattern(tracker_layers.size());
     }
     for(unsigned int j=0;j<tracker_layers.size();j++){
       int stub_number = layers[j];

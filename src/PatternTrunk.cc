@@ -4,6 +4,10 @@ PatternTrunk::PatternTrunk(Pattern* p){
   lowDefPattern = new GradedPattern(*p);
 }
 
+PatternTrunk::PatternTrunk(GradedPattern* p){
+  lowDefPattern = new GradedPattern(*p);
+}
+
 PatternTrunk::PatternTrunk(){
   lowDefPattern = new GradedPattern();
 }
@@ -171,6 +175,15 @@ void PatternTrunk::updateDCBits(GradedPattern* p){
       }
     }
   }
+}
+
+void PatternTrunk::updatePatternData(const GradedPattern& p){
+  lowDefPattern->mergeData(p);
+}
+
+void PatternTrunk::updateWithPattern(GradedPattern* gp){
+  updatePatternData(*gp);
+  updateDCBits(gp);
 }
 
 bool PatternTrunk::checkPattern(Pattern* hp){
