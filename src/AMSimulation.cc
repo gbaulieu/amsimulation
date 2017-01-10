@@ -1797,17 +1797,17 @@ int main(int av, char** ac){
       Sector* mySector = sectors[i];
       st2.addSector(*mySector);
       Sector* newSector = st2.getAllSectors()[i];
-      vector<GradedPattern*> patterns = mySector->getPatternTree()->getLDPatterns();
-      for(unsigned int j=0;j<patterns.size();j++){
-	GradedPattern* p = patterns[j];
-	int nbFS = p->getNbFakeSuperstrips();
-	if(nbFS<=maxFS && nbFS>=minFS){
-	  //add the pattern
-	  for(int k=0;k<p->getGrade();k++){
-	    newSector->getPatternTree()->addPattern(p,NULL,p->getAveragePt(), p->getCharge());
-	  }
+      if(vm.count("minFS") || vm.count("maxFS")){
+	cout<<"Selecting patterns according to their number of fake superstrips..."<<endl;
+	mySector->getPatternTree()->removePatterns(minFS,maxFS);
+	cout<<mySector->getPatternTree()->getLDPatternNumber()<<" patterns remaining"<<endl;
+	if(mySector->getPatternTree()->getLDPatternNumber()==0){
+	  cout<<"No pattern in output : abort."<<endl;
+	  return -1;
 	}
       }
+      newSector->getPatternTree()->addPatternsFromTree(mySector->getPatternTree());
+      
       newSector->getPatternTree()->truncate(newNbPatterns,sorting_algo,defectiveAddresses);
       cout<<"Sector "<<mySector->getOfficialID()<<" :\n\tinput bank : "<<mySector->getPatternTree()->getLDPatternNumber()<<" patterns\n\toutput bank : "<<newSector->getPatternTree()->getLDPatternNumber()<<" patterns."<<endl;
     }

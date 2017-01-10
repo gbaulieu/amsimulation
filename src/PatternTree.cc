@@ -409,3 +409,25 @@ void PatternTree::truncate(int nbPatterns, int sorting_algo, vector<unsigned int
 
   switchToMap();
 }
+
+void PatternTree::removePatterns(int minFS, int maxFS){
+  switchToVector();
+
+  vector<PatternTrunk*>::iterator itr = v_patterns.begin();
+
+  int min = minFS;
+  int max = maxFS;
+
+  auto it = std::remove_if (v_patterns.begin(), v_patterns.end(), [min,max](PatternTrunk* p){
+      GradedPattern* ldp = p->getLDPattern();
+      int nbFS = ldp->getNbFakeSuperstrips();
+      delete ldp;
+      if (nbFS>max || nbFS<min) {
+        return true;
+      }
+      return false;
+    });
+  v_patterns.erase(it, v_patterns.end());
+
+  switchToMap();
+}

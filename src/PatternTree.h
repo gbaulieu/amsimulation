@@ -113,6 +113,13 @@ class PatternTree{
   void switchToVector();
 
   /**
+     \brief Remove the patterns which does not meet the requierements on tne number of fake superstrips
+     \param minFS The minimal number of fake superstrips
+     \param maxFS The maximal number of fake superstrips
+   **/
+  void removePatterns(int minFS, int maxFS);
+  
+  /**
      \brief Delete the least used patterns to match the given pattern number
      \param nbPatterns The number of patterns to keep
      \param sorting_algo Algorithm used to sort the patterns (0:by popularity, 1:by PT, 2:by mixed score+PT)
