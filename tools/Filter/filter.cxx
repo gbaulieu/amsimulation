@@ -85,6 +85,7 @@ void filter::do_filter(int secid,int hit_lim)
 	  mf_stub_etaGEN->push_back(m_stub_etaGEN[j]);
 	  mf_stub_strip->push_back(m_stub_strip[j]);
 	  mf_stub_modid->push_back(m_stub_modid[j]);
+	  mf_stub_pdg->push_back(m_stub_pdg[j]);
 	  
 	  modid  = m_stub_modid[j]; 
 	  layer  = int(modid/1000000); 
@@ -267,6 +268,7 @@ void filter::initTuple(std::string test,std::string out)
   mf_stub_strip  = new std::vector<float>;
   mf_stub_ptGEN  = new std::vector<float>;
   mf_stub_modid  = new std::vector<int>; 
+  mf_stub_pdg  = new std::vector<int>; 
 
   filter::reset();
 
@@ -275,6 +277,7 @@ void filter::initTuple(std::string test,std::string out)
   m_efftree->Branch("STUB_etaGEN", &mf_stub_etaGEN);
   m_efftree->Branch("STUB_modid",  &mf_stub_modid);
   m_efftree->Branch("STUB_strip",  &mf_stub_strip);
+  m_efftree->Branch("STUB_pdg",  &mf_stub_pdg);
 }
 
 
@@ -372,6 +375,7 @@ void filter::reset()
   mf_stub_ptGEN->clear();  
   mf_stub_etaGEN->clear();  
   mf_stub_strip->clear();  
+  mf_stub_pdg->clear();  
   mf_stub_modid->clear();  
 
 

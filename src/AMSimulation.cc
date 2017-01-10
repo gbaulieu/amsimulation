@@ -491,6 +491,9 @@ void createAnalysis(SectorTree &st){
   int patt_sstrip;
 
   float patt_pt;
+  float patt_pt_min;
+  float patt_pt_max;
+  int patt_charge;
   int patt_order;
   int patt_grade;
   int patt_area;
@@ -514,7 +517,10 @@ void createAnalysis(SectorTree &st){
 
   TTree *OUT3    = new TTree("PatternData", "Informations about patterns");
   OUT3->Branch("order",    &patt_order);
+  OUT3->Branch("charge",    &patt_charge);
   OUT3->Branch("AveragePT",  &patt_pt);
+  OUT3->Branch("minPT",  &patt_pt_min);
+  OUT3->Branch("maxPT",  &patt_pt_max);
   OUT3->Branch("Popularity", &patt_grade);
   OUT3->Branch("Area", &patt_area);
   OUT3->Branch("Area1", &patt_area1);
@@ -543,7 +549,10 @@ void createAnalysis(SectorTree &st){
 
     patt_id=i;
     patt_order = p->getOrderInChip();
+    patt_charge = p->getCharge();
     patt_pt = p->getAveragePt();
+    patt_pt_min = p->getMinPt();
+    patt_pt_max = p->getMaxPt();
     patt_grade = p->getGrade();
     patt_area = 0;
     patt_area1 = 0;
@@ -1788,17 +1797,17 @@ int main(int av, char** ac){
       Sector* mySector = sectors[i];
       st2.addSector(*mySector);
       Sector* newSector = st2.getAllSectors()[i];
-      vector<GradedPattern*> patterns = mySector->getPatternTree()->getLDPatterns();
-      for(unsigned int j=0;j<patterns.size();j++){
-	GradedPattern* p = patterns[j];
-	int nbFS = p->getNbFakeSuperstrips();
-	if(nbFS<=maxFS && nbFS>=minFS){
-	  //add the pattern
-	  for(int k=0;k<p->getGrade();k++){
-	    newSector->getPatternTree()->addPattern(p,NULL,p->getAveragePt());
-	  }
+      if(vm.count("minFS") || vm.count("maxFS")){
+	cout<<"Selecting patterns according to their number of fake superstrips..."<<endl;
+	mySector->getPatternTree()->removePatterns(minFS,maxFS);
+	cout<<mySector->getPatternTree()->getLDPatternNumber()<<" patterns remaining"<<endl;
+	if(mySector->getPatternTree()->getLDPatternNumber()==0){
+	  cout<<"No pattern in output : abort."<<endl;
+	  return -1;
 	}
       }
+      newSector->getPatternTree()->addPatternsFromTree(mySector->getPatternTree());
+      
       newSector->getPatternTree()->truncate(newNbPatterns,sorting_algo,defectiveAddresses);
       cout<<"Sector "<<mySector->getOfficialID()<<" :\n\tinput bank : "<<mySector->getPatternTree()->getLDPatternNumber()<<" patterns\n\toutput bank : "<<newSector->getPatternTree()->getLDPatternNumber()<<" patterns."<<endl;
     }

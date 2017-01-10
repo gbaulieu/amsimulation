@@ -83,6 +83,7 @@ class filter
   std::vector<int>   *pm_stub_pdg;
 
   std::vector<int>   *mf_stub_modid;
+  std::vector<int>   *mf_stub_pdg;
   std::vector<float> *mf_stub_strip;
   std::vector<float> *mf_stub_ptGEN;  
   std::vector<float> *mf_stub_etaGEN;

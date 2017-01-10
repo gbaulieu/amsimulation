@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE( CMSPatternLayer_constructor_test )
   const int LADDER = 14;
   const int SSTRIP = 126;
 
-  Pattern p(NB_LAYERS);
+  GradedPattern p(NB_LAYERS);
 
   for(int i=0;i<NB_LAYERS;i++){
     CMSPatternLayer test;
