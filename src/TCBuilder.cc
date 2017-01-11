@@ -13,7 +13,9 @@ TCBuilder::TCBuilder():TrackFitter(0){
 TCBuilder::TCBuilder(int nb):TrackFitter(nb)
 {
   l2gConverter=NULL;
+  m_nMissingHits = 1;
   m_minimum_number_for_TC = 0;                 //Minimum number of layers with stub to a create a TC (defined per pattern)
+  maxseeds=-1; // By default all seeds are used.
   updateThresholds();
 }
 
@@ -27,6 +29,15 @@ void TCBuilder::initialize(){
 
 void TCBuilder::setLocalToGlobalConverter(LocalToGlobalConverter* l){
   l2gConverter = l;
+}
+
+void TCBuilder::setMaxSeeds(int nmax){
+  maxseeds = nmax;
+}
+
+void TCBuilder::setPatternSize(int rs){
+  if(rs>0)
+    m_minimum_number_for_TC = rs-m_nMissingHits;
 }
 
 void TCBuilder::setHardwareEmulation(bool hardwareEmulation)
@@ -609,6 +620,8 @@ void TCBuilder::fit(vector<Hit*> originalHits, int pattern_id)
 
   int tow = sector_id; // The tower ID, necessary to get the phi shift
 
+  int nseeds=0;
+
   SEC_TYPE currentSec;
 
   //Get the sec_type from the sector_id
@@ -723,6 +736,8 @@ void TCBuilder::fit(vector<Hit*> originalHits, int pattern_id)
 	  if (nLaySeed1 == nLaySeed2) continue; //The seed layers have to be differents
 	  if (nLaySeed2 > 4) break;             //no more possible combinations for the current seed1
 
+	  ++nseeds;
+	  if (nseeds>maxseeds && maxseeds>0) break;
 
 	  //We have a correct Seed1/Seed2 combination !!!
 
@@ -835,7 +850,7 @@ void TCBuilder::fit(vector<Hit*> originalHits, int pattern_id)
 void TCBuilder::fit(){
   for(unsigned int i=0;i<patterns.size();i++){
     vector<Hit*> allHits = patterns[i]->getHits();
-    m_minimum_number_for_TC = patterns[i]->getNbLayers()-patterns[i]->getNbFakeSuperstrips()-1;
+    setPatternSize(patterns[i]->getNbLayers()-patterns[i]->getNbFakeSuperstrips());
     fit(allHits, patterns[i]->getOrderInChip());
   }
 }
