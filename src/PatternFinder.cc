@@ -34,7 +34,7 @@ PatternFinder::PatternFinder(int at, SectorTree* st, string f, string of){
 
   tracker.setSectorMaps(sector_list[0]->getLadderCodeMap(),sector_list[0]->getModuleCodeMap());
 
-  converter = new LocalToGlobalConverter(sector_list[0],"./modules_position.txt");
+  converter = NULL;
 
   //Link the patterns with the tracker representation
   cout<<"linking..."<<endl;
@@ -265,6 +265,10 @@ void PatternFinder::find(int start, int& stop){
   //TAMU PCA
   string dataDir = "./tamu_data/";
   LinearizedTrackFitter linearizedTrackFitter(dataDir.c_str(), true, true);
+
+  //Initialization of local to global converter
+  if(converter==NULL)
+    converter = new PRBF2LocalToGlobalConverter(sectors->getAllSectors()[0],"./modules_position.txt");
 
   while(num_evt<n_entries_TT && num_evt<=stop){
     TT->GetEntry(num_evt);

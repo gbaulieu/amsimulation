@@ -1,0 +1,54 @@
+image: gitlab-registry.in2p3.fr/ipnl_fasttrack/amsimulation:latest
+
+stages:
+    - build
+    - test
+    - check
+
+build:
+  stage: build
+#Adapt the makefile to be able to compile outside CMSSW
+  script: 
+    - sed -i s/CMSSW_ENABLED=true/CMSSW_ENABLED=false/ Makefile
+    - export ROOTSYS=/opt/root/
+    - export PATH=/opt/root/bin/:$PATH
+    - export LD_LIBRARY_PATH=/opt/root/lib/:$LD_LIBRARY_PATH
+    - make -j 4
+    - make tests
+    - cd tools/mergeSectors
+    - sed -i s/CMSSW_ENABLED=true/CMSSW_ENABLED=false/ Makefile
+    - make
+    - cd ../comparePatterns
+    - sed -i s/CMSSW_ENABLED=true/CMSSW_ENABLED=false/ Makefile
+    - make
+    - cd ../..
+  artifacts:
+    paths:
+      - AMSimulation
+      - UnitTest
+      - tools/mergeSectors/mergeSectors
+      - tools/comparePatterns/comparePatterns
+
+# run tests using the binary built before
+functionality:
+  stage: test
+  script:
+    - export ROOTSYS=/opt/root/
+    - export PATH=/opt/root/bin/:$PATH
+    - export LD_LIBRARY_PATH=/opt/root/lib/:$LD_LIBRARY_PATH
+    - ./AMSimulation --help
+    - ./UnitTest
+    - ./tools/mergeSectors/mergeSectors ./test_data/PU4T_sample.root
+  artifacts:
+    paths:
+      - tools/comparePatterns/comparePatterns
+      - test_data/PU4T_sample.root
+
+# check the accuracy of the previous results
+accuracy:
+  stage: check
+  script:
+    - export ROOTSYS=/opt/root/
+    - export PATH=/opt/root/bin/:$PATH
+    - export LD_LIBRARY_PATH=/opt/root/lib/:$LD_LIBRARY_PATH
+    - ./tools/comparePatterns/comparePatterns test_data/PU4T_ref.root test_data/PU4T_sample.root

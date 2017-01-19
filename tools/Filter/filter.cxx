@@ -150,6 +150,7 @@ void filter::do_filter(int secid,int hit_lim)
 	mf_stub_Y0->push_back(m_stub_Y0[j]); 
 	mf_stub_Z0->push_back(m_stub_Z0[j]); 
 	mf_stub_PHI0->push_back(m_stub_PHI0[j]);
+	mf_stub_pdg->push_back(m_stub_pdg[j]);
 
       } // End of loop over stubs
 
@@ -345,9 +346,9 @@ void filter::initTuple(std::string test,std::string out, int format)
   mf_stub_Y0      = new  std::vector<float>;  
   mf_stub_Z0      = new  std::vector<float>;
   mf_stub_PHI0    = new  std::vector<float>;
+  mf_stub_pdg  = new std::vector<int>; 
 
   filter::reset();
-
 
   m_efftree->Branch("STUB_n",           &mf_stub);
   m_efftree->Branch("STUB_ptGEN",       &mf_stub_ptGEN);
@@ -355,6 +356,7 @@ void filter::initTuple(std::string test,std::string out, int format)
   m_efftree->Branch("STUB_modid",       &mf_stub_modid);
   m_efftree->Branch("STUB_detid",       &mf_stub_detid);
   m_efftree->Branch("STUB_strip",       &mf_stub_strip);
+  m_efftree->Branch("STUB_pdg",         &mf_stub_pdg);
  
   if (format==1)
   {
@@ -366,6 +368,7 @@ void filter::initTuple(std::string test,std::string out, int format)
     m_efftree->Branch("STUB_Y0",          &mf_stub_Y0);
     m_efftree->Branch("STUB_Z0",          &mf_stub_Z0);
     m_efftree->Branch("STUB_PHI0",        &mf_stub_PHI0);
+    m_efftree->Branch("STUB_pdg",         &mf_stub_pdg);
   }
 }
 
@@ -507,5 +510,6 @@ void filter::reset()
   mf_stub_Y0->clear();      
   mf_stub_Z0->clear();      
   mf_stub_PHI0->clear();    
+  mf_stub_pdg->clear();  
 
 }

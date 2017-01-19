@@ -36,12 +36,14 @@ class PatternGenerator{
   int m_stub;
   vector<int>                   m_stub_modid;
   vector<int>                   m_stub_detid;
+  vector<int>                   m_stub_pdg; // PDG ID of the particle 
   vector<float>                 m_stub_strip;  // Strip du cluster interne du stub
   vector<float>                 m_stub_ptGEN;  // PT de la particule initiale
   vector<float>                 m_stub_etaGEN;  // Eta de la particule initiale
 
   vector<int>                   *p_m_stub_modid;
   vector<int>                   *p_m_stub_detid;
+  vector<int>                   *p_m_stub_pdg;
   vector<float>                 *p_m_stub_strip;
   vector<float>                 *p_m_stub_ptGEN;
   vector<float>                 *p_m_stub_etaGEN;

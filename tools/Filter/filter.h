@@ -119,6 +119,7 @@ class filter
   std::vector<float>  *mf_stub_Y0;
   std::vector<float>  *mf_stub_Z0;
   std::vector<float>  *mf_stub_PHI0;
+  std::vector<int>    *mf_stub_pdg;
 
 };
 

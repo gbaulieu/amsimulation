@@ -3,6 +3,7 @@ UNAME := $(shell uname)
 SRC=src
 
 CUDA_ENABLED=false
+CMSSW_ENABLED=true
 CUDA_ROOTDIR=/usr/local/cuda/
 CUDA_EXAMPLEDIR=${CUDA_ROOTDIR}/samples/common/
 
@@ -18,16 +19,22 @@ ifeq ($(CUDA_ENABLED),true)
 	INC =-I `root-config --incdir` -I ${SRC} -I ${CUDA_EXAMPLEDIR}/inc -I${CUDA_ROOTDIR}/include/
 	LIBS =-L ${ROOTSYS}/lib -L${CUDA_ROOTDIR}/lib64 -lcuda -lcudart
 else
-	FLAG=-O3 -Wall -std=c++11 -Werror=type-limits
-	INC =-I `root-config --incdir` -I `scram tool tag boost INCLUDE` -I`scram tool tag eigen INCLUDE` -I ${SRC}
-	LIBS =-L ${ROOTSYS}/lib -L `scram tool tag boost LIBDIR`
+	ifeq ($(CMSSW_ENABLED),true)
+		FLAG=-O3 -Wall -std=c++11 -Werror=type-limits
+		INC =-I `root-config --incdir` -I `scram tool tag boost INCLUDE` -I`scram tool tag eigen INCLUDE` -I ${SRC}
+		LIBS =-L ${ROOTSYS}/lib -L `scram tool tag boost LIBDIR`
+	else
+		FLAG=-O3 -Wall -std=c++11 -Werror=type-limits
+		INC =-I `root-config --incdir` -I /usr/include/eigen3/ -I ${SRC}
+		LIBS =-L ${ROOTSYS}/lib
+	endif
 endif
    BOOSTLIBS = -lboost_serialization -lboost_program_options -lboost_iostreams
 endif
 
 ifeq ($(CUDA_ENABLED),true)
 	OBJECTS=SuperStrip.o Hit.o Pattern.o PatternLayer.o GradedPattern.o PatternTrunk.o PatternTree.o \
-	PatternGenerator.o Sector.o LocalToGlobalConverter.o SectorTree.o CMSPatternLayer.o Segment.o Module.o Ladder.o Layer.o \
+	PatternGenerator.o Sector.o LocalToGlobalConverter.o PRBF2LocalToGlobalConverter.o CMSSWLocalToGlobalConverter.o SectorTree.o CMSPatternLayer.o Segment.o Module.o Ladder.o Layer.o \
 	Detector.o PatternFinder.o Track.o TrackFitter.o FitParams.o PrincipalTrackFitter.o \
 	PrincipalFitGenerator.o MultiDimFitData.o KarimakiTrackFitter.o TCBuilder.o PCATrackFitter.o HoughFitter.o SeedClusteringFitter.o \
 	ComputerHough.o	Retina.o RetinaTrackFitter.o libhoughCPU.o FileEventProxy.o GPUPooler.o gpu.o \
@@ -35,7 +42,7 @@ ifeq ($(CUDA_ENABLED),true)
 	CombinationIndex.o GetVariables.o StubsCombination.o CommonTools.o
 else
 	OBJECTS=SuperStrip.o Hit.o Pattern.o PatternLayer.o GradedPattern.o PatternTrunk.o PatternTree.o \
-	PatternGenerator.o Sector.o LocalToGlobalConverter.o SectorTree.o CMSPatternLayer.o Segment.o Module.o \
+	PatternGenerator.o Sector.o LocalToGlobalConverter.o PRBF2LocalToGlobalConverter.o CMSSWLocalToGlobalConverter.o SectorTree.o CMSPatternLayer.o Segment.o Module.o \
 	Ladder.o Layer.o Detector.o PatternFinder.o Track.o TrackFitter.o FitParams.o \
 	PrincipalTrackFitter.o PrincipalFitGenerator.o MultiDimFitData.o \
 	Retina.o RetinaTrackFitter.o KarimakiTrackFitter.o TCBuilder.o PCATrackFitter.o HoughFitter.o SeedClusteringFitter.o \
@@ -82,6 +89,12 @@ Sector.o:${SRC}/Sector.h ${SRC}/Sector.cc
 
 LocalToGlobalConverter.o:${SRC}/LocalToGlobalConverter.h ${SRC}/LocalToGlobalConverter.cc
 	g++ -c ${FLAG} ${INC} ${SRC}/LocalToGlobalConverter.cc
+
+PRBF2LocalToGlobalConverter.o:${SRC}/LocalToGlobalConverter.h ${SRC}/PRBF2LocalToGlobalConverter.h ${SRC}/PRBF2LocalToGlobalConverter.cc 
+	g++ -c ${FLAG} ${INC} ${SRC}/PRBF2LocalToGlobalConverter.cc
+
+CMSSWLocalToGlobalConverter.o:${SRC}/LocalToGlobalConverter.h ${SRC}/CMSSWLocalToGlobalConverter.h ${SRC}/CMSSWLocalToGlobalConverter.cc 
+	g++ -c ${FLAG} ${INC} ${SRC}/CMSSWLocalToGlobalConverter.cc
 
 SectorTree.o:${SRC}/SectorTree.h ${SRC}/SectorTree.cc
 	g++ -c ${FLAG} ${INC} ${SRC}/SectorTree.cc

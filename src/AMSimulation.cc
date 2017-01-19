@@ -561,6 +561,9 @@ void createAnalysis(SectorTree &st){
   int patt_sstrip;
 
   float patt_pt;
+  float patt_pt_min;
+  float patt_pt_max;
+  int patt_charge;
   int patt_order;
   int patt_grade;
   int patt_area;
@@ -584,7 +587,10 @@ void createAnalysis(SectorTree &st){
 
   TTree *OUT3    = new TTree("PatternData", "Informations about patterns");
   OUT3->Branch("order",    &patt_order);
+  OUT3->Branch("charge",    &patt_charge);
   OUT3->Branch("AveragePT",  &patt_pt);
+  OUT3->Branch("minPT",  &patt_pt_min);
+  OUT3->Branch("maxPT",  &patt_pt_max);
   OUT3->Branch("Popularity", &patt_grade);
   OUT3->Branch("Area", &patt_area);
   OUT3->Branch("Area1", &patt_area1);
@@ -613,7 +619,10 @@ void createAnalysis(SectorTree &st){
 
     patt_id=i;
     patt_order = p->getOrderInChip();
+    patt_charge = p->getCharge();
     patt_pt = p->getAveragePt();
+    patt_pt_min = p->getMinPt();
+    patt_pt_max = p->getMaxPt();
     patt_grade = p->getGrade();
     patt_area = 0;
     patt_area1 = 0;
@@ -1140,7 +1149,7 @@ int main(int av, char** ac){
   if (vm.count("help")) {
     cout << desc << "\n";
 
-    return 1;
+    return 0;
   }
 
   if (vm.count("analyseBank")) {
@@ -1728,12 +1737,12 @@ int main(int av, char** ac){
       cout<<"** LOCAL LAYER/LADDER -> Superstrip Size "<<endl;
       displaySuperstripSizesWithLocalID(st);
       cout<<"**"<<endl;
-      cout<<"** The 8 input buses are used for the following layers (CMS IDs) : ";
+      cout<<"** The 8 input buses are used for the following layers (CMS IDs - Symmetric layers in -Z) : ";
       for(unsigned int j=0;j<layers.size();j++){
-	if(hybrid_sector && layers[j]==9)
+	if(hybrid_sector && layers[j]==biggestID )
 	  continue;
-	if(hybrid_sector && layers[j]==biggestID)
-	  cout<<9<<"/"<<biggestID;
+	if(hybrid_sector && layers[j]==9)
+	  cout<<9<<"/"<<biggestID<<" - ";
 	else
 	  cout<<layers[j]<<" - ";
       }
@@ -1760,21 +1769,21 @@ int main(int av, char** ac){
 	for(int k=0;k<p->getNbLayers();k++){
 
 	  bool tagLayer = false;
-	  if(hybrid_sector && k==4){ // this is layer 9 -> in hybrid sector we set it on bus 7
-	    continue;
-	  }
-
 	  PatternLayer* mp = p->getLayerStrip(k);
 
-	  if(k==4 && !endcap_sector && !mp->isFake()) // this is layer 9 and not a fake superstrip -> we tag it
+	  if(hybrid_sector && k==4){ // this is layer 9 -> in hybrid sectors it shares the same bus than layers 13/20
+	    if(mp->isFake()) // if we have a fake superstrip on this layer -> we use the value of last layer (13/20)
+	      mp = p->getLayerStrip(8);
+	    else
+	      tagLayer = true;//we need to tag the layer to distinguish layer 9 from the endcap layer sharing the same bus
+	  }
+
+	  if(k==4 && !endcap_sector && !hybrid_sector && !mp->isFake()){ // this is layer 9 on barrel sector and not a fake superstrip -> we tag it
 	    tagLayer = true;
+	  }
 	  
-	  if(hybrid_sector && k==p->getNbLayers()-1){ // this is the last layer -> set its data on last bus along with data from layer 9
-	    if(mp->isFake()){ // if we have a fake superstrip on this layer -> we use the value of layer 9
-	      mp = p->getLayerStrip(4);
-	      if (!mp->isFake())
-		tagLayer = true;//we need to tag the layer to distinguish layer 9 from the endcap layer sharing the same bus
-	    }
+	  if(hybrid_sector && k==p->getNbLayers()-1){ // this is the last layer -> it has already been treated along with layer 9
+	    continue;
 	  }
 	  
 	  cout<<((CMSPatternLayer*)mp)->toAM05Format(tagLayer)<<endl;
@@ -1849,17 +1858,17 @@ int main(int av, char** ac){
       Sector* mySector = sectors[i];
       st2.addSector(*mySector);
       Sector* newSector = st2.getAllSectors()[i];
-      vector<GradedPattern*> patterns = mySector->getPatternTree()->getLDPatterns();
-      for(unsigned int j=0;j<patterns.size();j++){
-	GradedPattern* p = patterns[j];
-	int nbFS = p->getNbFakeSuperstrips();
-	if(nbFS<=maxFS && nbFS>=minFS){
-	  //add the pattern
-	  for(int k=0;k<p->getGrade();k++){
-	    newSector->getPatternTree()->addPattern(p,NULL,p->getAveragePt());
-	  }
+      if(vm.count("minFS") || vm.count("maxFS")){
+	cout<<"Selecting patterns according to their number of fake superstrips..."<<endl;
+	mySector->getPatternTree()->removePatterns(minFS,maxFS);
+	cout<<mySector->getPatternTree()->getLDPatternNumber()<<" patterns remaining"<<endl;
+	if(mySector->getPatternTree()->getLDPatternNumber()==0){
+	  cout<<"No pattern in output : abort."<<endl;
+	  return -1;
 	}
       }
+      newSector->getPatternTree()->addPatternsFromTree(mySector->getPatternTree());
+      
       newSector->getPatternTree()->truncate(newNbPatterns,sorting_algo,defectiveAddresses);
       cout<<"Sector "<<mySector->getOfficialID()<<" :\n\tinput bank : "<<mySector->getPatternTree()->getLDPatternNumber()<<" patterns\n\toutput bank : "<<newSector->getPatternTree()->getLDPatternNumber()<<" patterns."<<endl;
     }
