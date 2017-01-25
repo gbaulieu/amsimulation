@@ -426,6 +426,7 @@ void createAnalysis(SectorTree &st){
     nbLayers = list[0]->getNbLayers();
   vector<TH1I*> modulesPlot;
   vector<int> layerIDs = list[0]->getLayersID();
+  int sector_id = list[0]->getOfficialID();
   
   for(int i=0;i<nbLayers;i++){
     ostringstream oss;
@@ -497,6 +498,7 @@ void createAnalysis(SectorTree &st){
   int patt_order;
   int patt_grade;
   int patt_area;
+  int patt_sector;
 
   int patt_area1;
   int patt_area2;
@@ -516,6 +518,7 @@ void createAnalysis(SectorTree &st){
   OUT2->Branch("phi",   &patt_sstrip);
 
   TTree *OUT3    = new TTree("PatternData", "Informations about patterns");
+  OUT3->Branch("sector",    &patt_sector);
   OUT3->Branch("order",    &patt_order);
   OUT3->Branch("charge",    &patt_charge);
   OUT3->Branch("AveragePT",  &patt_pt);
@@ -548,6 +551,7 @@ void createAnalysis(SectorTree &st){
     GradedPattern* p = allPatterns[i];
 
     patt_id=i;
+    patt_sector = sector_id;
     patt_order = p->getOrderInChip();
     patt_charge = p->getCharge();
     patt_pt = p->getAveragePt();
