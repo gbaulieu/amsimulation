@@ -189,16 +189,8 @@ bool compareHits(Hit* h1, Hit* h2){
 vector<Hit*> Pattern::getHits(){
   vector<Hit*> hits;
   for(int i=0;i<nb_layer;i++){
-    vector<Hit*> local_hits;
-    for(int j=0;j<(int)nb_strips[i];j++){
-      vector<Hit*> l_hits = strips[i][j]->getHits();
-      local_hits.insert(local_hits.end(), l_hits.begin(), l_hits.end());
-    }
-    sort(local_hits.begin(),local_hits.end(),compareHits);
-    int nb_hits=(int)local_hits.size();
-    if(Detector::hw_limit_stub_per_layer>0 && nb_hits>Detector::hw_limit_stub_per_layer)
-      nb_hits=Detector::hw_limit_stub_per_layer;
-    hits.insert(hits.end(),local_hits.begin(),local_hits.begin()+nb_hits);
+    vector<Hit*> local_hits=getHits(i);
+    hits.insert(hits.end(),local_hits.begin(),local_hits.end());
   }
   return hits;
 }
