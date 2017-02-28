@@ -393,6 +393,11 @@ void displayInformations(SectorTree &st){
     float maxPT=-1;
     float minPT=1000;    
     int nbDC = 0;
+    vector<set<int>> ss_values;
+    for(unsigned int i=0;i<layers.size();i++){
+      set<int> mySet;
+      ss_values.push_back(mySet);
+    }
     for(unsigned int j=0;j<patterns.size();j++){
       float pt = patterns[j]->getAveragePt();
       if(pt>maxPT)
@@ -402,6 +407,7 @@ void displayInformations(SectorTree &st){
 
       for(int k=0;k<patterns[j]->getNbLayers();k++){
 	PatternLayer* pl = patterns[j]->getLayerStrip(k);
+	ss_values[k].insert(pl->getIntValue());
 	nbDC = pl->getDCBitsNumber();
 	if(maxDC[k]<nbDC)
 	  maxDC[k]=nbDC;
@@ -409,11 +415,18 @@ void displayInformations(SectorTree &st){
       delete patterns[j];
     }
     patterns.clear();
-    
+     
+    cout<<"Number of distinct superstrip values :"<<endl;
+    for(unsigned int j=0;j<layers.size();j++){
+      cout<<"\tLayer "<<layers[j]<<" : "<<ss_values[j].size()<<endl;
+    }
+    cout<<endl;
+
     cout<<"Number of used DC bits :"<<endl;
     for(unsigned int j=0;j<layers.size();j++){
       cout<<"\tLayer "<<layers[j]<<" : "<<maxDC[j]<<endl;
     }
+    cout<<endl;
 
     cout<<"PT range is ["<<round(minPT)<<","<<round(maxPT)<<"] GeV"<<endl;
   }
