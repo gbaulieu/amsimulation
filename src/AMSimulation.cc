@@ -494,13 +494,14 @@ void createAnalysis(SectorTree &st){
   int nbLayers = 0;
   if(list.size()>0)
     nbLayers = list[0]->getNbLayers();
-  vector<TH1I*> modulesPlot;
+  vector<TH1I*> bitsPlot;
   vector<int> layerIDs = list[0]->getLayersID();
+  int sector_id = list[0]->getOfficialID();
   
   for(int i=0;i<nbLayers;i++){
     ostringstream oss;
     oss<<"Layer "<<i;
-    modulesPlot.push_back(new TH1I(oss.str().c_str(),"Module Z position", 14, 0, 14));
+    bitsPlot.push_back(new TH1I(oss.str().c_str(),"0 bits in LD superstrips", 16, 0, 16));
   }
   // We put all patterns in the same vector
   vector<GradedPattern*> allPatterns;
@@ -519,12 +520,10 @@ void createAnalysis(SectorTree &st){
     vector<int> PT = list[k]->getPatternTree()->getPTHisto();
     TH1I* pt_histo = new TH1I("PT sector "+k,"PT of pattern generating tracks", 110, 0, 110);
     for(int i=0;i<101;i++){
-      //cout<<PT[i]<<"-";
       for(int j=0;j<PT[i];j++){
 	pt_histo->Fill(i);
       }
     }
-    //cout<<endl;
     pt_histo->SetFillColor(41);
     pt_histo->Write();
     delete pt_histo;
@@ -567,6 +566,7 @@ void createAnalysis(SectorTree &st){
   int patt_order;
   int patt_grade;
   int patt_area;
+  int patt_sector;
 
   int patt_area1;
   int patt_area2;
@@ -586,6 +586,7 @@ void createAnalysis(SectorTree &st){
   OUT2->Branch("phi",   &patt_sstrip);
 
   TTree *OUT3    = new TTree("PatternData", "Informations about patterns");
+  OUT3->Branch("sector",    &patt_sector);
   OUT3->Branch("order",    &patt_order);
   OUT3->Branch("charge",    &patt_charge);
   OUT3->Branch("AveragePT",  &patt_pt);
@@ -618,6 +619,7 @@ void createAnalysis(SectorTree &st){
     GradedPattern* p = allPatterns[i];
 
     patt_id=i;
+    patt_sector = sector_id;
     patt_order = p->getOrderInChip();
     patt_charge = p->getCharge();
     patt_pt = p->getAveragePt();
@@ -650,6 +652,12 @@ void createAnalysis(SectorTree &st){
 	patt_sstrip = positions[k];
 	OUT2->Fill();
       }
+      int val = pl->getIntValue();
+      for(int k=15;k>=0;k--){
+	if(((val>>k)&0x1)==0){
+	  bitsPlot[j]->Fill(15-k);
+	}
+      }
     }
     OUT3->Fill();
   }
@@ -659,8 +667,8 @@ void createAnalysis(SectorTree &st){
   delete OUT3;
 
   for(int i=0;i<nbLayers;i++){
-    modulesPlot[i]->Write();
-    delete modulesPlot[i];
+    bitsPlot[i]->Write();
+    delete bitsPlot[i];
   }
 
   for(unsigned int k=0;k<allPatterns.size();k++){
@@ -973,6 +981,60 @@ vector<unsigned int> loadDefectiveAddresses(string name){
   return addresses;
 }
 
+set<unsigned int> loadDefectiveModules(const Sector& s, string name){
+  string line;
+  ifstream myfile (name.c_str());
+  set<unsigned int> module_set;
+  if (myfile.is_open()){
+    while ( myfile.good() ){
+      getline (myfile,line);
+      if(line.length()>0 && line.find("#")!=0){//the line does not start with # and is not empty
+	stringstream ss(line);
+	std::string item;
+	vector<string> items;
+	while (getline(ss, item, ' ')) {//split with the space character
+	  std::string::iterator end_pos = std::remove(item.begin(), item.end(), ' ');
+	  item.erase(end_pos, item.end());
+	  istringstream buffer(item);
+	  unsigned int v;
+	  buffer >> v;
+	  //we have the modid, get the layer/ladder/module infos
+	  unsigned int layer = v/10000;
+	  unsigned int ladder = (v-layer*10000)/100;
+	  unsigned int module = (v-layer*10000-ladder*100);
+	  //Convertion from global to local numbering
+	  int local_layer = s.getLayerIndex(layer);
+	  int local_ladder = s.getLadderCode(layer, ladder);
+	  int local_module = s.getModuleCode(layer, ladder, module);
+
+	  if(local_module==-1 || local_ladder==-1)
+	    continue;
+
+	  bool isPSModule = false;
+	  if((layer>=5 && layer<=7) || (layer>10 && CMSPatternLayer::getLadderCode(layer,ladder)<=8)){
+	    isPSModule=true;
+	  }
+
+	  //We create 2 superstrips (one per segment) to have the full module
+	  CMSPatternLayer tmp_superstrip;
+	  tmp_superstrip.computeSuperstrip(layer, local_module, local_ladder,0,0,64,isPSModule,false);
+	  unsigned int value = local_layer*100000+tmp_superstrip.getPhi()*1000+tmp_superstrip.getModule()*10+tmp_superstrip.getSegment();
+	  module_set.insert(value);
+	  tmp_superstrip.computeSuperstrip(layer, local_module, local_ladder,0,isPSModule?16:1,64,isPSModule,false);
+	  value = local_layer*100000+tmp_superstrip.getPhi()*1000+tmp_superstrip.getModule()*10+tmp_superstrip.getSegment();
+	  module_set.insert(value);
+	}
+      }
+    }
+    myfile.close();
+  }
+  else{
+    cout << "Can not find file "<<name<<" to load the list of defective modules!"<<endl;
+    exit(-1);
+  }
+  return module_set;
+}
+
 void createSectorFromRootFile(SectorTree* st, string fileName, vector<int> layers, int sector_id){
 
   Sector s(layers);
@@ -1132,9 +1194,10 @@ int main(int av, char** ac){
     ("bank_name", po::value<string>(), "The bank file name")    
     ("minFS", po::value<int>(), "Used with --alterBank : only patterns with at least minFS fake stubs will be kept in the new bank")
     ("maxFS", po::value<int>(), "Used with --alterBank : only patterns with at most maxFS fake stubs will be kept in the new bank")
-    ("truncate", po::value<int>(), "Used with --alterBank : gives the number of patterns to keep in the new bank, starting with the most used ones. Can be used with --defectiveAddressesFile to manage non working pattern addresses in the chip.")
+    ("truncate", po::value<int>(), "Used with --alterBank : gives the number of patterns to keep in the new bank, starting with the most used ones. Can be used with --defectiveAddressesFile to manage non working pattern addresses in the chip and --defectiveModulesFile to manage non working modules in the tracker.")
     ("sortAlgo", po::value<int>(), "Used with --alterBank : sort algorithm used. 0 to sort by popularity, 1 by PT and 2 for a mix of popularity and PT. Default is popularity.")
     ("defectiveAddressesFile", po::value<string>(), "The file containing the list of defective pattern addresses in the chip (separeted with spaces or - for ranges)")    
+    ("defectiveModulesFile", po::value<string>(), "The file containing the list of defective modules (modid separeted by spaces)")    
     ("nbActiveLayers", po::value<int>(), "Used with --printBankAM05 : only patterns with this exact number of active layers will be printed")
     ("hardware_limits", "Use hardware limitations during pattern recognition")
     ("hardware_precision", "Use hardware computing precision when applicable")
@@ -1801,13 +1864,14 @@ int main(int av, char** ac){
     }
   }
   else if(vm.count("alterBank")) {
-    SectorTree st;
+    SectorTree* st = new SectorTree();;
     SectorTree* save=NULL;
     int minFS=-1;
     int maxFS=-1;
     int newNbPatterns = -1;
     int sorting_algo = -1;
     vector<unsigned int> defectiveAddresses;
+    set<unsigned int> defectiveModules;
     if(vm.count("minFS"))
       minFS = vm["minFS"].as<int>();
     if(vm.count("maxFS"))
@@ -1839,21 +1903,33 @@ int main(int av, char** ac){
       try { 
 	f.push(ifs);
 	boost::archive::text_iarchive ia(f);
-	ia >> st;
+	ia >> *st;
       }
       catch (boost::iostreams::gzip_error& e) {
 	if(e.error()==4){//file is not compressed->read it without decompression
 	  std::ifstream new_ifs(vm["bankFile"].as<string>().c_str());
 	  boost::archive::text_iarchive ia(new_ifs);
-	  ia >> st;
+	  ia >> *st;
 	}
       }
     }
 
-    SectorTree st2(st);
+    SectorTree *newRef;
+    if(vm.count("defectiveModulesFile")){
+      newRef = new SectorTree();
+      cout<<st->getAllSectors()[0]->getPatternTree()->getLDPatternNumber()<<" patterns in original bank."<<endl;
+      defectiveModules=loadDefectiveModules(*(st->getAllSectors()[0]),vm["defectiveModulesFile"].as<string>());
+      newRef->addSector(*st->getAllSectors()[0]);
+      newRef->getAllSectors()[0]->getPatternTree()->desactivateModules(st->getAllSectors()[0]->getPatternTree(), defectiveModules);
+      cout<<newRef->getAllSectors()[0]->getPatternTree()->getLDPatternNumber()<<" patterns after module desactivation."<<endl;
+      delete st;
+      st = newRef;
+    }
+
+    SectorTree st2(*st);
 
     cout<<"Altering bank..."<<endl;
-    vector<Sector*> sectors = st.getAllSectors();
+    vector<Sector*> sectors = st->getAllSectors();
     for(unsigned int i=0;i<sectors.size();i++){
       Sector* mySector = sectors[i];
       st2.addSector(*mySector);
@@ -1886,6 +1962,7 @@ int main(int av, char** ac){
       boost::archive::text_oarchive oa(f);
       oa << ref;
     }
+    delete st;
   }
   else if(vm.count("MergeBanks")) {
     SectorTree st1;

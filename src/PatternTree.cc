@@ -4,6 +4,10 @@ PatternTree::PatternTree(){
 }
 
 PatternTree::~PatternTree(){
+  clear();
+}
+
+void PatternTree::clear(){
   if(patterns.size()!=0){
     for(map<string, PatternTrunk*>::iterator itr = patterns.begin(); itr != patterns.end(); ++itr){
       delete (itr->second);
@@ -309,6 +313,34 @@ struct ScoreComparer {
   float pt_span;
   float grade_span;
 };
+
+void PatternTree::desactivateModules(PatternTree* ref_pt, set<unsigned int> defective_modules){
+  clear();
+  ref_pt->switchToVector();
+  CMSPatternLayer fakeSuperstrip;
+  fakeSuperstrip.computeSuperstrip(0,0,0,0,0,0,false,true);
+
+  for(unsigned int i=0;i<ref_pt->v_patterns.size();i++){
+    //If we have dead modules : we replace the corresponding superstrips by fake ones
+    if(defective_modules.size()>0){
+      int nbLayers = ref_pt->v_patterns[i]->getLDPattern()->getNbLayers();
+      GradedPattern* nPattern = ref_pt->v_patterns[i]->getLDPattern();
+      // Loop over the layers
+      for(int k=0;k<nbLayers;k++){
+	CMSPatternLayer* pl = (CMSPatternLayer*)nPattern->getLayerStrip(k);
+	// If the superstrip is already a fake one : nothing to do
+	if(!pl->isFake()){
+	  unsigned int module = k*100000+pl->getPhi()*1000+pl->getModule()*10+pl->getSegment();
+	  if(defective_modules.find(module) != defective_modules.end()){
+	    nPattern->setLayerStrip(k,&fakeSuperstrip);
+	  }
+	}
+      }
+      addPatternForMerging(nPattern);
+      delete nPattern;
+    }
+  }
+}
 
 void PatternTree::truncate(int nbPatterns, int sorting_algo, vector<unsigned int> defective_addresses){
   switchToVector();

@@ -198,7 +198,6 @@ int Sector::getModuleCode(int layer, int ladder, int module) const{
   map<int, map<int, vector<int> > >::const_iterator it = m_modules.find(layer);
 
   if(it==m_modules.end()){
-    cout<<"layer non trouve"<<endl;
     return -1;//the layer does not exist
   }
 
