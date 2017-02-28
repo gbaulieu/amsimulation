@@ -424,14 +424,14 @@ void createAnalysis(SectorTree &st){
   int nbLayers = 0;
   if(list.size()>0)
     nbLayers = list[0]->getNbLayers();
-  vector<TH1I*> modulesPlot;
+  vector<TH1I*> bitsPlot;
   vector<int> layerIDs = list[0]->getLayersID();
   int sector_id = list[0]->getOfficialID();
   
   for(int i=0;i<nbLayers;i++){
     ostringstream oss;
     oss<<"Layer "<<i;
-    modulesPlot.push_back(new TH1I(oss.str().c_str(),"Module Z position", 14, 0, 14));
+    bitsPlot.push_back(new TH1I(oss.str().c_str(),"0 bits in LD superstrips", 16, 0, 16));
   }
   // We put all patterns in the same vector
   vector<GradedPattern*> allPatterns;
@@ -450,12 +450,10 @@ void createAnalysis(SectorTree &st){
     vector<int> PT = list[k]->getPatternTree()->getPTHisto();
     TH1I* pt_histo = new TH1I("PT sector "+k,"PT of pattern generating tracks", 110, 0, 110);
     for(int i=0;i<101;i++){
-      //cout<<PT[i]<<"-";
       for(int j=0;j<PT[i];j++){
 	pt_histo->Fill(i);
       }
     }
-    //cout<<endl;
     pt_histo->SetFillColor(41);
     pt_histo->Write();
     delete pt_histo;
@@ -584,6 +582,12 @@ void createAnalysis(SectorTree &st){
 	patt_sstrip = positions[k];
 	OUT2->Fill();
       }
+      int val = pl->getIntValue();
+      for(int k=15;k>=0;k--){
+	if(((val>>k)&0x1)==0){
+	  bitsPlot[j]->Fill(15-k);
+	}
+      }
     }
     OUT3->Fill();
   }
@@ -593,8 +597,8 @@ void createAnalysis(SectorTree &st){
   delete OUT3;
 
   for(int i=0;i<nbLayers;i++){
-    modulesPlot[i]->Write();
-    delete modulesPlot[i];
+    bitsPlot[i]->Write();
+    delete bitsPlot[i];
   }
 
   for(unsigned int k=0;k<allPatterns.size();k++){
