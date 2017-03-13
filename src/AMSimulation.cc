@@ -416,7 +416,7 @@ void displayInformations(SectorTree &st){
     }
     patterns.clear();
      
-    cout<<"Number of distinct superstrip values :"<<endl;
+    cout<<"Number of distinct superstrip values (without DC bits) :"<<endl;
     for(unsigned int j=0;j<layers.size();j++){
       cout<<"\tLayer "<<layers[j]<<" : "<<ss_values[j].size()<<endl;
     }
