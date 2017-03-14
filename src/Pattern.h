@@ -35,7 +35,20 @@ class Pattern{
      \param p The pattern to copy
   **/
   Pattern(const Pattern& p);
-  virtual ~Pattern();
+  virtual ~Pattern(){
+    if(nb_strips!=NULL){
+      delete [] nb_strips;
+    }
+    for(int i=0;i<nb_layer;i++){
+      if(layer_strips[i]!=NULL)
+	delete layer_strips[i];
+      if(strips!=NULL)
+	delete [] strips[i];
+    }
+    delete [] strips;
+    strips = NULL;
+    nb_strips = NULL;
+  };
   /**
      \brief Set one of the PatternLayer
      \param layer The layer of the new PatternLayer (will be copied)

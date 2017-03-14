@@ -51,21 +51,6 @@ Pattern::Pattern(const Pattern& p){
   }
 }
 
-Pattern::~Pattern(){
-  if(nb_strips!=NULL){
-    delete [] nb_strips;
-  }
-  for(int i=0;i<nb_layer;i++){
-    if(layer_strips[i]!=NULL)
-      delete layer_strips[i];
-    if(strips!=NULL)
-      delete [] strips[i];
-  }
-  delete [] strips;
-  strips = NULL;
-  nb_strips = NULL;
-}
-
 void Pattern::setLayerStrip(int layer, PatternLayer* strip){
   if(layer<nb_layer && layer>=0){
     layer_strips[layer]=strip->clone();
