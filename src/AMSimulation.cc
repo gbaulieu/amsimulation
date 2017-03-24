@@ -1165,7 +1165,7 @@ int main(int av, char** ac){
   po::options_description desc("Allowed options");
   desc.add_options()
     ("help", "produce help message")
-    ("generateBank", "Generates a pattern bank from root simulation file (needs --ss_size_file --dc_bits --pt_min --pt_max --eta_min --eta_max --coverage --input_directory --bank_name --sector_file --sector_id --active_layers)")
+    ("generateBank", "Generates a pattern bank from root simulation file (needs --ss_size_file --dc_bits --pt_min --pt_max --eta_min --eta_max --coverage --input_directory --bank_name --sector_file --sector_id --active_layers, optionaly --reference_bank)")
     ("testSectors", "Get the tracks sectors")
     ("MergeBanks", "Merge 2 bank files having only 1 sector (needs --inputFile --secondFile and --outputFile)")
     ("buildFitParams", "Computes the Fit parameters for the given bank using tracks from the given directory (needs --bankFile, --input_directory and --outputFile)")
@@ -1198,6 +1198,7 @@ int main(int av, char** ac){
     ("pt_max", po::value<float>(), "Only tracks having a smaller PT will be used to generate a pattern")
     ("eta_min", po::value<float>(), "Only tracks having a greater ETA will be used to generate a pattern")
     ("eta_max", po::value<float>(), "Only tracks having a smaller ETA will be used to generate a pattern")
+    ("reference_bank", po::value<string>(), "While generating a bank, only patterns not present in the reference bank will be added in the new one.")
     ("maxFakeSStrips", po::value<int>(), "The maximum number of fake superstrips used in a pattern (0=desactivated)")
     ("coverage", po::value<float>(), "Value to reach to stop the process [0-1]")
     ("input_directory", po::value<string>(), "The directory containing the single particule root files (local or RFIO)")
@@ -1452,7 +1453,31 @@ int main(int av, char** ac){
 	  pg.setVariableResolution(layer_dc_bits_number[i], active_layers[i]);
       }
     }
-    
+
+    SectorTree reference_sector_tree;
+    if(vm.count("reference_bank")){
+      cout<<"Loading reference pattern bank..."<<endl;
+      {
+	std::ifstream ifs(vm["reference_bank"].as<string>().c_str());
+	//Decompression
+	boost::iostreams::filtering_stream<boost::iostreams::input> f;
+	f.push(boost::iostreams::gzip_decompressor());
+	try { 
+	  f.push(ifs);
+	  boost::archive::text_iarchive ia(f);
+	  ia >> reference_sector_tree;
+	}
+	catch (boost::iostreams::gzip_error& e) {
+	  if(e.error()==4){//file is not compressed->read it without decompression
+	    std::ifstream new_ifs(vm["reference_bank"].as<string>().c_str());
+	    boost::archive::text_iarchive ia(new_ifs);
+	    ia >> reference_sector_tree;
+	  }
+	}
+      }
+      pg.setReferenceBank(&reference_sector_tree);
+    }
+
     pg.generate(&st, 100000, threshold, eta);
 
 

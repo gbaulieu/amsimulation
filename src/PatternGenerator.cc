@@ -7,6 +7,7 @@ PatternGenerator::PatternGenerator(){
   etaMax=1.0f;
   variableRes_state_cache = false;
   cache_is_uptodate = false;
+  referenceSector = NULL;
 }
 
 void PatternGenerator::setMinPT(float minp){
@@ -52,6 +53,10 @@ void PatternGenerator::setVariableResolution(int nb, int l){
     nb = 0;
   variableRes[l] = nb;
   cache_is_uptodate=false;
+}
+
+void PatternGenerator::setReferenceBank(SectorTree* st){
+  referenceSector = st;
 }
 
 bool PatternGenerator::getVariableResolutionState(){
@@ -145,7 +150,8 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
     cout<<"No layer defined!"<<endl;
     return -1;
   }
-  vector<Pattern*> patterns;
+
+  Sector* sectorRef = NULL;
 
   //--> Signification (et dimension) des variables
 
@@ -292,6 +298,15 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
     else{
       nbInSector++;
     }
+
+    if(referenceSector!=NULL){
+      sectorRef = referenceSector->getAllSectors()[0];
+      if(!(*sectorRef==*sector)){
+	cout<<"The reference bank is not meant for this sector : it will NOT be used!"<<endl;
+	sectorRef=NULL;
+      }
+    }
+
     /*
     for(unsigned int j=0;j<tracker_layers.size();j++){
       cout<<"stubs "<<ladder_per_layer[j]<<"/"<<module_per_layer[j]<<"-";
@@ -386,16 +401,19 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
     //cout<<*lowDef_p<<endl;
     
     if(coverageEstimation==NULL){
-      if(getVariableResolutionState()){
-	sector->getPatternTree()->addPattern(lowDef_p,p, last_pt, current_pdg);
-      }
-      else{
-	sector->getPatternTree()->addPattern(p,NULL, last_pt, current_pdg);
+      if(sectorRef==NULL || !sectorRef->getPatternTree()->checkPattern(lowDef_p, p)){//we don't have an existing bank or the existing bank does not contain the pattern
+	if(getVariableResolutionState()){
+	  sector->getPatternTree()->addPattern(lowDef_p,p, last_pt, current_pdg);
+	}
+	else{
+	  sector->getPatternTree()->addPattern(p,NULL, last_pt, current_pdg);
+	}
       }
     }
     else{
       if(getVariableResolutionState()){
-	if(sector->getPatternTree()->checkPattern(lowDef_p, p))//does the bank contains the pattern?
+	if(sector->getPatternTree()->checkPattern(lowDef_p, p) || 
+	   (sectorRef!=NULL && sectorRef->getPatternTree()->checkPattern(lowDef_p, p)))//A bank already contains the pattern
 	  (*coverageEstimation)++;
       }
     }
@@ -413,10 +431,17 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
     cout<<"Nb Events with stubs on all layers : "<<nbInLayer<<endl;
     cout<<"Nb Events in sectors : "<<nbInSector<<endl;
 
+    int ref_bank_ld_pattern_number = 0;
+    int ref_bank_fd_pattern_number = 0;
+    if(sectorRef!=NULL){
+      ref_bank_ld_pattern_number = sectorRef->getLDPatternNumber();
+      ref_bank_fd_pattern_number = sectorRef->getFDPatternNumber();
+    }
+
     if(getVariableResolutionState())
-      return sectors->getFDPatternNumber();
+      return sectors->getFDPatternNumber()+ref_bank_fd_pattern_number;
     else
-      return sectors->getLDPatternNumber();
+      return sectors->getLDPatternNumber()+ref_bank_ld_pattern_number;
   }
   else
     return 0;

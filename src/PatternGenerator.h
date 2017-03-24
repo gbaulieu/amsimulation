@@ -31,6 +31,7 @@ class PatternGenerator{
   vector<int> tracker_layers;
   vector<int> inactive_layers;
   string particuleDirName;
+  SectorTree* referenceSector;//optional existing bank
 
   // Containers to load the TTree branches
   int m_stub;
@@ -111,6 +112,12 @@ class PatternGenerator{
      \return True if activated
   **/
   bool getVariableResolutionState();
+
+  /**
+     \brief Gives an existing bank : the generated bank will only contains patterns not present in the existing one.
+     \param st A SectorTree containing an existing bank for the exact same sector.
+  **/
+  void setReferenceBank(SectorTree* st);
   /**
      \brief Generates the patterns
      \param sectors This structure contains the interesting sectors, patterns will be added to this structure
