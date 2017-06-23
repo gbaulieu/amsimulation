@@ -14,8 +14,6 @@
 #include "PatternFinder.h"
 #include "SectorTree.h"
 #include "Detector.h"
-#include "PrincipalTrackFitter.h"
-#include "PrincipalFitGenerator.h"
 
 #ifdef USE_CUDA
 #include "GPUPooler.h"
@@ -27,7 +25,6 @@
 
 #ifndef __APPLE__
 BOOST_CLASS_EXPORT_IMPLEMENT(CMSPatternLayer) 
-BOOST_CLASS_EXPORT_IMPLEMENT(PrincipalTrackFitter) 
 #endif
 
 using namespace std;
@@ -1107,7 +1104,6 @@ int main(int av, char** ac){
     ("generateBank", "Generates a pattern bank from root simulation file (needs --ss_size_file --dc_bits --pt_min --pt_max --eta_min --eta_max --coverage --input_directory --bank_name --sector_file --sector_id --active_layers, optionaly --reference_bank)")
     ("testSectors", "Get the tracks sectors")
     ("MergeBanks", "Merge 2 bank files having only 1 sector (needs --inputFile --secondFile and --outputFile)")
-    ("buildFitParams", "Computes the Fit parameters for the given bank using tracks from the given directory (needs --bankFile, --input_directory and --outputFile)")
     ("findPatterns", "Search for patterns in an event file (needs --ss_threshold --inputFile, --bankFile, --startEvent and --stopEvent)")
 #ifdef USE_CUDA
     ("useGPU", "Use the GPU card to accelerate the pattern recognition (needs cuda libraries and a configured GPU card)")
@@ -1569,50 +1565,6 @@ int main(int av, char** ac){
 #ifdef USE_CUDA
     }
 #endif
-  }
-  else if(vm.count("buildFitParams")) {
-    SectorTree st;
-    cout<<"Loading pattern bank..."<<endl;
-    {
-      std::ifstream ifs(vm["bankFile"].as<string>().c_str());
-      boost::iostreams::filtering_stream<boost::iostreams::input> f;
-      f.push(boost::iostreams::gzip_decompressor());
-      //we try to read a compressed file
-      try { 
-	f.push(ifs);
-	boost::archive::text_iarchive ia(f);
-	ia >> st;
-      }
-      catch (boost::iostreams::gzip_error& e) {
-	if(e.error()==4){//file is not compressed->read it without decompression
-	  std::ifstream new_ifs(vm["bankFile"].as<string>().c_str());
-	  boost::archive::text_iarchive ia(new_ifs);
-	  ia >> st;
-	}
-      }
-    }
-
-    map<int,pair<float,float> > eta_limits = CMSPatternLayer::getLayerDefInEta();
-
-    PrincipalFitGenerator pfg(vm["input_directory"].as<string>().c_str(), &st);
-    pfg.generate(eta_limits, 2, 100, 0, 0.87);
-
-    st.getAllSectors()[0]->getPatternTree()->truncate(-1);
-
-    cout<<"Saving SectorTree...";
-    {
-      const SectorTree& ref = st;
-      std::ofstream ofs(vm["outputFile"].as<string>().c_str());
-      // Compression part
-      boost::iostreams::filtering_stream<boost::iostreams::output> f;
-      f.push(boost::iostreams::gzip_compressor(boost::iostreams::gzip_params(boost::iostreams::gzip::best_compression)));
-      f.push(ofs);
-      //
-      boost::archive::text_oarchive oa(f);
-      oa << ref;
-      cout<<"done."<<endl;
-    }
-    
   }
   else if(vm.count("printBank")) {
     SectorTree st;

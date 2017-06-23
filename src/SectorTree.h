@@ -9,9 +9,7 @@
 #include <TFile.h>
 #include "Sector.h"
 #include "CMSPatternLayer.h"
-#include "PrincipalTrackFitter.h"
 #include "KarimakiTrackFitter.h"
-#include "HoughFitter.h"
 #include "SeedClusteringFitter.h"
 #include "RetinaTrackFitter.h"
 #include "PCATrackFitter.h"
@@ -23,7 +21,6 @@
 
 #ifndef __APPLE__
 BOOST_CLASS_EXPORT_KEY(CMSPatternLayer) 
-BOOST_CLASS_EXPORT_KEY(PrincipalTrackFitter) 
 #endif
 
 using namespace std;
