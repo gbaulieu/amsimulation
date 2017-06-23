@@ -159,7 +159,7 @@ void Pattern::link(Detector& d){
 #ifdef USE_CUDA
 void Pattern::linkCuda(patternBank* p, deviceDetector* d, int pattern_index, const vector< vector<int> >& sec, const vector<map<int, vector<int> > >& modules, vector<int> layers,
                        unsigned int* cache){
-  memset(cache,PATTERN_UNUSED,PATTERN_LAYERS*PATTERN_SSTRIPS*sizeof(unsigned int));
+  std::fill(cache,ARRAYEND(cache),PATTERN_UNUSED);
   for(int i=0;i<nb_layer;i++){
     layer_strips[i]->getSuperStripCuda(i, sec[i], modules[i], layers[i], cache+i*PATTERN_SSTRIPS);
   }
