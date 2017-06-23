@@ -7,11 +7,13 @@ TrackFitter::~TrackFitter(){
 TrackFitter::TrackFitter(){
   nb_layers = 4;
   sec_phi = 0;
+  sector_id = -1;
 }
 
 TrackFitter::TrackFitter(int nb){
   nb_layers = nb;
   sec_phi = 0;
+  sector_id = -1;
 }
 
 vector<Pattern*> TrackFitter::getFilteredPatterns(){
