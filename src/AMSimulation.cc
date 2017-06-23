@@ -493,8 +493,8 @@ void createAnalysis(SectorTree &st){
   bank_eff->GetYaxis()->SetTitle("Integrated popularity (%)");
   bank_eff->Write();
   delete bank_eff;
-  delete patts;
-  delete scores;
+  delete [] patts;
+  delete [] scores;
 
   int patt_id;
   int patt_ssid;
