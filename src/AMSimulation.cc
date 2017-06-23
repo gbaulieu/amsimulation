@@ -1416,7 +1416,7 @@ int main(int av, char** ac){
     pg.generate(&st, 100000, threshold, eta);
 
 
-    if(pg.getVariableResolutionState()>0){
+    if(pg.getVariableResolutionState()){
       cout<<"LD Patterns : "<<st.getLDPatternNumber()<<endl;
     }
 
