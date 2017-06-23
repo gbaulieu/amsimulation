@@ -19,12 +19,9 @@
 #include "PatternFinder.h"
 #include "SectorTree.h"
 #include "Detector.h"
-#include "PrincipalTrackFitter.h"
-#include "PrincipalFitGenerator.h"
 
 #ifndef __APPLE__
 BOOST_CLASS_EXPORT_IMPLEMENT(CMSPatternLayer) 
-BOOST_CLASS_EXPORT_IMPLEMENT(PrincipalTrackFitter) 
 #endif
 
 using namespace std;
