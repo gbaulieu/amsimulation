@@ -36,7 +36,7 @@ ifeq ($(CUDA_ENABLED),true)
 	OBJECTS=SuperStrip.o Hit.o Pattern.o PatternLayer.o GradedPattern.o PatternTrunk.o PatternTree.o \
 	PatternGenerator.o Sector.o LocalToGlobalConverter.o PRBF2LocalToGlobalConverter.o CMSSWLocalToGlobalConverter.o SectorTree.o CMSPatternLayer.o Segment.o Module.o Ladder.o Layer.o \
 	Detector.o PatternFinder.o Track.o TrackFitter.o \
-	KarimakiTrackFitter.o TCBuilder.o PCATrackFitter.o SeedClusteringFitter.o \
+	KarimakiTrackFitter.o TCBuilder.o PCATrackFitter.o \
 	Retina.o RetinaTrackFitter.o FileEventProxy.o GPUPooler.o gpu.o \
 	LinearizedTrackFitter.o BuildTestFunctions.o CombinationIndexListBuilder.o L1TrackTriggerTree.o MatrixReader.o \
 	CombinationIndex.o GetVariables.o StubsCombination.o CommonTools.o
@@ -44,7 +44,7 @@ else
 	OBJECTS=SuperStrip.o Hit.o Pattern.o PatternLayer.o GradedPattern.o PatternTrunk.o PatternTree.o \
 	PatternGenerator.o Sector.o LocalToGlobalConverter.o PRBF2LocalToGlobalConverter.o CMSSWLocalToGlobalConverter.o SectorTree.o CMSPatternLayer.o Segment.o Module.o \
 	Ladder.o Layer.o Detector.o PatternFinder.o Track.o TrackFitter.o \
-	Retina.o RetinaTrackFitter.o KarimakiTrackFitter.o TCBuilder.o PCATrackFitter.o SeedClusteringFitter.o \
+	Retina.o RetinaTrackFitter.o KarimakiTrackFitter.o TCBuilder.o PCATrackFitter.o \
 	LinearizedTrackFitter.o BuildTestFunctions.o CombinationIndexListBuilder.o L1TrackTriggerTree.o MatrixReader.o \
 	CombinationIndex.o GetVariables.o StubsCombination.o CommonTools.o
 endif
@@ -129,9 +129,6 @@ TCBuilder.o:${SRC}/TCBuilder.h ${SRC}/TCBuilder.cc
 
 PCATrackFitter.o:${SRC}/PCATrackFitter.h ${SRC}/PCATrackFitter.cc ${SRC}/PCATrackFitter.cc ${SRC}/pcaconst.h
 	g++ -c ${FLAG} ${INC} ${SRC}/PCATrackFitter.cc
-
-SeedClusteringFitter.o:${SRC}/SeedClusteringFitter.h ${SRC}/SeedClusteringFitter.cc
-	g++ -c ${FLAG} ${INC} ${SRC}/SeedClusteringFitter.cc
 
 Retina.o:${SRC}/Retina.h ${SRC}/Retina.cc
 	g++ -c ${FLAG} ${INC} ${SRC}/Retina.cc

@@ -10,7 +10,6 @@
 #include "Sector.h"
 #include "CMSPatternLayer.h"
 #include "KarimakiTrackFitter.h"
-#include "SeedClusteringFitter.h"
 #include "RetinaTrackFitter.h"
 #include "PCATrackFitter.h"
 #include "TCBuilder.h"
