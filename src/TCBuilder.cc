@@ -6,16 +6,15 @@
 
 #include "TCBuilder.h"
 
-TCBuilder::TCBuilder():TrackFitter(0){
-  l2gConverter=NULL;
+TCBuilder::TCBuilder():TrackFitter(0),m_tabBarrelThresholds(),m_tabHybridThresholds(),m_tabEndcapThresholds(),
+		       m_nMissingHits(0), m_minimum_number_for_TC(0), maxseeds(-1), l2gConverter(NULL)
+{
+
 }
 
-TCBuilder::TCBuilder(int nb):TrackFitter(nb)
+TCBuilder::TCBuilder(int nb):TrackFitter(nb),m_tabBarrelThresholds(),m_tabHybridThresholds(),m_tabEndcapThresholds(),
+			     m_nMissingHits(1),	m_minimum_number_for_TC(0), maxseeds(-1), l2gConverter(NULL)
 {
-  l2gConverter=NULL;
-  m_nMissingHits = 1;
-  m_minimum_number_for_TC = 0;                 //Minimum number of layers with stub to a create a TC (defined per pattern)
-  maxseeds=-1; // By default all seeds are used.
   updateThresholds();
 }
 
