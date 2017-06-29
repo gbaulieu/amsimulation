@@ -68,7 +68,7 @@ bool PatternGenerator::getVariableResolutionState(){
     return variableRes_state_cache;
   }
 
-  for(map<int, int>::iterator it = variableRes.begin(); it != variableRes.end(); it++){
+  for(map<int, int>::iterator it = variableRes.begin(); it != variableRes.end(); ++it){
     if(it->second!=0){
       variableRes_state_cache=true;
       return variableRes_state_cache;

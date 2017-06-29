@@ -59,7 +59,7 @@ Sector* SectorTree::getSector(vector<int> ladders, vector<int> modules){
     }
     if(found)//this one is ok-> we take it
       return test;
-    first++;
+    ++first;
   }
   //none of the selected sectors where ok for modules...
   return NULL;
@@ -227,12 +227,12 @@ map<string, int> SectorTree::getSuperstripSize_lut(){
 
 bool SectorTree::hasSameSuperstripSizes(const SectorTree& st){
   //all of this is in st
-  for(map<string, int>::iterator it=superstripSize_lut.begin();it!=superstripSize_lut.end();it++){
+  for(map<string, int>::iterator it=superstripSize_lut.begin();it!=superstripSize_lut.end();++it){
     if(it->second!=st.superstripSize_lut[it->first])
       return false;
   }
   //all of st is in this
-  for(map<string, int>::iterator it=st.superstripSize_lut.begin();it!=st.superstripSize_lut.end();it++){
+  for(map<string, int>::iterator it=st.superstripSize_lut.begin();it!=st.superstripSize_lut.end();++it){
     if(it->second!=superstripSize_lut[it->first])
       return false;
   }
@@ -240,7 +240,7 @@ bool SectorTree::hasSameSuperstripSizes(const SectorTree& st){
 }
 
 void SectorTree::displaySuperstripSizes(){
-  for(map<string, int>::iterator it=superstripSize_lut.begin();it!=superstripSize_lut.end();it++){
+  for(map<string, int>::iterator it=superstripSize_lut.begin();it!=superstripSize_lut.end();++it){
     cout<<"\t"<<it->first<<" : "<<it->second<<endl;
   }
 }

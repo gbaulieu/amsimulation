@@ -439,7 +439,7 @@ void PCATrackFitter::mergeTracks()
     else
     {
       index++;
-      it++;
+      ++it;
     }
   }
 }

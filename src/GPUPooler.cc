@@ -219,7 +219,7 @@ void GPUPooler::loopForEvents(int waitingTime, int timeout){
       cudaStreamSynchronize(*streams[streamIndex]);
       saveEvent(*it,streamIndex);
 
-      it++;
+      ++it;
       streamIndex=1-streamIndex;
     }
     cudaDeviceSynchronize();

@@ -308,12 +308,12 @@ void displaySectorLUT(SectorTree &st){
     cout<<"** LUTs for sector "<<s->getOfficialID()<<endl;
     cout<<endl;
     cout<<"** LAYER/LADDER -> LOCAL LADDER"<<endl;
-    for(map<string, int>::iterator it = ladderMap.begin(); it != ladderMap.end(); it++) {
+    for(map<string, int>::iterator it = ladderMap.begin(); it != ladderMap.end(); ++it) {
       cout<<it->first<<" "<<it->second<<endl;
     }
     cout<<endl;
     cout<<"** LAYER/LADDER/MODULE -> LOCAL MODULE"<<endl;
-    for(map<string, int>::iterator it = moduleMap.begin(); it != moduleMap.end(); it++) {
+    for(map<string, int>::iterator it = moduleMap.begin(); it != moduleMap.end(); ++it) {
       cout<<it->first<<" "<<it->second<<endl;
     }
   }
@@ -323,7 +323,7 @@ void displaySuperstripSizesWithLocalID(SectorTree &st){
   vector<Sector*> list = st.getAllSectors();
   map<string, int> ladderMap = list[0]->getLadderCodeMap();
   map<string, int> superstripSize_lut = st.getSuperstripSize_lut();
-  for(map<string, int>::iterator it=superstripSize_lut.begin();it!=superstripSize_lut.end();it++){
+  for(map<string, int>::iterator it=superstripSize_lut.begin();it!=superstripSize_lut.end();++it){
     if(it->first.length()==2 && it->first.compare("00")!=0){//barrel and not 00
       //Get the global layer ID
       istringstream buffer(it->first);
@@ -783,12 +783,12 @@ void createFromSimu(string fileName, vector<int> tracker_layers, vector< vector<
   cout<<"PHI min : "<<found_phi_min<<endl;
   cout<<"PHI max : "<<found_phi_max<<endl;
 
-  for(map<int, set<int> >::const_iterator it_layer=usedLadders.begin();it_layer!=usedLadders.end();it_layer++){
+  for(map<int, set<int> >::const_iterator it_layer=usedLadders.begin();it_layer!=usedLadders.end();++it_layer){
     cout<<"Layer "<<it_layer->first<<" : "<<endl;
-    for(set<int>::const_iterator it_lad=it_layer->second.begin();it_lad!=it_layer->second.end();it_lad++){
+    for(set<int>::const_iterator it_lad=it_layer->second.begin();it_lad!=it_layer->second.end();++it_lad){
       cout<<"    "<<*it_lad<<" : ";
       set<int> modules = usedModules[it_layer->first][*it_lad];
-      for(set<int>::const_iterator it_mod=modules.begin();it_mod!=modules.end();it_mod++){
+      for(set<int>::const_iterator it_mod=modules.begin();it_mod!=modules.end();++it_mod){
 	cout<<*it_mod<<" ";
       }
       cout<<endl;
