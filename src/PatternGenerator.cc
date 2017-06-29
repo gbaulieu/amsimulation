@@ -4,7 +4,8 @@ PatternGenerator::PatternGenerator():
   variableRes_state_cache(false), cache_is_uptodate(false), ptMin(2),
   ptMax(100), etaMin(0.0f), etaMax(1.0f), nbMaxFakeSuperstrips(0),
   tracker_layers(), inactive_layers(), particuleDirName(""), referenceSector(NULL),
-  m_stub(0), m_stub_modid(), m_stub_pdg(), m_stub_strip(), m_stub_ptGEN(), m_stub_etaGEN()
+  m_stub(0), m_stub_modid(), m_stub_pdg(), m_stub_strip(), m_stub_ptGEN(), m_stub_etaGEN(),
+  p_m_stub_modid(NULL),p_m_stub_pdg(NULL),p_m_stub_strip(NULL),p_m_stub_ptGEN(NULL),p_m_stub_etaGEN(NULL)
 {
 }
 
