@@ -1,14 +1,11 @@
 #include "PatternFinder.h"
 
-PatternFinder::PatternFinder(int at, SectorTree* st, string f, string of){
-  active_threshold = at;
-  max_nb_missing_hit = 0;
-  useMissingHits=false;
-  max_road_number=1000000;
-  sectors = st;
-  eventsFilename = f;
-  outputFileName = of;
-  hardware_limitations=false;
+#ifndef USE_CUDA
+PatternFinder::PatternFinder(int at, SectorTree* st, string f, string of):
+  active_threshold(at), max_nb_missing_hit(0), useMissingHits(false),
+  max_road_number(1000000), sectors(st), eventsFilename(f),
+  outputFileName(of), tracker(), converter(NULL), hardware_limitations(false)
+{
 
   //we don't need the map of patterns, a vector will be enough and uses less memory
   sectors->getAllSectors()[0]->getPatternTree()->switchToVector();
@@ -34,13 +31,12 @@ PatternFinder::PatternFinder(int at, SectorTree* st, string f, string of){
 
   tracker.setSectorMaps(sector_list[0]->getLadderCodeMap(),sector_list[0]->getModuleCodeMap());
 
-  converter = NULL;
-
   //Link the patterns with the tracker representation
   cout<<"linking..."<<endl;
   sectors->link(tracker);
   cout<<"done."<<endl;
 }
+#endif
 
 PatternFinder::~PatternFinder(){
   if(converter!=NULL)
@@ -48,16 +44,11 @@ PatternFinder::~PatternFinder(){
 }
 
 #ifdef USE_CUDA
-PatternFinder::PatternFinder(int at, SectorTree* st, string f, string of, patternBank* p, deviceDetector* d, deviceParameters* dp){
-  active_threshold = at;
-  max_nb_missing_hit=0;
-  useMissingHits=false;
-  sectors = st;
-  eventsFilename = f;
-  outputFileName = of;
-  d_detector=d;
-  d_p_bank = p;
-  d_parameters = dp;
+PatternFinder::PatternFinder(int at, SectorTree* st, string f, string of, patternBank* p, deviceDetector* d, deviceParameters* dp):
+  active_threshold(at), max_nb_missing_hit(0), useMissingHits(false), max_road_number(1000000),
+  sectors(st), eventsFilename(f), outputFileName(of),converter(NULL), hardware_limitations(false),d_detector(d),
+  d_p_bank(p), d_parameters(dp)
+{
 
   //we don't need the map of patterns, a vector will be enough and uses less memory
   sectors->getAllSectors()[0]->getPatternTree()->switchToVector();
