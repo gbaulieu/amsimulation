@@ -474,7 +474,8 @@ void PatternGenerator::generate(SectorTree* sectors, int step, float threshold, 
     newCount = generate(tc, &indexPart, step, &nbTracks, sectors, eta_limits);
     trackUsed+=nbTracks;
     iterationNbTracks+=nbTracks;
-    dif=(newCount-nbPatterns)/(float)iterationNbTracks;//% of coverage for this iteration
+    if(iterationNbTracks!=0)
+      dif=(newCount-nbPatterns)/(float)iterationNbTracks;//% of coverage for this iteration
     nbPatterns=newCount;
     if(iterationNbTracks!=0){
       tracks[loop-1]=nbPatterns;
