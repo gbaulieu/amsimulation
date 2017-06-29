@@ -1,6 +1,6 @@
 #include "GPUPooler.h"
 
-GPUPooler::GPUPooler(string sectorFilename, string inputDirectory, string outputDirectory, int patternThreshold){
+GPUPooler::GPUPooler(string sectorFilename, string inputDirectory, string outputDirectory, int patternThreshold):eventID(), pf(NULL){
   resetCard(); 
   cout<<"Loading file "<<sectorFilename<<"..."<<endl;
   std::ifstream ifs(sectorFilename.c_str());
@@ -54,7 +54,8 @@ GPUPooler::GPUPooler(string sectorFilename, string inputDirectory, string output
 GPUPooler::~GPUPooler(){
   delete Raw_proxy;
   delete pattern_proxy;
-  delete pf;
+  if(pf!=NULL)
+    delete pf;
   
   cudaFree(cuda_nb_hits);
 
@@ -175,7 +176,8 @@ void GPUPooler::getEventFromDevice(int stream){
 
 void GPUPooler::computeEvent(int stream){
   //cout<<"computeEvent sur "<<streams[stream]<<endl;
-  pf->findCuda(cuda_nb_hits[stream],d_stubs[stream],streams[stream]);
+  if(pf!=NULL)
+    pf->findCuda(cuda_nb_hits[stream],d_stubs[stream],streams[stream]);
 }
 
 void GPUPooler::loopForEvents(int waitingTime, int timeout){
