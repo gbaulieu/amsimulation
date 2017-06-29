@@ -1,13 +1,11 @@
 #include "PatternGenerator.h"
 
-PatternGenerator::PatternGenerator(){
-  ptMin=2;
-  ptMax=100;
-  etaMin=0.0f;
-  etaMax=1.0f;
-  variableRes_state_cache = false;
-  cache_is_uptodate = false;
-  referenceSector = NULL;
+PatternGenerator::PatternGenerator():
+  variableRes_state_cache(false), cache_is_uptodate(false), ptMin(2),
+  ptMax(100), etaMin(0.0f), etaMax(1.0f), nbMaxFakeSuperstrips(0),
+  tracker_layers(), inactive_layers(), particuleDirName(""), referenceSector(NULL),
+  m_stub(0), m_stub_modid(), m_stub_pdg(), m_stub_strip(), m_stub_ptGEN(), m_stub_etaGEN()
+{
 }
 
 void PatternGenerator::setMinPT(float minp){
