@@ -445,11 +445,9 @@ void createAnalysis(SectorTree &st){
   }
   // We put all patterns in the same vector
   vector<GradedPattern*> allPatterns;
-  int nbTracks=0;
   for(unsigned int i=0;i<list.size();i++){
     vector<GradedPattern*> patterns = list[i]->getPatternTree()->getLDPatterns();
     for(unsigned int j=0;j<patterns.size();j++){
-      nbTracks+=patterns[j]->getGrade();
       allPatterns.push_back(patterns[j]);
     }
   }
@@ -866,7 +864,6 @@ vector<unsigned int> loadDefectiveAddresses(string name){
       if(line.length()>0 && line.find("#")!=0){//the line does not start with # and is not empty
 	stringstream ss(line);
 	std::string item;
-	vector<string> items;
 	while (getline(ss, item, ' ')) {//split with the space character
 	  std::string::iterator end_pos = std::remove(item.begin(), item.end(), ' ');
 	  item.erase(end_pos, item.end());
@@ -931,7 +928,6 @@ set<unsigned int> loadDefectiveModules(const Sector& s, string name){
       if(line.length()>0 && line.find("#")!=0){//the line does not start with # and is not empty
 	stringstream ss(line);
 	std::string item;
-	vector<string> items;
 	while (getline(ss, item, ' ')) {//split with the space character
 	  std::string::iterator end_pos = std::remove(item.begin(), item.end(), ' ');
 	  item.erase(end_pos, item.end());
@@ -1232,7 +1228,6 @@ int main(int av, char** ac){
     displaySectorLUT(st);
   } else if (vm.count("generateBank")) {
     
-    vector<int> layers;
     SectorTree st;
     string size_file="";
     string dcBits="";

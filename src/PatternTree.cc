@@ -132,7 +132,6 @@ vector<int> PatternTree::getPTHisto(){
 }
 
 int PatternTree::getFDPatternNumber(){
-  vector<GradedPattern*> res;
   int num=0;
   if(patterns.size()!=0){
     for(map<string, PatternTrunk*>::iterator itr = patterns.begin(); itr != patterns.end(); ++itr){
