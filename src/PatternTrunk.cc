@@ -189,7 +189,7 @@ void PatternTrunk::updateWithPattern(GradedPattern* gp){
 bool PatternTrunk::checkPattern(Pattern* hp){
   if(hp==NULL)
     return false;
-  if(fullDefPatterns.size()!=0){
+  if(!fullDefPatterns.empty()){
     string key=hp->getKey();
     map<string, GradedPattern*>::iterator it = fullDefPatterns.find(key);
     if(it==fullDefPatterns.end())//not found

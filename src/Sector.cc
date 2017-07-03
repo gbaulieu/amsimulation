@@ -189,7 +189,7 @@ void Sector::buildLadderCodeMap(){
 }
 
 map<string,int> Sector::getLadderCodeMap(){
-  if(toLadderCode.size()==0)
+  if(toLadderCode.empty())
     buildLadderCodeMap();
   return toLadderCode;
 }
@@ -236,7 +236,7 @@ void Sector::buildModuleCodeMap(){
 }
 
 map<string,int> Sector::getModuleCodeMap(){
-  if(toModuleCode.size()==0)
+  if(toModuleCode.empty())
     buildModuleCodeMap();
   return toModuleCode;
 }
@@ -375,7 +375,7 @@ int Sector::getKey(){
   int k = 0;
   stringstream oss;
   int min_layer = 1000;
-  if(m_modules.size()>0){
+  if(!m_modules.empty()){
     for(map<int, map<int, vector<int> > >::const_iterator it=m_modules.begin();it!=m_modules.end();++it){
       if(it->first<min_layer)
 	min_layer=it->first;

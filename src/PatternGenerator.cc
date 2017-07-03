@@ -63,7 +63,7 @@ bool PatternGenerator::getVariableResolutionState(){
     return variableRes_state_cache;
 
   cache_is_uptodate=true;
-  if(variableRes.size()==0){
+  if(variableRes.empty()){
     variableRes_state_cache=false;
     return variableRes_state_cache;
   }

@@ -202,7 +202,7 @@ map< string, int > SectorTree::loadSStripSizeLUT(string name){
 }
 
 int SectorTree::getSuperstripSize(int layer_id, int ladder_id){
-  if(superstripSize_lut.size()==0)
+  if(superstripSize_lut.empty())
     superstripSize_lut = loadSStripSizeLUT(ss_size_filename);
   if(layer_id<11){ // barrel
     ostringstream oss;
@@ -220,7 +220,7 @@ int SectorTree::getSuperstripSize(int layer_id, int ladder_id){
 }
 
 map<string, int> SectorTree::getSuperstripSize_lut(){
-  if(superstripSize_lut.size()==0)
+  if(superstripSize_lut.empty())
     superstripSize_lut = loadSStripSizeLUT(ss_size_filename);
   return superstripSize_lut;
 }

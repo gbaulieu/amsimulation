@@ -17,7 +17,7 @@ PatternFinder::PatternFinder(int at, SectorTree* st, string f, string of):
   if(sector_list.size()>0){
     for(int i=0;i<sector_list[0]->getNbLayers();i++){
       int layerID = sector_list[0]->getLayerID(i);
-      if(detector_config.size()>0){
+      if(!detector_config.empty()){
 	if(detector_config.find(layerID)!=detector_config.end())
 	  if(layerID<11)//barrel : 1 module with 2*nb_modules segments
 	    tracker.addLayer(detector_config[layerID][0],detector_config[layerID][1],1, detector_config[layerID][2]*2, detector_config[layerID][3], SectorTree::getSuperstripSize(layerID), true);
