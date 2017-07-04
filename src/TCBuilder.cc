@@ -558,12 +558,10 @@ void TCBuilder::fit(vector<Hit*> originalHits, int pattern_id)
   //Create a new vector to store the custom hits parameters
   vector <Hit> hits;
   
-  Hit* pOrigHit;
-  
   //For each hit of the lists
   for (unsigned int origHitIndex = 0; origHitIndex<originalHits.size(); origHitIndex++)
     {
-      pOrigHit = originalHits[origHitIndex];
+      Hit* pOrigHit = originalHits[origHitIndex];
       
       /**************** FROM LOCAL TO GLOBAL COORDINATES ****************/
       vector<float> coords;

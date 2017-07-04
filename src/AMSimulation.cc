@@ -981,8 +981,8 @@ void createSectorFromRootFile(SectorTree* st, string fileName, vector<int> layer
   if(fileName.substr(fileName.length()-4,fileName.length()).compare(".csv")==0){
     ifstream is(fileName.c_str());
     string line;
-    int line_index=0;
     if (is.is_open()){
+      int line_index=0;
       while ( is.good() ){
 	getline (is,line);
 	if(line_index==sector_id+1){ // line describing the sector we want
@@ -1245,7 +1245,6 @@ int main(int av, char** ac){
     float minEta=0;
     float maxEta=0;
     int maxNbFake=0;
-    int sector_tklayout_id=0;
     map<int,pair<float,float> > eta = CMSPatternLayer::getLayerDefInEta();
     
     try{
@@ -1270,7 +1269,7 @@ int main(int av, char** ac){
       cout<<"Output file name is "<<bankFileName<<endl;
       activeLayers=vm["active_layers"].as<string>();
       cout<<"Using layers "<<activeLayers<<endl;
-      sector_tklayout_id=vm["sector_id"].as<int>();
+      int sector_tklayout_id=vm["sector_id"].as<int>();
       cout<<"Using sector "<<sector_tklayout_id<<" from "<<vm["sector_file"].as<string>()<<endl;
 
       //Get the active/forced/inactive layers

@@ -448,7 +448,6 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
 
 void PatternGenerator::generate(SectorTree* sectors, int step, float threshold, map<int,pair<float,float> > eta_limits){
   int nbPatterns = 1;
-  int newCount = 0;
   int indexPart = 0;
   float dif=1;
  
@@ -470,7 +469,7 @@ void PatternGenerator::generate(SectorTree* sectors, int step, float threshold, 
     //threshold=0;
     loop++;
     iterationNbTracks=0;
-    newCount = generate(tc, &indexPart, step, &nbTracks, sectors, eta_limits);
+    int newCount = generate(tc, &indexPart, step, &nbTracks, sectors, eta_limits);
     trackUsed+=nbTracks;
     iterationNbTracks+=nbTracks;
     if(iterationNbTracks!=0)

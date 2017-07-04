@@ -6,10 +6,10 @@ map<string, int> Sector::toModuleCode;
 map< int, vector<int> > Sector::readConfig(string name){
   string line;
   ifstream myfile (name.c_str());
-  int lineNumber=0;
   map< int, vector<int> > detector_config;
   if (myfile.is_open()){
     cout<<"Using configuration found in detector.cfg"<<endl;
+    int lineNumber=0;
     while ( myfile.good() )
       {
 	getline (myfile,line);
@@ -374,8 +374,8 @@ int Sector::getOfficialID() const{
 int Sector::getKey(){
   int k = 0;
   stringstream oss;
-  int min_layer = 1000;
   if(!m_modules.empty()){
+    int min_layer = 1000;
     for(map<int, map<int, vector<int> > >::const_iterator it=m_modules.begin();it!=m_modules.end();++it){
       if(it->first<min_layer)
 	min_layer=it->first;

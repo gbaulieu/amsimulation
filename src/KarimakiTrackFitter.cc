@@ -60,7 +60,6 @@ void KarimakiTrackFitter::fitPattern(Pattern* p){
   int n_miss = 0;
   int n_mult = 0;
   int ngc = 0;
-  int ng = 0;
 
   double x,y,z,rr;
  
@@ -85,7 +84,7 @@ void KarimakiTrackFitter::fitPattern(Pattern* p){
   for (int i=0;i<nb_layers;++i){
     vector<Hit*> active_hits = p->getHits(i);//list of hits in the pattern for this layer
 
-    ng = active_hits.size();
+    int ng = active_hits.size();
     
     if (ng==0) 
       n_miss++;

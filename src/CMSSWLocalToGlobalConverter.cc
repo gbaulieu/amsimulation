@@ -3,10 +3,6 @@
 CMSSWLocalToGlobalConverter::CMSSWLocalToGlobalConverter(int sectorID, string geometryFile):LocalToGlobalConverter(){
   string line;
   ifstream myfile (geometryFile.c_str());
-  int layer = -1;
-  int ladder = -1;
-  int module = -1;
-  float coef_value = -1;
   stringstream val;
 
   //Which side of the tracker are we on?
@@ -30,6 +26,12 @@ CMSSWLocalToGlobalConverter::CMSSWLocalToGlobalConverter(int sectorID, string ge
 	  items.push_back(item);
 	}
 	if(items.size()==11){
+
+	  int layer = -1;
+	  int ladder = -1;
+	  int module = -1;
+	  float coef_value = -1;
+	  
 	  val.clear();
 	  val.str(items[0]);
 	  val >> layer;
