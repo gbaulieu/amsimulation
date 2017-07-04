@@ -1662,8 +1662,7 @@ int main(int av, char** ac){
       int expected_active_layers = -1;
       bool hybrid_sector = layers.size()>8;//we have more layers than input buses
 
-      int biggestID = -1;//last layer of the sector
-      biggestID=layers[layers.size()-1];
+      int biggestID = layers[layers.size()-1];//last layer of the sector
 
       bool endcap_sector = false;
       if(biggestID>10 && !hybrid_sector)

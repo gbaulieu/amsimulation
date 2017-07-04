@@ -17,8 +17,7 @@ map< int, vector<int> > Sector::readConfig(string name){
 	vector<int> layer_config;
 	if(line.length()>0 && line.find("#")!=0){
 	  layer_config.clear();
-	  size_t pos = -1;
-	  pos = line.find(",");
+	  size_t pos = line.find(",");
 	  bool go = true;
 	  while(go){
 	    if(pos==string::npos)

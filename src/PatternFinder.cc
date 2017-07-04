@@ -294,8 +294,7 @@ void PatternFinder::find(int start, int& stop){
 
     for(int i=0;i<m_stub;i++){
       int layer = m_stub_layer[i];
-      int module = -1;
-      module = CMSPatternLayer::getModuleCode(layer, m_stub_module[i]);
+      int module = CMSPatternLayer::getModuleCode(layer, m_stub_module[i]);
       if(module<0)
 	continue;
       int ladder = CMSPatternLayer::getLadderCode(layer, m_stub_ladder[i]);
@@ -824,8 +823,7 @@ void PatternFinder::findCuda(int start, int& stop, deviceStubs* d_stubs){
 
     for(int i=0;i<m_stub;i++){
       int layer = m_stub_layer[i];
-      int module = -1;
-      module = CMSPatternLayer::getModuleCode(layer, m_stub_module[i]);
+      int module = CMSPatternLayer::getModuleCode(layer, m_stub_module[i]);
       if(module<0)
 	continue;
       int ladder = CMSPatternLayer::getLadderCode(layer, m_stub_ladder[i]);
