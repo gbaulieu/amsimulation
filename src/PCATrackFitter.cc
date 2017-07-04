@@ -435,7 +435,7 @@ void PCATrackFitter::mergeTracks()
     }
 
     if(found)
-      tracks.erase(it);
+      it = tracks.erase(it);
     else
     {
       index++;
