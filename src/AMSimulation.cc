@@ -1346,7 +1346,7 @@ int main(int av, char** ac){
       threshold=vm["coverage"].as<float>();
       createSectorFromRootFile(&st,vm["sector_file"].as<string>(), active_layers, sector_tklayout_id);
     }
-    catch(boost::bad_any_cast e){
+    catch(boost::bad_any_cast& e){
       cout<<"At least one option is missing! Please check : "<<endl;
       cout<<desc<<endl;
       return -1;
