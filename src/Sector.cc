@@ -83,13 +83,8 @@ Sector::Sector(vector<int> layersID){
   officialID=-1;
 }
 
-Sector::Sector(const Sector& s){
-  m_modules=s.m_modules;
-  m_ladders=s.m_ladders;
+Sector::Sector(const Sector& s):m_modules(s.m_modules),m_ladders(s.m_ladders){
   patterns = new PatternTree();
-  // if(s.fitter!=NULL)
-  //  fitter = s.fitter->clone();
-  //else
   fitter=NULL;
   officialID=s.officialID;
 }
@@ -103,6 +98,7 @@ Sector::~Sector(){
 Sector& Sector::operator=(Sector& s){
   m_modules = s.m_modules; 
   m_ladders = s.m_ladders;
+  patterns = new PatternTree();
   fitter=NULL;
   officialID=s.officialID;
   return *this;
