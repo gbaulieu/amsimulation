@@ -96,11 +96,13 @@ Sector::~Sector(){
 }
 
 Sector& Sector::operator=(Sector& s){
-  m_modules = s.m_modules; 
-  m_ladders = s.m_ladders;
-  patterns = new PatternTree();
-  fitter=NULL;
-  officialID=s.officialID;
+  if(&s != this){//check for self assignement
+    m_modules = s.m_modules; 
+    m_ladders = s.m_ladders;
+    patterns = new PatternTree();
+    fitter=NULL;
+    officialID=s.officialID;
+  }
   return *this;
 }
 
