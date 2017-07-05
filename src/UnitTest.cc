@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE( CMSPatternLayer_constructor_test )
   BOOST_CHECK_EQUAL( p.getNbLayers() , NB_LAYERS );
 
   for(int i=0;i<NB_LAYERS;i++){
-    CMSPatternLayer* pl = (CMSPatternLayer*)p.getLayerStrip(i);
+    CMSPatternLayer* pl = dynamic_cast<CMSPatternLayer*>(p.getLayerStrip(i));
     BOOST_CHECK_EQUAL(pl->getModule(),MODULE);
     BOOST_CHECK_EQUAL(pl->getPhi(),LADDER);
     BOOST_CHECK_EQUAL(pl->getStrip(),SSTRIP);
@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE( bank_compatibility_test ){
 
     Pattern* p = patterns[100];
     for(int k=0;k<p->getNbLayers();k++){
-      CMSPatternLayer* mp = (CMSPatternLayer*)p->getLayerStrip(k);
+      CMSPatternLayer* mp = dynamic_cast<CMSPatternLayer*>(p->getLayerStrip(k));
       BOOST_CHECK_EQUAL(mp->getModule(),pattern100[k][0]);
       BOOST_CHECK_EQUAL(mp->getSegment(),pattern100[k][1]);
       BOOST_CHECK_EQUAL(mp->getPhi(),pattern100[k][2]);
@@ -142,7 +142,7 @@ BOOST_AUTO_TEST_CASE( pattern_finding_test ){
     if(sectors[i]->getFitter()==NULL){
       //TrackFitter* fitter = new KarimakiTrackFitter(sectors[i]->getNbLayers());
       TrackFitter* fitter = new TCBuilder(sectors[i]->getNbLayers());
-      ((TCBuilder*)fitter)->setHardwareEmulation(false);
+      (dynamic_cast<TCBuilder*>(fitter))->setHardwareEmulation(false);
       sectors[i]->setFitter(fitter);
       sectors[i]->updateFitterPhiRotation();
     }

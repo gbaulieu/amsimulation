@@ -326,7 +326,7 @@ void PatternTree::desactivateModules(PatternTree* ref_pt, set<unsigned int> defe
       GradedPattern* nPattern = ref_pt->v_patterns[i]->getLDPattern();
       // Loop over the layers
       for(int k=0;k<nbLayers;k++){
-	CMSPatternLayer* pl = (CMSPatternLayer*)nPattern->getLayerStrip(k);
+	CMSPatternLayer* pl = dynamic_cast<CMSPatternLayer*>(nPattern->getLayerStrip(k));
 	// If the superstrip is already a fake one : nothing to do
 	if(!pl->isFake()){
 	  unsigned int module = k*100000+pl->getPhi()*1000+pl->getModule()*10+pl->getSegment();

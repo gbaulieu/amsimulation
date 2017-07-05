@@ -577,7 +577,7 @@ void createAnalysis(SectorTree &st){
 
     for(int j=0;j<p->getNbLayers();j++){
       patt_layer = j;
-      CMSPatternLayer* pl = (CMSPatternLayer*)p->getLayerStrip(j);
+      CMSPatternLayer* pl = dynamic_cast<CMSPatternLayer*>(p->getLayerStrip(j));
       vector<int> positions = pl->getHDSuperstrips();
       vector<int> ladder_id = list[0]->getLadders(j);
       if(!pl->isFake()){
@@ -1478,10 +1478,10 @@ int main(int av, char** ac){
 	//TrackFitter* fitter = new KarimakiTrackFitter(sectors[i]->getNbLayers());
 	TrackFitter* fitter = new TCBuilder(sectors[i]->getNbLayers());
 	if(vm.count("hardware_precision")){
-	  ((TCBuilder*)fitter)->setHardwareEmulation(true);
+	  (dynamic_cast<TCBuilder*>(fitter))->setHardwareEmulation(true);
 	}
 	else{
-	  ((TCBuilder*)fitter)->setHardwareEmulation(false);
+	  (dynamic_cast<TCBuilder*>(fitter))->setHardwareEmulation(false);
 	}
 	sectors[i]->setFitter(fitter);
 	sectors[i]->updateFitterPhiRotation();
@@ -1590,7 +1590,7 @@ int main(int av, char** ac){
 	Pattern* p = patterns[j];
 	for(int k=0;k<p->getNbLayers();k++){
 	  PatternLayer* mp = p->getLayerStrip(k);
-	  cout<<((CMSPatternLayer*)mp)->toString()<<" - ";
+	  cout<<(dynamic_cast<CMSPatternLayer*>(mp))->toString()<<" - ";
 	}
 	cout<<endl;
       }
@@ -1626,7 +1626,7 @@ int main(int av, char** ac){
 	Pattern* p = patterns[j];
 	for(int k=0;k<p->getNbLayers();k++){
 	  PatternLayer* mp = p->getLayerStrip(k);
-	  cout<<((CMSPatternLayer*)mp)->toStringBinary()<<" - ";
+	  cout<<(dynamic_cast<CMSPatternLayer*>(mp))->toStringBinary()<<" - ";
 	}
 	cout<<endl;
       }
@@ -1771,7 +1771,7 @@ int main(int av, char** ac){
 	    continue;
 	  }
 	  
-	  cout<<((CMSPatternLayer*)mp)->toAM05Format(tagLayer)<<endl;
+	  cout<<(dynamic_cast<CMSPatternLayer*>(mp))->toAM05Format(tagLayer)<<endl;
 	}
 	//unused layers set to 0x01e05 (fake stub value)
 	//We want a threshold at 5/6 but we have 8 buses and the threshold can not go below 6

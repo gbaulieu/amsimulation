@@ -385,7 +385,7 @@ void PatternFinder::find(int start, int& stop){
 	int surface = 0;
 	vector<int> layerIDs = pattern_list[i]->getLayersID();
 	for (int k=0;k<pl[j]->getNbLayers();k++){
-	  CMSPatternLayer* patt_layer = (CMSPatternLayer*)pl[j]->getLayerStrip(k);
+	  CMSPatternLayer* patt_layer = dynamic_cast<CMSPatternLayer*>(pl[j]->getLayerStrip(k));
 	  int nb_used_dc = -1;
 	  vector<int> ladder_id = pattern_list[i]->getLadders(k);
 	  if(!patt_layer->isFake()){
