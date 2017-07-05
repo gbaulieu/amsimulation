@@ -12,6 +12,10 @@ PatternTrunk::PatternTrunk(){
   lowDefPattern = new GradedPattern();
 }
 
+PatternTrunk::PatternTrunk(const PatternTrunk& pt){
+  lowDefPattern = new GradedPattern(*(pt.lowDefPattern));
+}
+
 PatternTrunk::~PatternTrunk(){
   for(map<string, GradedPattern*>::iterator itr = fullDefPatterns.begin(); itr != fullDefPatterns.end(); ++itr){
     delete itr->second;
