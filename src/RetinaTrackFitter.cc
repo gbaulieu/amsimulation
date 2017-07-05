@@ -553,11 +553,9 @@ void RetinaTrackFitter::fit(){
 
   //////// Get the list of unique stubs from all the patterns ///////////
   set<int> ids;
-  int total=0;
   
   for(unsigned int i=0;i<patterns.size();i++){
     vector<Hit*> allHits = patterns[i]->getHits();
-    total+=allHits.size();
     for(unsigned int j=0;j<allHits.size();j++){
       pair<set<int>::iterator,bool> result = ids.insert(allHits[j]->getID());
       if(result.second==true)
