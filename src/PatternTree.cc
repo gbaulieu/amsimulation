@@ -321,7 +321,7 @@ void PatternTree::desactivateModules(PatternTree* ref_pt, set<unsigned int> defe
 
   for(unsigned int i=0;i<ref_pt->v_patterns.size();i++){
     //If we have dead modules : we replace the corresponding superstrips by fake ones
-    if(defective_modules.size()>0){
+    if(!defective_modules.empty()){
       int nbLayers = ref_pt->v_patterns[i]->getLDPattern()->getNbLayers();
       GradedPattern* nPattern = ref_pt->v_patterns[i]->getLDPattern();
       // Loop over the layers
@@ -443,8 +443,6 @@ void PatternTree::truncate(int nbPatterns, int sorting_algo, vector<unsigned int
 
 void PatternTree::removePatterns(int minFS, int maxFS){
   switchToVector();
-
-  vector<PatternTrunk*>::iterator itr = v_patterns.begin();
 
   int min = minFS;
   int max = maxFS;
