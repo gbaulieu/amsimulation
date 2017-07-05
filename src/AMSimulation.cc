@@ -861,7 +861,7 @@ vector<unsigned int> loadDefectiveAddresses(string name){
   if (myfile.is_open()){
     while ( myfile.good() ){
       getline (myfile,line);
-      if(line.length()>0 && line.find("#")!=0){//the line does not start with # and is not empty
+      if(line.length()>0 && line.compare(0,1,"#",0,1)!=0){//the line does not start with # and is not empty
 	stringstream ss(line);
 	std::string item;
 	while (getline(ss, item, ' ')) {//split with the space character
@@ -925,7 +925,7 @@ set<unsigned int> loadDefectiveModules(const Sector& s, string name){
   if (myfile.is_open()){
     while ( myfile.good() ){
       getline (myfile,line);
-      if(line.length()>0 && line.find("#")!=0){//the line does not start with # and is not empty
+      if(line.length()>0 &&  line.compare(0,1,"#",0,1)!=0){//the line does not start with # and is not empty
 	stringstream ss(line);
 	std::string item;
 	while (getline(ss, item, ' ')) {//split with the space character

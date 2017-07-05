@@ -39,7 +39,7 @@ PRBF2LocalToGlobalConverter::PRBF2LocalToGlobalConverter(const Sector* sectorDef
     
     while ( myfile.good() ){
       getline (myfile,line);
-      if(line.length()>0 && line.find("#")!=0){
+      if(line.length()>0 &&  line.compare(0,1,"#",0,1)!=0){
 	stringstream ss(line);
 	std::string item;
 	vector<string> items;
