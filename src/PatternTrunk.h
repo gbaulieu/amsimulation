@@ -36,6 +36,12 @@ class PatternTrunk{
      \brief Default constructor
   **/
   PatternTrunk();
+
+  /**
+     \brief Copy constructor
+   **/
+  PatternTrunk(const PatternTrunk& pt);
+
   ~PatternTrunk();
   /**
      \brief Add a new full definition pattern to the structure

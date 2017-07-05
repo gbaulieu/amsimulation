@@ -59,7 +59,7 @@ Sector* SectorTree::getSector(vector<int> ladders, vector<int> modules){
     }
     if(found)//this one is ok-> we take it
       return test;
-    first++;
+    ++first;
   }
   //none of the selected sectors where ok for modules...
   return NULL;
@@ -175,7 +175,7 @@ map< string, int > SectorTree::loadSStripSizeLUT(string name){
   if (myfile.is_open()){
     while ( myfile.good() ){
       getline (myfile,line);
-      if(line.length()>0 && line.find("#")!=0){
+      if(line.length()>0 && line.compare(0,1,"#",0,1)!=0){
 	stringstream ss(line);
 	std::string item;
 	vector<string> items;
@@ -202,7 +202,7 @@ map< string, int > SectorTree::loadSStripSizeLUT(string name){
 }
 
 int SectorTree::getSuperstripSize(int layer_id, int ladder_id){
-  if(superstripSize_lut.size()==0)
+  if(superstripSize_lut.empty())
     superstripSize_lut = loadSStripSizeLUT(ss_size_filename);
   if(layer_id<11){ // barrel
     ostringstream oss;
@@ -220,19 +220,19 @@ int SectorTree::getSuperstripSize(int layer_id, int ladder_id){
 }
 
 map<string, int> SectorTree::getSuperstripSize_lut(){
-  if(superstripSize_lut.size()==0)
+  if(superstripSize_lut.empty())
     superstripSize_lut = loadSStripSizeLUT(ss_size_filename);
   return superstripSize_lut;
 }
 
 bool SectorTree::hasSameSuperstripSizes(const SectorTree& st){
   //all of this is in st
-  for(map<string, int>::iterator it=superstripSize_lut.begin();it!=superstripSize_lut.end();it++){
+  for(map<string, int>::iterator it=superstripSize_lut.begin();it!=superstripSize_lut.end();++it){
     if(it->second!=st.superstripSize_lut[it->first])
       return false;
   }
   //all of st is in this
-  for(map<string, int>::iterator it=st.superstripSize_lut.begin();it!=st.superstripSize_lut.end();it++){
+  for(map<string, int>::iterator it=st.superstripSize_lut.begin();it!=st.superstripSize_lut.end();++it){
     if(it->second!=superstripSize_lut[it->first])
       return false;
   }
@@ -240,7 +240,7 @@ bool SectorTree::hasSameSuperstripSizes(const SectorTree& st){
 }
 
 void SectorTree::displaySuperstripSizes(){
-  for(map<string, int>::iterator it=superstripSize_lut.begin();it!=superstripSize_lut.end();it++){
+  for(map<string, int>::iterator it=superstripSize_lut.begin();it!=superstripSize_lut.end();++it){
     cout<<"\t"<<it->first<<" : "<<it->second<<endl;
   }
 }

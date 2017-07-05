@@ -1,13 +1,12 @@
 #include "PatternGenerator.h"
 
-PatternGenerator::PatternGenerator(){
-  ptMin=2;
-  ptMax=100;
-  etaMin=0.0f;
-  etaMax=1.0f;
-  variableRes_state_cache = false;
-  cache_is_uptodate = false;
-  referenceSector = NULL;
+PatternGenerator::PatternGenerator():
+  variableRes_state_cache(false), cache_is_uptodate(false), ptMin(2),
+  ptMax(100), etaMin(0.0f), etaMax(1.0f), nbMaxFakeSuperstrips(0),
+  tracker_layers(), inactive_layers(), particuleDirName(""), referenceSector(NULL),
+  m_stub(0), m_stub_modid(), m_stub_pdg(), m_stub_strip(), m_stub_ptGEN(), m_stub_etaGEN(),
+  p_m_stub_modid(NULL),p_m_stub_pdg(NULL),p_m_stub_strip(NULL),p_m_stub_ptGEN(NULL),p_m_stub_etaGEN(NULL)
+{
 }
 
 void PatternGenerator::setMinPT(float minp){
@@ -64,12 +63,12 @@ bool PatternGenerator::getVariableResolutionState(){
     return variableRes_state_cache;
 
   cache_is_uptodate=true;
-  if(variableRes.size()==0){
+  if(variableRes.empty()){
     variableRes_state_cache=false;
     return variableRes_state_cache;
   }
 
-  for(map<int, int>::iterator it = variableRes.begin(); it != variableRes.end(); it++){
+  for(map<int, int>::iterator it = variableRes.begin(); it != variableRes.end(); ++it){
     if(it->second!=0){
       variableRes_state_cache=true;
       return variableRes_state_cache;
@@ -452,7 +451,6 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
 
 void PatternGenerator::generate(SectorTree* sectors, int step, float threshold, map<int,pair<float,float> > eta_limits){
   int nbPatterns = 1;
-  int newCount = 0;
   int indexPart = 0;
   float dif=1;
  
@@ -474,10 +472,11 @@ void PatternGenerator::generate(SectorTree* sectors, int step, float threshold, 
     //threshold=0;
     loop++;
     iterationNbTracks=0;
-    newCount = generate(tc, &indexPart, step, &nbTracks, sectors, eta_limits);
+    int newCount = generate(tc, &indexPart, step, &nbTracks, sectors, eta_limits);
     trackUsed+=nbTracks;
     iterationNbTracks+=nbTracks;
-    dif=(newCount-nbPatterns)/(float)iterationNbTracks;//% of coverage for this iteration
+    if(iterationNbTracks!=0)
+      dif=(newCount-nbPatterns)/(float)iterationNbTracks;//% of coverage for this iteration
     nbPatterns=newCount;
     if(iterationNbTracks!=0){
       tracks[loop-1]=nbPatterns;

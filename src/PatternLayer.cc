@@ -4,8 +4,7 @@
 
 map<string, vector<short> > PatternLayer::positions_cache;
 
-PatternLayer::PatternLayer(){
-  bits=0;
+PatternLayer::PatternLayer():bits(0){
   memset(dc_bits,3,DC_BITS*sizeof(char));
 }
 

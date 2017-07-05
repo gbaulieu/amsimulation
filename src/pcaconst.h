@@ -398,8 +398,6 @@ namespace pca
         (etamax_ == cp.etamax_ ) &&
         (towerid_ == cp.towerid_ ) && 
         (chargesign_ == cp.chargesign_ ) && 
-        (cols_ == cp.cols_ ) && 
-        (rows_ == cp.rows_ ) &&  
         (layersids_ == cp.layersids_ ));
   }
   

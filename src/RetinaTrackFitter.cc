@@ -99,7 +99,7 @@ void RetinaTrackFitter::fit(vector<Hit*> hits_, int pattern_id){
   // required changing the class interface because it's passed around.
   ::DeleteContainerElementsGuard< std::vector<Hit_t*> > deleteHitsGuard( hits );
 
-  for(unsigned int ihit=0; ihit<hits_.size(); ihit++){
+  for(unsigned int ihit=0; ihit<hits_.size(); ++ihit){
   
     Hit_t* hit = new Hit_t();
     hit->x     = hits_[ihit]->getX();
@@ -525,7 +525,7 @@ void RetinaTrackFitter::fit(vector<Hit*> hits_, int pattern_id){
 
 	// --- Save the track:
 	Track* trk = new Track(c, 0., phi, eta, z0, maximaXY_step2[itrk].w, bestpqRZ_step2.w);
-	for(unsigned int ihit=0; ihit<hits_RZ.size(); ihit++)
+	for(unsigned int ihit=0; ihit<hits_RZ.size(); ++ihit)
 	  trk->addStubIndex(hits_RZ[ihit]->id);
 
 	tracks.push_back(trk);
@@ -553,11 +553,9 @@ void RetinaTrackFitter::fit(){
 
   //////// Get the list of unique stubs from all the patterns ///////////
   set<int> ids;
-  int total=0;
   
   for(unsigned int i=0;i<patterns.size();i++){
     vector<Hit*> allHits = patterns[i]->getHits();
-    total+=allHits.size();
     for(unsigned int j=0;j<allHits.size();j++){
       pair<set<int>::iterator,bool> result = ids.insert(allHits[j]->getID());
       if(result.second==true)
@@ -588,7 +586,7 @@ TrackFitter* RetinaTrackFitter::clone(){
 
 void RetinaTrackFitter::rotateHits(vector<Hit_t*> hits, double angle){
   
-  for (unsigned int ihit=0; ihit<hits.size(); ihit++) {
+  for (unsigned int ihit=0; ihit<hits.size(); ++ihit) {
     double x = hits[ihit]->x*cos(angle) - hits[ihit]->y*sin(angle);
     double y = hits[ihit]->x*sin(angle) + hits[ihit]->y*cos(angle);
     hits[ihit]->x = x;
@@ -599,7 +597,7 @@ void RetinaTrackFitter::rotateHits(vector<Hit_t*> hits, double angle){
 
 void RetinaTrackFitter::confTrans(vector<Hit_t*> hits){
   
-  for (unsigned int ihit=0; ihit<hits.size(); ihit++) {
+  for (unsigned int ihit=0; ihit<hits.size(); ++ihit) {
     double R2 = hits[ihit]->x*hits[ihit]->x + hits[ihit]->y*hits[ihit]->y;
     hits[ihit]->x /= R2;
     hits[ihit]->y /= R2;

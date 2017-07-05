@@ -14,8 +14,6 @@
 #include "PatternFinder.h"
 #include "SectorTree.h"
 #include "Detector.h"
-#include "PrincipalTrackFitter.h"
-#include "PrincipalFitGenerator.h"
 
 #ifdef USE_CUDA
 #include "GPUPooler.h"
@@ -27,7 +25,6 @@
 
 #ifndef __APPLE__
 BOOST_CLASS_EXPORT_IMPLEMENT(CMSPatternLayer) 
-BOOST_CLASS_EXPORT_IMPLEMENT(PrincipalTrackFitter) 
 #endif
 
 using namespace std;
@@ -381,12 +378,12 @@ void displaySectorLUT(SectorTree &st){
     cout<<"** LUTs for sector "<<s->getOfficialID()<<endl;
     cout<<endl;
     cout<<"** LAYER/LADDER -> LOCAL LADDER"<<endl;
-    for(map<string, int>::iterator it = ladderMap.begin(); it != ladderMap.end(); it++) {
+    for(map<string, int>::iterator it = ladderMap.begin(); it != ladderMap.end(); ++it) {
       cout<<it->first<<" "<<it->second<<endl;
     }
     cout<<endl;
     cout<<"** LAYER/LADDER/MODULE -> LOCAL MODULE"<<endl;
-    for(map<string, int>::iterator it = moduleMap.begin(); it != moduleMap.end(); it++) {
+    for(map<string, int>::iterator it = moduleMap.begin(); it != moduleMap.end(); ++it) {
       cout<<it->first<<" "<<it->second<<endl;
     }
   }
@@ -396,7 +393,7 @@ void displaySuperstripSizesWithLocalID(SectorTree &st){
   vector<Sector*> list = st.getAllSectors();
   map<string, int> ladderMap = list[0]->getLadderCodeMap();
   map<string, int> superstripSize_lut = st.getSuperstripSize_lut();
-  for(map<string, int>::iterator it=superstripSize_lut.begin();it!=superstripSize_lut.end();it++){
+  for(map<string, int>::iterator it=superstripSize_lut.begin();it!=superstripSize_lut.end();++it){
     if(it->first.length()==2 && it->first.compare("00")!=0){//barrel and not 00
       //Get the global layer ID
       istringstream buffer(it->first);
@@ -518,11 +515,9 @@ void createAnalysis(SectorTree &st){
   }
   // We put all patterns in the same vector
   vector<GradedPattern*> allPatterns;
-  int nbTracks=0;
   for(unsigned int i=0;i<list.size();i++){
     vector<GradedPattern*> patterns = list[i]->getPatternTree()->getLDPatterns();
     for(unsigned int j=0;j<patterns.size();j++){
-      nbTracks+=patterns[j]->getGrade();
       allPatterns.push_back(patterns[j]);
     }
   }
@@ -563,8 +558,8 @@ void createAnalysis(SectorTree &st){
   bank_eff->GetYaxis()->SetTitle("Integrated popularity (%)");
   bank_eff->Write();
   delete bank_eff;
-  delete patts;
-  delete scores;
+  delete [] patts;
+  delete [] scores;
 
   int patt_id;
   int patt_ssid;
@@ -652,7 +647,7 @@ void createAnalysis(SectorTree &st){
 
     for(int j=0;j<p->getNbLayers();j++){
       patt_layer = j;
-      CMSPatternLayer* pl = (CMSPatternLayer*)p->getLayerStrip(j);
+      CMSPatternLayer* pl = dynamic_cast<CMSPatternLayer*>(p->getLayerStrip(j));
       vector<int> positions = pl->getHDSuperstrips();
       vector<int> ladder_id = list[0]->getLadders(j);
       if(!pl->isFake()){
@@ -856,12 +851,12 @@ void createFromSimu(string fileName, vector<int> tracker_layers, vector< vector<
   cout<<"PHI min : "<<found_phi_min<<endl;
   cout<<"PHI max : "<<found_phi_max<<endl;
 
-  for(map<int, set<int> >::const_iterator it_layer=usedLadders.begin();it_layer!=usedLadders.end();it_layer++){
+  for(map<int, set<int> >::const_iterator it_layer=usedLadders.begin();it_layer!=usedLadders.end();++it_layer){
     cout<<"Layer "<<it_layer->first<<" : "<<endl;
-    for(set<int>::const_iterator it_lad=it_layer->second.begin();it_lad!=it_layer->second.end();it_lad++){
+    for(set<int>::const_iterator it_lad=it_layer->second.begin();it_lad!=it_layer->second.end();++it_lad){
       cout<<"    "<<*it_lad<<" : ";
       set<int> modules = usedModules[it_layer->first][*it_lad];
-      for(set<int>::const_iterator it_mod=modules.begin();it_mod!=modules.end();it_mod++){
+      for(set<int>::const_iterator it_mod=modules.begin();it_mod!=modules.end();++it_mod){
 	cout<<*it_mod<<" ";
       }
       cout<<endl;
@@ -936,10 +931,9 @@ vector<unsigned int> loadDefectiveAddresses(string name){
   if (myfile.is_open()){
     while ( myfile.good() ){
       getline (myfile,line);
-      if(line.length()>0 && line.find("#")!=0){//the line does not start with # and is not empty
+      if(line.length()>0 && line.compare(0,1,"#",0,1)!=0){//the line does not start with # and is not empty
 	stringstream ss(line);
 	std::string item;
-	vector<string> items;
 	while (getline(ss, item, ' ')) {//split with the space character
 	  std::string::iterator end_pos = std::remove(item.begin(), item.end(), ' ');
 	  item.erase(end_pos, item.end());
@@ -1001,10 +995,9 @@ set<unsigned int> loadDefectiveModules(const Sector& s, string name){
   if (myfile.is_open()){
     while ( myfile.good() ){
       getline (myfile,line);
-      if(line.length()>0 && line.find("#")!=0){//the line does not start with # and is not empty
+      if(line.length()>0 &&  line.compare(0,1,"#",0,1)!=0){//the line does not start with # and is not empty
 	stringstream ss(line);
 	std::string item;
-	vector<string> items;
 	while (getline(ss, item, ' ')) {//split with the space character
 	  std::string::iterator end_pos = std::remove(item.begin(), item.end(), ' ');
 	  item.erase(end_pos, item.end());
@@ -1058,8 +1051,8 @@ void createSectorFromRootFile(SectorTree* st, string fileName, vector<int> layer
   if(fileName.substr(fileName.length()-4,fileName.length()).compare(".csv")==0){
     ifstream is(fileName.c_str());
     string line;
-    int line_index=0;
     if (is.is_open()){
+      int line_index=0;
       while ( is.good() ){
 	getline (is,line);
 	if(line_index==sector_id+1){ // line describing the sector we want
@@ -1168,7 +1161,6 @@ int main(int av, char** ac){
     ("generateBank", "Generates a pattern bank from root simulation file (needs --ss_size_file --dc_bits --pt_min --pt_max --eta_min --eta_max --coverage --input_directory --bank_name --sector_file --sector_id --active_layers, optionaly --reference_bank)")
     ("testSectors", "Get the tracks sectors")
     ("MergeBanks", "Merge 2 bank files having only 1 sector (needs --inputFile --secondFile and --outputFile)")
-    ("buildFitParams", "Computes the Fit parameters for the given bank using tracks from the given directory (needs --bankFile, --input_directory and --outputFile)")
     ("findPatterns", "Search for patterns in an event file (needs --ss_threshold --inputFile, --bankFile, --startEvent and --stopEvent)")
 #ifdef USE_CUDA
     ("useGPU", "Use the GPU card to accelerate the pattern recognition (needs cuda libraries and a configured GPU card)")
@@ -1297,7 +1289,6 @@ int main(int av, char** ac){
     displaySectorLUT(st);
   } else if (vm.count("generateBank")) {
     
-    vector<int> layers;
     SectorTree st;
     string size_file="";
     string dcBits="";
@@ -1315,7 +1306,6 @@ int main(int av, char** ac){
     float minEta=0;
     float maxEta=0;
     int maxNbFake=0;
-    int sector_tklayout_id=0;
     map<int,pair<float,float> > eta = CMSPatternLayer::getLayerDefInEta();
     
     try{
@@ -1340,7 +1330,7 @@ int main(int av, char** ac){
       cout<<"Output file name is "<<bankFileName<<endl;
       activeLayers=vm["active_layers"].as<string>();
       cout<<"Using layers "<<activeLayers<<endl;
-      sector_tklayout_id=vm["sector_id"].as<int>();
+      int sector_tklayout_id=vm["sector_id"].as<int>();
       cout<<"Using sector "<<sector_tklayout_id<<" from "<<vm["sector_file"].as<string>()<<endl;
 
       //Get the active/forced/inactive layers
@@ -1417,7 +1407,7 @@ int main(int av, char** ac){
       threshold=vm["coverage"].as<float>();
       createSectorFromRootFile(&st,vm["sector_file"].as<string>(), active_layers, sector_tklayout_id);
     }
-    catch(boost::bad_any_cast e){
+    catch(boost::bad_any_cast& e){
       cout<<"At least one option is missing! Please check : "<<endl;
       cout<<desc<<endl;
       return -1;
@@ -1481,7 +1471,7 @@ int main(int av, char** ac){
     pg.generate(&st, 100000, threshold, eta);
 
 
-    if(pg.getVariableResolutionState()>0){
+    if(pg.getVariableResolutionState()){
       cout<<"LD Patterns : "<<st.getLDPatternNumber()<<endl;
     }
 
@@ -1549,10 +1539,10 @@ int main(int av, char** ac){
 	//TrackFitter* fitter = new KarimakiTrackFitter(sectors[i]->getNbLayers());
 	TrackFitter* fitter = new TCBuilder(sectors[i]->getNbLayers());
 	if(vm.count("hardware_precision")){
-	  ((TCBuilder*)fitter)->setHardwareEmulation(true);
+	  (dynamic_cast<TCBuilder*>(fitter))->setHardwareEmulation(true);
 	}
 	else{
-	  ((TCBuilder*)fitter)->setHardwareEmulation(false);
+	  (dynamic_cast<TCBuilder*>(fitter))->setHardwareEmulation(false);
 	}
 	sectors[i]->setFitter(fitter);
 	sectors[i]->updateFitterPhiRotation();
@@ -1631,50 +1621,6 @@ int main(int av, char** ac){
     }
 #endif
   }
-  else if(vm.count("buildFitParams")) {
-    SectorTree st;
-    cout<<"Loading pattern bank..."<<endl;
-    {
-      std::ifstream ifs(vm["bankFile"].as<string>().c_str());
-      boost::iostreams::filtering_stream<boost::iostreams::input> f;
-      f.push(boost::iostreams::gzip_decompressor());
-      //we try to read a compressed file
-      try { 
-	f.push(ifs);
-	boost::archive::text_iarchive ia(f);
-	ia >> st;
-      }
-      catch (boost::iostreams::gzip_error& e) {
-	if(e.error()==4){//file is not compressed->read it without decompression
-	  std::ifstream new_ifs(vm["bankFile"].as<string>().c_str());
-	  boost::archive::text_iarchive ia(new_ifs);
-	  ia >> st;
-	}
-      }
-    }
-
-    map<int,pair<float,float> > eta_limits = CMSPatternLayer::getLayerDefInEta();
-
-    PrincipalFitGenerator pfg(vm["input_directory"].as<string>().c_str(), &st);
-    pfg.generate(eta_limits, 2, 100, 0, 0.87);
-
-    st.getAllSectors()[0]->getPatternTree()->truncate(-1);
-
-    cout<<"Saving SectorTree...";
-    {
-      const SectorTree& ref = st;
-      std::ofstream ofs(vm["outputFile"].as<string>().c_str());
-      // Compression part
-      boost::iostreams::filtering_stream<boost::iostreams::output> f;
-      f.push(boost::iostreams::gzip_compressor(boost::iostreams::gzip_params(boost::iostreams::gzip::best_compression)));
-      f.push(ofs);
-      //
-      boost::archive::text_oarchive oa(f);
-      oa << ref;
-      cout<<"done."<<endl;
-    }
-    
-  }
   else if(vm.count("printBank")) {
     SectorTree st;
     cout<<"Loading pattern bank..."<<endl;
@@ -1705,7 +1651,7 @@ int main(int av, char** ac){
 	Pattern* p = patterns[j];
 	for(int k=0;k<p->getNbLayers();k++){
 	  PatternLayer* mp = p->getLayerStrip(k);
-	  cout<<((CMSPatternLayer*)mp)->toString()<<" - ";
+	  cout<<(dynamic_cast<CMSPatternLayer*>(mp))->toString()<<" - ";
 	}
 	cout<<endl;
       }
@@ -1741,7 +1687,7 @@ int main(int av, char** ac){
 	Pattern* p = patterns[j];
 	for(int k=0;k<p->getNbLayers();k++){
 	  PatternLayer* mp = p->getLayerStrip(k);
-	  cout<<((CMSPatternLayer*)mp)->toStringBinary()<<" - ";
+	  cout<<(dynamic_cast<CMSPatternLayer*>(mp))->toStringBinary()<<" - ";
 	}
 	cout<<endl;
       }
@@ -1777,8 +1723,7 @@ int main(int av, char** ac){
       int expected_active_layers = -1;
       bool hybrid_sector = layers.size()>8;//we have more layers than input buses
 
-      int biggestID = -1;//last layer of the sector
-      biggestID=layers[layers.size()-1];
+      int biggestID = layers[layers.size()-1];//last layer of the sector
 
       bool endcap_sector = false;
       if(biggestID>10 && !hybrid_sector)
@@ -1887,7 +1832,7 @@ int main(int av, char** ac){
 	    continue;
 	  }
 	  
-	  cout<<((CMSPatternLayer*)mp)->toAM05Format(tagLayer)<<endl;
+	  cout<<(dynamic_cast<CMSPatternLayer*>(mp))->toAM05Format(tagLayer)<<endl;
 	}
 	//unused layers set to 0x01e05 (fake stub value)
 	//We want a threshold at 5/6 but we have 8 buses and the threshold can not go below 6

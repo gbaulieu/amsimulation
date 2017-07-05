@@ -12,6 +12,10 @@ PatternTrunk::PatternTrunk(){
   lowDefPattern = new GradedPattern();
 }
 
+PatternTrunk::PatternTrunk(const PatternTrunk& pt){
+  lowDefPattern = new GradedPattern(*(pt.lowDefPattern));
+}
+
 PatternTrunk::~PatternTrunk(){
   for(map<string, GradedPattern*>::iterator itr = fullDefPatterns.begin(); itr != fullDefPatterns.end(); ++itr){
     delete itr->second;
@@ -111,12 +115,11 @@ void PatternTrunk::computeAdaptativePattern(vector<int> r){
   for(int i=0;i<nb_layers;i++){
     
     PatternLayer* pl = lowDefPattern->getLayerStrip(i);
-    int last_bits=0;
     vector<int> bits(r[i],0);
 
     for(map<string, GradedPattern*>::iterator itr = fullDefPatterns.begin(); itr != fullDefPatterns.end(); ++itr){
       PatternLayer* fd_pl = itr->second->getLayerStrip(i);
-      last_bits = fd_pl->getStripCode();
+      int last_bits = fd_pl->getStripCode();
       if(itr==fullDefPatterns.begin()){//first pattern, we simply copy the last bits
 	for(int j=0;j<r[i];j++){
 	  bits[j]=((last_bits>>(r[i]-j-1)))&(0x1);
@@ -189,7 +192,7 @@ void PatternTrunk::updateWithPattern(GradedPattern* gp){
 bool PatternTrunk::checkPattern(Pattern* hp){
   if(hp==NULL)
     return false;
-  if(fullDefPatterns.size()!=0){
+  if(!fullDefPatterns.empty()){
     string key=hp->getKey();
     map<string, GradedPattern*>::iterator it = fullDefPatterns.find(key);
     if(it==fullDefPatterns.end())//not found

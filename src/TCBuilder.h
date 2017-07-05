@@ -42,7 +42,7 @@ class TCBuilder:public TrackFitter{
   double m_tabEndcapThresholds[4][5][16][2];  //Endcap LayMaxSeed1 = 3, LayMaxSeed2 = 4, LayMaxTestStub = 15
 
   int m_nMissingHits;
-  unsigned int m_minimum_number_for_TC;
+  unsigned int m_minimum_number_for_TC; //Minimum number of layers with stub to create a TC (defined per pattern)
   int maxseeds;
   LocalToGlobalConverter* l2gConverter;
 

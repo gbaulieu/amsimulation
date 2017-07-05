@@ -8,13 +8,13 @@ PatternTree::~PatternTree(){
 }
 
 void PatternTree::clear(){
-  if(patterns.size()!=0){
+  if(!patterns.empty()){
     for(map<string, PatternTrunk*>::iterator itr = patterns.begin(); itr != patterns.end(); ++itr){
       delete (itr->second);
     }
     patterns.clear();
   }
-  if(v_patterns.size()!=0){
+  if(!v_patterns.empty()){
     for(vector<PatternTrunk*>::iterator itr = v_patterns.begin(); itr != v_patterns.end(); ++itr){
       delete (*itr);
     }
@@ -23,7 +23,7 @@ void PatternTree::clear(){
 }
 
 void PatternTree::addPattern(Pattern* ldp, Pattern* fdp){
-  if(patterns.size()==0)
+  if(patterns.empty())
     switchToMap();
   string key = ldp->getKey();
   map<string, PatternTrunk*>::iterator it = patterns.find(key);
@@ -38,7 +38,7 @@ void PatternTree::addPattern(Pattern* ldp, Pattern* fdp){
 }
 
 void PatternTree::addPattern(Pattern* ldp, Pattern* fdp, float new_pt, int new_pdg){
-  if(patterns.size()==0)
+  if(patterns.empty())
     switchToMap();
   string key = ldp->getKey();
   map<string, PatternTrunk*>::iterator it = patterns.find(key);
@@ -71,13 +71,13 @@ void PatternTree::switchToMap(){
 
 vector<GradedPattern*> PatternTree::getFDPatterns(){
   vector<GradedPattern*> res;
-  if(patterns.size()!=0){
+  if(!patterns.empty()){
     for(map<string, PatternTrunk*>::iterator itr = patterns.begin(); itr != patterns.end(); ++itr){
       vector<GradedPattern*> fdp = itr->second->getFDPatterns();
       res.insert(res.end(), fdp.begin(), fdp.end());
     }
   }
-  if(v_patterns.size()!=0){
+  if(!v_patterns.empty()){
     for(vector<PatternTrunk*>::iterator itr = v_patterns.begin(); itr != v_patterns.end(); ++itr){
       vector<GradedPattern*> fdp = (*itr)->getFDPatterns();
       res.insert(res.end(),fdp.begin(),fdp.end());
@@ -88,13 +88,13 @@ vector<GradedPattern*> PatternTree::getFDPatterns(){
 
 vector<GradedPattern*> PatternTree::getLDPatterns(){
   vector<GradedPattern*> res;
-  if(patterns.size()!=0){
+  if(!patterns.empty()){
     for(map<string, PatternTrunk*>::iterator itr = patterns.begin(); itr != patterns.end(); ++itr){
       GradedPattern* ldp = itr->second->getLDPattern();
       res.push_back(ldp);
     }
   }
-  if(v_patterns.size()!=0){
+  if(!v_patterns.empty()){
     for(vector<PatternTrunk*>::iterator itr = v_patterns.begin(); itr != v_patterns.end(); ++itr){
       GradedPattern* ldp = (*itr)->getLDPattern();
       res.push_back(ldp);
@@ -108,7 +108,7 @@ vector<int> PatternTree::getPTHisto(){
   for(int i=0;i<150;i++){
     h.push_back(0);
   }
-  if(patterns.size()!=0){
+  if(!patterns.empty()){
     for(map<string, PatternTrunk*>::iterator itr = patterns.begin(); itr != patterns.end(); ++itr){
       float pt = itr->second->getLDPatternPT();
       if(pt>149)
@@ -118,7 +118,7 @@ vector<int> PatternTree::getPTHisto(){
       h[(int)pt]=h[(int)pt]+1;
     }
   }
-  if(v_patterns.size()!=0){
+  if(!v_patterns.empty()){
     for(vector<PatternTrunk*>::iterator itr = v_patterns.begin(); itr != v_patterns.end(); ++itr){
       float pt = (*itr)->getLDPatternPT();
       if(pt>149)
@@ -132,14 +132,13 @@ vector<int> PatternTree::getPTHisto(){
 }
 
 int PatternTree::getFDPatternNumber(){
-  vector<GradedPattern*> res;
   int num=0;
-  if(patterns.size()!=0){
+  if(!patterns.empty()){
     for(map<string, PatternTrunk*>::iterator itr = patterns.begin(); itr != patterns.end(); ++itr){
       num += itr->second->getFDPatternNumber();
     }
   }
-  if(v_patterns.size()!=0){
+  if(!v_patterns.empty()){
     for(vector<PatternTrunk*>::iterator itr = v_patterns.begin(); itr != v_patterns.end(); ++itr){
       num += (*itr)->getFDPatternNumber();
     }
@@ -148,14 +147,14 @@ int PatternTree::getFDPatternNumber(){
 }
 
 int PatternTree::getLDPatternNumber(){
-  if(patterns.size()!=0)
+  if(!patterns.empty())
     return patterns.size();
   else
     return v_patterns.size();
 }
 
 void PatternTree::computeAdaptativePatterns(vector<int> r){
-  if(patterns.size()!=0){
+  if(!patterns.empty()){
     for(map<string, PatternTrunk*>::iterator itr = patterns.begin(); itr != patterns.end(); ++itr){
       itr->second->computeAdaptativePattern(r);
     }
@@ -168,7 +167,7 @@ void PatternTree::computeAdaptativePatterns(vector<int> r){
 }
 
 void PatternTree::link(Detector& d){
-  if(patterns.size()!=0){
+  if(!patterns.empty()){
     for(map<string, PatternTrunk*>::iterator itr = patterns.begin(); itr != patterns.end(); ++itr){
       itr->second->link(d);
     }
@@ -184,7 +183,7 @@ void PatternTree::link(Detector& d){
 void PatternTree::linkCuda(patternBank* p, deviceDetector* d, const vector< vector<int> >& sec, const vector<map<int, vector<int> > >& modules, vector<int> layers){
   int counter=0;
   unsigned int* cache = new unsigned int[PATTERN_LAYERS*PATTERN_SSTRIPS];
-  if(patterns.size()!=0){
+  if(!patterns.empty()){
     cudaSetNbPatterns(p, patterns.size());
     for(map<string, PatternTrunk*>::iterator itr = patterns.begin(); itr != patterns.end(); ++itr){
       itr->second->linkCuda(p, d, counter, sec, modules, layers, cache);
@@ -211,7 +210,7 @@ void PatternTree::linkCuda(patternBank* p, deviceDetector* d, const vector< vect
 #endif
 
 void PatternTree::getActivePatterns(int active_threshold, vector<GradedPattern*>& active_patterns){
-  if(patterns.size()!=0){
+  if(!patterns.empty()){
     for(map<string, PatternTrunk*>::iterator itr = patterns.begin(); itr != patterns.end(); ++itr){
       GradedPattern* p = itr->second->getActivePattern(active_threshold);
       if(p!=NULL)
@@ -228,7 +227,7 @@ void PatternTree::getActivePatterns(int active_threshold, vector<GradedPattern*>
 }
 
 void PatternTree::getActivePatternsUsingMissingHit(int max_nb_missing_hit, int active_threshold, vector<GradedPattern*>& active_patterns){
-  if(patterns.size()!=0){
+  if(!patterns.empty()){
     for(map<string, PatternTrunk*>::iterator itr = patterns.begin(); itr != patterns.end(); ++itr){
       GradedPattern* p = itr->second->getActivePatternUsingMissingHit(max_nb_missing_hit, active_threshold);
       if(p!=NULL)
@@ -245,7 +244,7 @@ void PatternTree::getActivePatternsUsingMissingHit(int max_nb_missing_hit, int a
 }
 
 void PatternTree::addPatternsFromTree(PatternTree* p){
-  if(patterns.size()==0)
+  if(patterns.empty())
     switchToMap();
   vector<GradedPattern*> ld = p->getLDPatterns();
   for(unsigned int i=0;i<ld.size();i++){
@@ -258,7 +257,7 @@ void PatternTree::addPatternsFromTree(PatternTree* p){
 }
 
 void PatternTree::addPatternForMerging(GradedPattern* ldp){
-  if(patterns.size()==0)
+  if(patterns.empty())
     switchToMap();
   string key = ldp->getKey();
   map<string, PatternTrunk*>::iterator it = patterns.find(key);
@@ -272,7 +271,7 @@ void PatternTree::addPatternForMerging(GradedPattern* ldp){
 }
 
 bool PatternTree::checkPattern(Pattern* lp, Pattern* hp){
-  if(patterns.size()==0)
+  if(patterns.empty())
     switchToMap();
   if(lp==NULL || hp==NULL)
     return false;
@@ -322,12 +321,12 @@ void PatternTree::desactivateModules(PatternTree* ref_pt, set<unsigned int> defe
 
   for(unsigned int i=0;i<ref_pt->v_patterns.size();i++){
     //If we have dead modules : we replace the corresponding superstrips by fake ones
-    if(defective_modules.size()>0){
+    if(!defective_modules.empty()){
       int nbLayers = ref_pt->v_patterns[i]->getLDPattern()->getNbLayers();
       GradedPattern* nPattern = ref_pt->v_patterns[i]->getLDPattern();
       // Loop over the layers
       for(int k=0;k<nbLayers;k++){
-	CMSPatternLayer* pl = (CMSPatternLayer*)nPattern->getLayerStrip(k);
+	CMSPatternLayer* pl = dynamic_cast<CMSPatternLayer*>(nPattern->getLayerStrip(k));
 	// If the superstrip is already a fake one : nothing to do
 	if(!pl->isFake()){
 	  unsigned int module = k*100000+pl->getPhi()*1000+pl->getModule()*10+pl->getSegment();
@@ -444,8 +443,6 @@ void PatternTree::truncate(int nbPatterns, int sorting_algo, vector<unsigned int
 
 void PatternTree::removePatterns(int minFS, int maxFS){
   switchToVector();
-
-  vector<PatternTrunk*>::iterator itr = v_patterns.begin();
 
   int min = minFS;
   int max = maxFS;

@@ -35,18 +35,16 @@ endif
 ifeq ($(CUDA_ENABLED),true)
 	OBJECTS=SuperStrip.o Hit.o Pattern.o PatternLayer.o GradedPattern.o PatternTrunk.o PatternTree.o \
 	PatternGenerator.o Sector.o LocalToGlobalConverter.o PRBF2LocalToGlobalConverter.o CMSSWLocalToGlobalConverter.o SectorTree.o CMSPatternLayer.o Segment.o Module.o Ladder.o Layer.o \
-	Detector.o PatternFinder.o Track.o TrackFitter.o FitParams.o PrincipalTrackFitter.o \
-	PrincipalFitGenerator.o MultiDimFitData.o KarimakiTrackFitter.o TCBuilder.o PCATrackFitter.o HoughFitter.o SeedClusteringFitter.o \
-	ComputerHough.o	Retina.o RetinaTrackFitter.o libhoughCPU.o FileEventProxy.o GPUPooler.o gpu.o \
+	Detector.o PatternFinder.o Track.o TrackFitter.o \
+	KarimakiTrackFitter.o TCBuilder.o PCATrackFitter.o \
+	Retina.o RetinaTrackFitter.o FileEventProxy.o GPUPooler.o gpu.o \
 	LinearizedTrackFitter.o BuildTestFunctions.o CombinationIndexListBuilder.o L1TrackTriggerTree.o MatrixReader.o \
 	CombinationIndex.o GetVariables.o StubsCombination.o CommonTools.o
 else
 	OBJECTS=SuperStrip.o Hit.o Pattern.o PatternLayer.o GradedPattern.o PatternTrunk.o PatternTree.o \
 	PatternGenerator.o Sector.o LocalToGlobalConverter.o PRBF2LocalToGlobalConverter.o CMSSWLocalToGlobalConverter.o SectorTree.o CMSPatternLayer.o Segment.o Module.o \
-	Ladder.o Layer.o Detector.o PatternFinder.o Track.o TrackFitter.o FitParams.o \
-	PrincipalTrackFitter.o PrincipalFitGenerator.o MultiDimFitData.o \
-	Retina.o RetinaTrackFitter.o KarimakiTrackFitter.o TCBuilder.o PCATrackFitter.o HoughFitter.o SeedClusteringFitter.o \
-	ComputerHough.o libhoughCPU.o \
+	Ladder.o Layer.o Detector.o PatternFinder.o Track.o TrackFitter.o \
+	Retina.o RetinaTrackFitter.o KarimakiTrackFitter.o TCBuilder.o PCATrackFitter.o \
 	LinearizedTrackFitter.o BuildTestFunctions.o CombinationIndexListBuilder.o L1TrackTriggerTree.o MatrixReader.o \
 	CombinationIndex.o GetVariables.o StubsCombination.o CommonTools.o
 endif
@@ -123,38 +121,14 @@ Track.o:${SRC}/Track.h ${SRC}/Track.cc
 TrackFitter.o:${SRC}/TrackFitter.h ${SRC}/TrackFitter.cc
 	g++ -c ${FLAG} ${INC} ${SRC}/TrackFitter.cc
 
-FitParams.o:${SRC}/FitParams.h ${SRC}/FitParams.cc
-	g++ -c ${FLAG} ${INC} ${SRC}/FitParams.cc
-
-PrincipalTrackFitter.o:${SRC}/PrincipalTrackFitter.h ${SRC}/PrincipalTrackFitter.cc
-	g++ -c ${FLAG} ${INC} ${SRC}/PrincipalTrackFitter.cc
-
-PrincipalFitGenerator.o:${SRC}/PrincipalFitGenerator.h ${SRC}/PrincipalFitGenerator.cc
-	g++ -c ${FLAG} ${INC} ${SRC}/PrincipalFitGenerator.cc
-
-MultiDimFitData.o:${SRC}/MultiDimFitData.h ${SRC}/MultiDimFitData.cc
-	g++ -c ${FLAG} ${INC} ${SRC}/MultiDimFitData.cc
-
 KarimakiTrackFitter.o:${SRC}/KarimakiTrackFitter.h ${SRC}/KarimakiTrackFitter.cc
 	g++ -c ${FLAG} ${INC} ${SRC}/KarimakiTrackFitter.cc
-
-HoughFitter.o:${SRC}/HoughFitter.h ${SRC}/HoughFitter.cc
-	g++ -c ${FLAG} ${INC} ${SRC}/HoughFitter.cc
 
 TCBuilder.o:${SRC}/TCBuilder.h ${SRC}/TCBuilder.cc
 	g++ -c ${FLAG} ${INC} ${SRC}/TCBuilder.cc
 
 PCATrackFitter.o:${SRC}/PCATrackFitter.h ${SRC}/PCATrackFitter.cc ${SRC}/PCATrackFitter.cc ${SRC}/pcaconst.h
 	g++ -c ${FLAG} ${INC} ${SRC}/PCATrackFitter.cc
-
-SeedClusteringFitter.o:${SRC}/SeedClusteringFitter.h ${SRC}/SeedClusteringFitter.cc
-	g++ -c ${FLAG} ${INC} ${SRC}/SeedClusteringFitter.cc
-
-ComputerHough.o:${SRC}/ComputerHough.h ${SRC}/ComputerHough.cc $(SRC)/libhoughStruct.h $(SRC)/HoughStruct.h libhoughCPU.o
-	g++ -c ${FLAG} ${INC} ${SRC}/ComputerHough.cc
-
-libhoughCPU.o:${SRC}/libhoughCPU.h ${SRC}/libhoughCPU.c
-	g++ -c ${FLAG} ${INC} ${SRC}/libhoughCPU.c
 
 Retina.o:${SRC}/Retina.h ${SRC}/Retina.cc
 	g++ -c ${FLAG} ${INC} ${SRC}/Retina.cc

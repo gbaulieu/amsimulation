@@ -3,10 +3,6 @@
 CMSSWLocalToGlobalConverter::CMSSWLocalToGlobalConverter(int sectorID, string geometryFile):LocalToGlobalConverter(){
   string line;
   ifstream myfile (geometryFile.c_str());
-  int layer = -1;
-  int ladder = -1;
-  int module = -1;
-  float coef_value = -1;
   stringstream val;
 
   //Which side of the tracker are we on?
@@ -20,7 +16,7 @@ CMSSWLocalToGlobalConverter::CMSSWLocalToGlobalConverter(int sectorID, string ge
         
     while ( myfile.good() ){
       getline (myfile,line);
-      if(line.length()>0 && line.find("#")!=0){
+      if(line.length()>0 && line.compare(0,1,"#",0,1)!=0){
 	stringstream ss(line);
 	std::string item;
 	vector<string> items;
@@ -30,6 +26,12 @@ CMSSWLocalToGlobalConverter::CMSSWLocalToGlobalConverter(int sectorID, string ge
 	  items.push_back(item);
 	}
 	if(items.size()==11){
+
+	  int layer = -1;
+	  int ladder = -1;
+	  int module = -1;
+	  float coef_value = -1;
+	  
 	  val.clear();
 	  val.str(items[0]);
 	  val >> layer;

@@ -3,12 +3,6 @@
 PRBF2LocalToGlobalConverter::PRBF2LocalToGlobalConverter(const Sector* sectorDefinition, string geometryFile):LocalToGlobalConverter(){
   string line;
   ifstream myfile (geometryFile.c_str());
-  int layer = -1;
-  int ladder = -1;
-  int local_ladder = -1;
-  int module = -1;
-  int local_module = -1;
-  float coef_value = -1;
   stringstream val;
 
   module_pos = NULL;
@@ -45,7 +39,7 @@ PRBF2LocalToGlobalConverter::PRBF2LocalToGlobalConverter(const Sector* sectorDef
     
     while ( myfile.good() ){
       getline (myfile,line);
-      if(line.length()>0 && line.find("#")!=0){
+      if(line.length()>0 &&  line.compare(0,1,"#",0,1)!=0){
 	stringstream ss(line);
 	std::string item;
 	vector<string> items;
@@ -55,6 +49,10 @@ PRBF2LocalToGlobalConverter::PRBF2LocalToGlobalConverter(const Sector* sectorDef
 	  items.push_back(item);
 	}
 	if(items.size()==11){
+	  int layer=-1;
+	  int ladder=-1;
+	  int module=-1;
+	  float coef_value = -1;
 	  val.clear();
 	  val.str(items[0]);
 	  val >> layer;
@@ -65,10 +63,10 @@ PRBF2LocalToGlobalConverter::PRBF2LocalToGlobalConverter(const Sector* sectorDef
 	  val.clear();
 	  val.str(items[2]);
 	  val >> module;
-	  local_ladder = sectorDefinition->getLadderCode(layer,ladder);
+	  int local_ladder = sectorDefinition->getLadderCode(layer,ladder);
 	  if(local_ladder==-1)//not in the sector
 	    continue;
-	  local_module = sectorDefinition->getModuleCode(layer,ladder,module);
+	  int local_module = sectorDefinition->getModuleCode(layer,ladder,module);
 	  if(local_module==-1)//not in the sector
 	    continue;
 	  bool isPSModule = false;

@@ -252,7 +252,6 @@ string CMSPatternLayer::toAM05Format(bool tagLayer){
   short AM05_STRIP_START_BIT = 4;
   short AM05_STRIP_DC0_BIT = 2;
   short AM05_STRIP_DC1_BIT = 0;
-  short AM05_STRIP_DC2_BIT = 0;
 
   short AM05_MOD_MASK = 0xF;
   short AM05_PHI_MASK = 0xF;
@@ -377,7 +376,7 @@ string CMSPatternLayer::toAM05Format(bool tagLayer){
     AM05_STRIP_START_BIT = 6;
     AM05_STRIP_DC0_BIT = 4;
     AM05_STRIP_DC1_BIT = 2;
-    AM05_STRIP_DC2_BIT = 0;
+    short AM05_STRIP_DC2_BIT = 0;
     
     AM05_MOD_MASK = 0x7;
     AM05_PHI_MASK = 0xF;

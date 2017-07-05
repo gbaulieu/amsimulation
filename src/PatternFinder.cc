@@ -1,14 +1,11 @@
 #include "PatternFinder.h"
 
-PatternFinder::PatternFinder(int at, SectorTree* st, string f, string of){
-  active_threshold = at;
-  max_nb_missing_hit = 0;
-  useMissingHits=false;
-  max_road_number=1000000;
-  sectors = st;
-  eventsFilename = f;
-  outputFileName = of;
-  hardware_limitations=false;
+#ifndef USE_CUDA
+PatternFinder::PatternFinder(int at, SectorTree* st, string f, string of):
+  active_threshold(at), max_nb_missing_hit(0), useMissingHits(false),
+  max_road_number(1000000), sectors(st), eventsFilename(f),
+  outputFileName(of), tracker(), converter(NULL), hardware_limitations(false)
+{
 
   //we don't need the map of patterns, a vector will be enough and uses less memory
   sectors->getAllSectors()[0]->getPatternTree()->switchToVector();
@@ -20,7 +17,7 @@ PatternFinder::PatternFinder(int at, SectorTree* st, string f, string of){
   if(sector_list.size()>0){
     for(int i=0;i<sector_list[0]->getNbLayers();i++){
       int layerID = sector_list[0]->getLayerID(i);
-      if(detector_config.size()>0){
+      if(!detector_config.empty()){
 	if(detector_config.find(layerID)!=detector_config.end())
 	  if(layerID<11)//barrel : 1 module with 2*nb_modules segments
 	    tracker.addLayer(detector_config[layerID][0],detector_config[layerID][1],1, detector_config[layerID][2]*2, detector_config[layerID][3], SectorTree::getSuperstripSize(layerID), true);
@@ -34,13 +31,12 @@ PatternFinder::PatternFinder(int at, SectorTree* st, string f, string of){
 
   tracker.setSectorMaps(sector_list[0]->getLadderCodeMap(),sector_list[0]->getModuleCodeMap());
 
-  converter = NULL;
-
   //Link the patterns with the tracker representation
   cout<<"linking..."<<endl;
   sectors->link(tracker);
   cout<<"done."<<endl;
 }
+#endif
 
 PatternFinder::~PatternFinder(){
   if(converter!=NULL)
@@ -48,16 +44,11 @@ PatternFinder::~PatternFinder(){
 }
 
 #ifdef USE_CUDA
-PatternFinder::PatternFinder(int at, SectorTree* st, string f, string of, patternBank* p, deviceDetector* d, deviceParameters* dp){
-  active_threshold = at;
-  max_nb_missing_hit=0;
-  useMissingHits=false;
-  sectors = st;
-  eventsFilename = f;
-  outputFileName = of;
-  d_detector=d;
-  d_p_bank = p;
-  d_parameters = dp;
+PatternFinder::PatternFinder(int at, SectorTree* st, string f, string of, patternBank* p, deviceDetector* d, deviceParameters* dp):
+  active_threshold(at), max_nb_missing_hit(0), useMissingHits(false), max_road_number(1000000),
+  sectors(st), eventsFilename(f), outputFileName(of),converter(NULL), hardware_limitations(false),d_detector(d),
+  d_p_bank(p), d_parameters(dp)
+{
 
   //we don't need the map of patterns, a vector will be enough and uses less memory
   sectors->getAllSectors()[0]->getPatternTree()->switchToVector();
@@ -303,8 +294,7 @@ void PatternFinder::find(int start, int& stop){
 
     for(int i=0;i<m_stub;i++){
       int layer = m_stub_layer[i];
-      int module = -1;
-      module = CMSPatternLayer::getModuleCode(layer, m_stub_module[i]);
+      int module = CMSPatternLayer::getModuleCode(layer, m_stub_module[i]);
       if(module<0)
 	continue;
       int ladder = CMSPatternLayer::getLadderCode(layer, m_stub_ladder[i]);
@@ -395,7 +385,7 @@ void PatternFinder::find(int start, int& stop){
 	int surface = 0;
 	vector<int> layerIDs = pattern_list[i]->getLayersID();
 	for (int k=0;k<pl[j]->getNbLayers();k++){
-	  CMSPatternLayer* patt_layer = (CMSPatternLayer*)pl[j]->getLayerStrip(k);
+	  CMSPatternLayer* patt_layer = dynamic_cast<CMSPatternLayer*>(pl[j]->getLayerStrip(k));
 	  int nb_used_dc = -1;
 	  vector<int> ladder_id = pattern_list[i]->getLadders(k);
 	  if(!patt_layer->isFake()){
@@ -833,8 +823,7 @@ void PatternFinder::findCuda(int start, int& stop, deviceStubs* d_stubs){
 
     for(int i=0;i<m_stub;i++){
       int layer = m_stub_layer[i];
-      int module = -1;
-      module = CMSPatternLayer::getModuleCode(layer, m_stub_module[i]);
+      int module = CMSPatternLayer::getModuleCode(layer, m_stub_module[i]);
       if(module<0)
 	continue;
       int ladder = CMSPatternLayer::getLadderCode(layer, m_stub_ladder[i]);

@@ -6,19 +6,18 @@ map<string, int> Sector::toModuleCode;
 map< int, vector<int> > Sector::readConfig(string name){
   string line;
   ifstream myfile (name.c_str());
-  int lineNumber=0;
   map< int, vector<int> > detector_config;
   if (myfile.is_open()){
     cout<<"Using configuration found in detector.cfg"<<endl;
+    int lineNumber=0;
     while ( myfile.good() )
       {
 	getline (myfile,line);
 	bool error=false;
 	vector<int> layer_config;
-	if(line.length()>0 && line.find("#")!=0){
+	if(line.length()>0 && line.compare(0,1,"#",0,1)!=0){
 	  layer_config.clear();
-	  size_t pos = -1;
-	  pos = line.find(",");
+	  size_t pos = line.find(",");
 	  bool go = true;
 	  while(go){
 	    if(pos==string::npos)
@@ -84,13 +83,8 @@ Sector::Sector(vector<int> layersID){
   officialID=-1;
 }
 
-Sector::Sector(const Sector& s){
-  m_modules=s.m_modules;
-  m_ladders=s.m_ladders;
+Sector::Sector(const Sector& s):m_modules(s.m_modules),m_ladders(s.m_ladders){
   patterns = new PatternTree();
-  // if(s.fitter!=NULL)
-  //  fitter = s.fitter->clone();
-  //else
   fitter=NULL;
   officialID=s.officialID;
 }
@@ -102,37 +96,17 @@ Sector::~Sector(){
 }
 
 Sector& Sector::operator=(Sector& s){
-  m_modules = s.m_modules; 
-  m_ladders = s.m_ladders;
-  fitter=NULL;
-  officialID=s.officialID;
+  if(&s != this){//check for self assignement
+    m_modules = s.m_modules; 
+    m_ladders = s.m_ladders;
+    patterns = new PatternTree();
+    fitter=NULL;
+    officialID=s.officialID;
+  }
   return *this;
 }
 
 bool Sector::operator==(Sector& s){
-  /*
-  if(officialID!=s.officialID)
-    return false;
-  cout<<"ID is OK"<<endl;
-  if(m_modules.size() != s.m_modules.size())
-    return false;
-  cout<<"number of layers is OK"<<endl;
-  for(map<int, map<int, vector<int> > >::iterator it=m_modules.begin();it!=m_modules.end();it++){
-    map<int, vector<int> > ladders = m_modules[it->first];
-    map<int, vector<int> > ladders_2 = s.m_modules[it->first]; 
-    if(ladders.size()!=ladders_2.size())
-      return false;
-    cout<<"number of ladders on layer "<<it->first<<" is OK"<<endl;
-    for(map<int, vector<int> >::iterator it2=ladders.begin();it2!=ladders.end();it2++){
-      vector<int> modules = ladders[it2->first];
-      vector<int> modules_2 = ladders_2[it2->first];
-      if(modules.size()!=modules_2.size())
-        return false;
-      return std::equal ( modules.begin(), modules.end(), modules_2.begin() );
-    }
-  }
-  return true;
-  */
   return (officialID==s.officialID && m_modules==s.m_modules && m_ladders==s.m_ladders);
 }
 
@@ -212,7 +186,7 @@ void Sector::buildLadderCodeMap(){
 }
 
 map<string,int> Sector::getLadderCodeMap(){
-  if(toLadderCode.size()==0)
+  if(toLadderCode.empty())
     buildLadderCodeMap();
   return toLadderCode;
 }
@@ -259,7 +233,7 @@ void Sector::buildModuleCodeMap(){
 }
 
 map<string,int> Sector::getModuleCodeMap(){
-  if(toModuleCode.size()==0)
+  if(toModuleCode.empty())
     buildModuleCodeMap();
   return toModuleCode;
 }
@@ -300,7 +274,7 @@ vector<int> Sector::getLadders(int l) const{
   int cpt=0;
   while(cpt<l){
     cpt++;
-    it++;
+    ++it;
   }
 
   for(unsigned int i=0;i<it->second.size();i++){
@@ -318,7 +292,7 @@ vector<int> Sector::getModules(int lay, int l) const{
   int cpt=0;
   while(cpt<lay){
     cpt++;
-    it++;
+    ++it;
   }
   map<int, vector<int> >::const_iterator it_ladder = it->second.find(l);
   if(it_ladder==it->second.end())//no such ladder
@@ -328,7 +302,7 @@ vector<int> Sector::getModules(int lay, int l) const{
 
 int Sector::getLayerID(int i) const{
   vector<int> l;
-  for(map<int, map<int, vector<int> > >::const_iterator it=m_modules.begin();it!=m_modules.end();it++){
+  for(map<int, map<int, vector<int> > >::const_iterator it=m_modules.begin();it!=m_modules.end();++it){
     l.push_back(it->first);
   }
   sort(l.begin(),l.end());
@@ -340,7 +314,7 @@ int Sector::getLayerID(int i) const{
 
 vector<int> Sector::getLayersID() const{
   vector<int> l;
-  for(map<int, map<int, vector<int> > >::const_iterator it=m_modules.begin();it!=m_modules.end();it++){
+  for(map<int, map<int, vector<int> > >::const_iterator it=m_modules.begin();it!=m_modules.end();++it){
     l.push_back(it->first);
   }
   sort(l.begin(),l.end());
@@ -349,7 +323,7 @@ vector<int> Sector::getLayersID() const{
 
 int Sector::getLayerIndex(int i) const{
   vector<int> l;
-  for(map<int, map<int, vector<int> > >::const_iterator it=m_modules.begin();it!=m_modules.end();it++){
+  for(map<int, map<int, vector<int> > >::const_iterator it=m_modules.begin();it!=m_modules.end();++it){
     l.push_back(it->first);
   }
   sort(l.begin(),l.end());
@@ -367,7 +341,7 @@ PatternTree* Sector::getPatternTree(){
 string Sector::getIDString(){
   ostringstream oss;
   vector<int> layer_list;
-  for(map<int, map<int, vector<int> > >::const_iterator it_layer=m_modules.begin();it_layer!=m_modules.end();it_layer++){
+  for(map<int, map<int, vector<int> > >::const_iterator it_layer=m_modules.begin();it_layer!=m_modules.end();++it_layer){
     layer_list.push_back(it_layer->first);
   }
   sort(layer_list.begin(), layer_list.end());
@@ -397,15 +371,15 @@ int Sector::getOfficialID() const{
 int Sector::getKey(){
   int k = 0;
   stringstream oss;
-  int min_layer = 1000;
-  if(m_modules.size()>0){
-    for(map<int, map<int, vector<int> > >::const_iterator it=m_modules.begin();it!=m_modules.end();it++){
+  if(!m_modules.empty()){
+    int min_layer = 1000;
+    for(map<int, map<int, vector<int> > >::const_iterator it=m_modules.begin();it!=m_modules.end();++it){
       if(it->first<min_layer)
 	min_layer=it->first;
     }
     map<int, vector<int> > lad = m_modules[min_layer];
     vector<int> list;
-    for(map<int, vector<int> >::const_iterator it_ladder=lad.begin();it_ladder!=lad.end();it_ladder++){
+    for(map<int, vector<int> >::const_iterator it_ladder=lad.begin();it_ladder!=lad.end();++it_ladder){
       list.push_back(it_ladder->first);
     }
     if(list.size()!=0){
@@ -423,9 +397,9 @@ vector<string> Sector::getKeys(){
   vector<string> res;
   vector< vector<int> > copy;
 
-  for(map<int, map<int, vector<int> > >::const_iterator it=m_modules.begin();it!=m_modules.end();it++){
+  for(map<int, map<int, vector<int> > >::const_iterator it=m_modules.begin();it!=m_modules.end();++it){
     vector<int> v;
-    for(map<int, vector<int> >::const_iterator it_ladder=it->second.begin();it_ladder!=it->second.end();it_ladder++){
+    for(map<int, vector<int> >::const_iterator it_ladder=it->second.begin();it_ladder!=it->second.end();++it_ladder){
       v.push_back(it_ladder->first);
     }
     copy.push_back(v);
@@ -459,7 +433,7 @@ void Sector::getRecKeys(vector< vector<int> > &v, int level, string temp, vector
 
 ostream& operator<<(ostream& out, const Sector& s){
   
-  for(map<int, vector<int> >::const_iterator it=s.m_ladders.begin();it!=s.m_ladders.end();it++){
+  for(map<int, vector<int> >::const_iterator it=s.m_ladders.begin();it!=s.m_ladders.end();++it){
     out<<"Layer : "<<it->first<<endl;
     vector<int> ladders = it->second;
     map<int, vector<int> > ladders_modules = (s.m_modules.find(it->first))->second;
@@ -502,7 +476,7 @@ void Sector::linkCuda(patternBank* p, deviceDetector* d){
   vector<vector<int> > ladders;
   vector<map<int, vector<int> > > modules;
   vector<int> layer_list;
-  for(map<int, map<int, vector<int> > >::const_iterator it_layer=m_modules.begin();it_layer!=m_modules.end();it_layer++){
+  for(map<int, map<int, vector<int> > >::const_iterator it_layer=m_modules.begin();it_layer!=m_modules.end();++it_layer){
     layer_list.push_back(it_layer->first);
   }
   sort(layer_list.begin(), layer_list.end());

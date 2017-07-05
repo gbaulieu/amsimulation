@@ -435,11 +435,11 @@ void PCATrackFitter::mergeTracks()
     }
 
     if(found)
-      tracks.erase(it);
+      it = tracks.erase(it);
     else
     {
       index++;
-      it++;
+      ++it;
     }
   }
 }
@@ -468,11 +468,9 @@ void PCATrackFitter::fit()
   //      tracks
   
   set<int> ids;
-  int total=0;
   for (unsigned int i=0; i<patterns.size(); ++i)
   {
     vector<Hit*> allHits = patterns[i]->getHits();
-    total+=allHits.size();
     for(unsigned int j=0; j<allHits.size(); ++j)
     {
       pair<set<int>::iterator,bool> result = ids.insert(allHits[j]->getID());
@@ -867,11 +865,8 @@ void PCATrackFitter::fit_integer(vector<Hit*> hits)
       else
         eta = -1.0e0 * log (tantheta2);
       
-      long long int coverpt = 0.0; 
-      long long int phi = 0.0;
-      
-      coverpt = qvec_rphi(0,0);
-      phi = qvec_rphi(0,1);
+      long long int coverpt = qvec_rphi(0,0);
+      long long int phi = qvec_rphi(0,1);
       if (check_val((double) coverpt, pca::add_const_w))
         std::cerr << "Overflow in coverpt add_const_w " << std::endl;
       if (check_val((double) phi, pca::add_const_w))
@@ -1115,22 +1110,16 @@ void PCATrackFitter::fit_float(vector<Hit*> hits)
       dump_element(qvec_rphi, std::cout);
       */
 
-      double cottheta = 0.0; // eta
-      double z0 = 0.0;
-      
-      cottheta = qvec_rz(0,0);
-      z0 = qvec_rz(0,1);
+      double cottheta = qvec_rz(0,0);
+      double z0 = qvec_rz(0,1);
       for (int i=0; i<(int)cmtx_rz.n_cols(); ++i)
       {
         cottheta += cmtx_rz(0, i) * zrv(0, i);
         z0 += cmtx_rz(1, i) * zrv(0, i);
       }
       
-      double coverpt = 0.0; // pt
-      double phi = 0.0;
-      
-      coverpt = qvec_rphi(0,0);
-      phi = qvec_rphi(0,1);
+      double coverpt = qvec_rphi(0,0);
+      double phi = qvec_rphi(0,1);
       for (int i=0; i<(int)cmtx_rphi.n_cols(); ++i)
       {
         coverpt += cmtx_rphi(0, i) * phirv(0, i);
@@ -1269,22 +1258,16 @@ void PCATrackFitter::fit_float(vector<Hit*> hits)
         }
       }
 
-      double cottheta = 0.0; // eta
-      double z0 = 0.0;
-      
-      cottheta = qvec_rz(0,0);
-      z0 = qvec_rz(0,1);
+      double cottheta = qvec_rz(0,0);
+      double z0 = qvec_rz(0,1);
       for (int i=0; i<(int)cmtx_rz.n_cols(); ++i)
       {
         cottheta += cmtx_rz(0, i) * zrv(0, i);
         z0 += cmtx_rz(1, i) * zrv(0, i);
       }
       
-      double coverpt = 0.0; // pt
-      double phi = 0.0;
-      
-      coverpt = qvec_rphi(0,0);
-      phi = qvec_rphi(0,1);
+      double coverpt = qvec_rphi(0,0);
+      double phi = qvec_rphi(0,1);
       for (int i=0; i<(int)cmtx_rphi.n_cols(); ++i)
       {
         coverpt += cmtx_rphi(0, i) * phirv(0, i);

@@ -35,6 +35,7 @@ Track::Track(const Track& ref){
   z0    = ref.z0;
   w_xy  = ref.w_xy;
   w_rz  = ref.w_rz;
+  chi2  = ref.chi2;
   for(unsigned int i=0;i<ref.stub_ids.size();i++){
     stub_ids.push_back(ref.stub_ids[i]);
   }

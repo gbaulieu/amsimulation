@@ -173,10 +173,7 @@ pqPoint Retina::findMaximumInterpolated(pqPoint_i point_i, double w) {
   int p_i = point_i.p;
   int q_i = point_i.q;
 
-  double p_mean = 0.;
-  double q_mean = 0.;
-
-  p_mean = (pmin + pbinsize * (p_i - 0.5)) * Grid[p_i-1][q_i] +
+  double p_mean = (pmin + pbinsize * (p_i - 0.5)) * Grid[p_i-1][q_i] +
            (pmin + pbinsize * (p_i + 0.5)) * Grid[p_i][q_i] +
            (pmin + pbinsize * (p_i + 1.5)) * Grid[p_i+1][q_i];
 
@@ -193,7 +190,7 @@ pqPoint Retina::findMaximumInterpolated(pqPoint_i point_i, double w) {
   	     Grid[p_i-1][q_i+1] + Grid[p_i][q_i+1] + Grid[p_i+1][q_i+1]);
 
 
-  q_mean =  (qmin + qbinsize * (q_i - 0.5)) * Grid[p_i][q_i-1] +
+  double q_mean =  (qmin + qbinsize * (q_i - 0.5)) * Grid[p_i][q_i-1] +
   	    (qmin + qbinsize * (q_i + 0.5)) * Grid[p_i][q_i] +
   	    (qmin + qbinsize * (q_i + 1.5)) * Grid[p_i][q_i+1];
 
