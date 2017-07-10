@@ -1,31 +1,5 @@
 #include "UnitTest.h"
 
-#define BOOST_TEST_MODULE ALL_TESTS tests
-#include <boost/test/unit_test.hpp>
-
-#include <fstream>
-#include <sstream>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/iostreams/filtering_stream.hpp>
-#include <boost/iostreams/filter/gzip.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/program_options.hpp>
-#include <boost/progress.hpp>
-
-#include <iostream>
-
-#include "PatternTree.h"
-#include "PatternGenerator.h"
-#include "PatternFinder.h"
-#include "SectorTree.h"
-#include "Detector.h"
-
-#ifndef __APPLE__
-BOOST_CLASS_EXPORT_IMPLEMENT(CMSPatternLayer) 
-#endif
-
-using namespace std;
-
 BOOST_AUTO_TEST_CASE( CMSPatternLayer_constructor_test )
 {
   const int NB_LAYERS = 6;
@@ -73,25 +47,7 @@ BOOST_AUTO_TEST_CASE( bank_compatibility_test ){
   pattern100[5] = patternLayer5;
 
   SectorTree st;
-  {
-    std::ifstream ifs("./test_data/test_bank.pbk");
-    boost::iostreams::filtering_stream<boost::iostreams::input> f;
-    f.push(boost::iostreams::gzip_decompressor());
-    //we try to read a compressed file
-    try { 
-      f.push(ifs);
-      boost::archive::text_iarchive ia(f);
-      ia >> st;
-    }
-    catch (boost::iostreams::gzip_error& e) {
-      if(e.error()==4){//file is not compressed->read it without decompression
-	std::ifstream new_ifs("./test_data/test_bank.pbk");
-	boost::archive::text_iarchive ia(new_ifs);
-	ia >> st;
-      }
-    }
-  }
-  
+  SectorTree::loadBank(st,"./test_data/test_bank.pbk");
   vector<Sector*> sectors = st.getAllSectors();
 
   BOOST_CHECK_EQUAL((int)sectors.size(),1);
@@ -116,24 +72,7 @@ BOOST_AUTO_TEST_CASE( bank_compatibility_test ){
 
 BOOST_AUTO_TEST_CASE( pattern_finding_test ){
   SectorTree st;
-  {
-    std::ifstream ifs("./test_data/test_bank.pbk");
-    boost::iostreams::filtering_stream<boost::iostreams::input> f;
-    f.push(boost::iostreams::gzip_decompressor());
-    //we try to read a compressed file
-    try { 
-      f.push(ifs);
-      boost::archive::text_iarchive ia(f);
-      ia >> st;
-    }
-    catch (boost::iostreams::gzip_error& e) {
-      if(e.error()==4){//file is not compressed->read it without decompression
-	std::ifstream new_ifs("./test_data/test_bank.pbk");
-	boost::archive::text_iarchive ia(new_ifs);
-	ia >> st;
-      }
-    }
-  }
+  SectorTree::loadBank(st,"./test_data/test_bank.pbk");
 
   ///////////////////////////////////////////////////////////////
   // If we don't have a fitter -> create a TCBuilder default one

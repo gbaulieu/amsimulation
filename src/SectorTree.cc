@@ -252,3 +252,22 @@ int SectorTree::getNbSectors(){
 void SectorTree::setSuperstripSizeFile(string fileName){
   ss_size_filename=fileName;
 }
+
+void SectorTree::loadBank(SectorTree& st, string filename){
+  std::ifstream ifs(filename);
+  boost::iostreams::filtering_stream<boost::iostreams::input> f;
+  f.push(boost::iostreams::gzip_decompressor());
+  //we try to read a compressed file
+  try { 
+    f.push(ifs);
+    boost::archive::text_iarchive ia(f);
+    ia >> st;
+  }
+  catch (boost::iostreams::gzip_error& e) {
+    if(e.error()==4){//file is not compressed->read it without decompression
+      std::ifstream new_ifs(filename);
+      boost::archive::text_iarchive ia(new_ifs);
+      ia >> st;
+    }
+  }
+}

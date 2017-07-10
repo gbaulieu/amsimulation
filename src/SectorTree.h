@@ -2,6 +2,12 @@
 #define _SECTORTREE_H_
 
 #include <iostream>
+#include <fstream>
+#include <sstream>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/iostreams/filtering_stream.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/archive/text_iarchive.hpp>
 #include <map>
 #include <ctime>
 #include <TTree.h>
@@ -165,6 +171,13 @@ class SectorTree{
 
   static void displaySuperstripSizes();
   static void setSuperstripSizeFile(string fileName);
+
+  /**
+     \brief Loads a PBK file into a SectorTree object
+     \param st A reference on an existing SectorTree Object
+     \param filename The name of the PBK file
+   **/
+  static void loadBank(SectorTree& st, string filename);
 
   /**
      \brief Get the number of sectors in the SectorTree
