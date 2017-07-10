@@ -1162,69 +1162,18 @@ int main(int av, char** ac){
 
   if (vm.count("analyseBank")) {
     SectorTree st;
-    {
-      std::ifstream ifs(vm["bankFile"].as<string>().c_str());
-      //Decompression
-      boost::iostreams::filtering_stream<boost::iostreams::input> f;
-      f.push(boost::iostreams::gzip_decompressor());
-      try { 
-	f.push(ifs);
-	boost::archive::text_iarchive ia(f);
-	ia >> st;
-      }
-      catch (boost::iostreams::gzip_error& e) {
-	if(e.error()==4){//file is not compressed->read it without decompression
-	  std::ifstream new_ifs(vm["bankFile"].as<string>().c_str());
-	  boost::archive::text_iarchive ia(new_ifs);
-	  ia >> st;
-	}
-      }
-    }
+    SectorTree::loadBank(st,vm["bankFile"].as<string>());
     TFile f( vm["outputFile"].as<string>().c_str(), "recreate");
     createAnalysis(st);
   } else if (vm.count("showBankInfos")) {
     SectorTree st;
     cout<<"Loading pattern bank..."<<endl;
-    {
-      std::ifstream ifs(vm["bankFile"].as<string>().c_str());
-      //Decompression
-      boost::iostreams::filtering_stream<boost::iostreams::input> f;
-      f.push(boost::iostreams::gzip_decompressor());
-      try { 
-	f.push(ifs);
-	boost::archive::text_iarchive ia(f);
-	ia >> st;
-      }
-      catch (boost::iostreams::gzip_error& e) {
-	if(e.error()==4){//file is not compressed->read it without decompression
-	  std::ifstream new_ifs(vm["bankFile"].as<string>().c_str());
-	  boost::archive::text_iarchive ia(new_ifs);
-	  ia >> st;
-	}
-      }
-    }
+    SectorTree::loadBank(st,vm["bankFile"].as<string>());
     displayInformations(st);
   } else if (vm.count("printSectorLUT")) {
     SectorTree st;
     cout<<"Loading pattern bank..."<<endl;
-    {
-      std::ifstream ifs(vm["bankFile"].as<string>().c_str());
-      //Decompression
-      boost::iostreams::filtering_stream<boost::iostreams::input> f;
-      f.push(boost::iostreams::gzip_decompressor());
-      try { 
-	f.push(ifs);
-	boost::archive::text_iarchive ia(f);
-	ia >> st;
-      }
-      catch (boost::iostreams::gzip_error& e) {
-	if(e.error()==4){//file is not compressed->read it without decompression
-	  std::ifstream new_ifs(vm["bankFile"].as<string>().c_str());
-	  boost::archive::text_iarchive ia(new_ifs);
-	  ia >> st;
-	}
-      }
-    }
+    SectorTree::loadBank(st,vm["bankFile"].as<string>());
     displaySectorLUT(st);
   } else if (vm.count("generateBank")) {
     
@@ -1386,24 +1335,7 @@ int main(int av, char** ac){
     SectorTree reference_sector_tree;
     if(vm.count("reference_bank")){
       cout<<"Loading reference pattern bank..."<<endl;
-      {
-	std::ifstream ifs(vm["reference_bank"].as<string>().c_str());
-	//Decompression
-	boost::iostreams::filtering_stream<boost::iostreams::input> f;
-	f.push(boost::iostreams::gzip_decompressor());
-	try { 
-	  f.push(ifs);
-	  boost::archive::text_iarchive ia(f);
-	  ia >> reference_sector_tree;
-	}
-	catch (boost::iostreams::gzip_error& e) {
-	  if(e.error()==4){//file is not compressed->read it without decompression
-	    std::ifstream new_ifs(vm["reference_bank"].as<string>().c_str());
-	    boost::archive::text_iarchive ia(new_ifs);
-	    ia >> reference_sector_tree;
-	  }
-	}
-      }
+      SectorTree::loadBank(st,vm["reference_bank"].as<string>());
       pg.setReferenceBank(&reference_sector_tree);
     }
 
@@ -1451,24 +1383,7 @@ int main(int av, char** ac){
   else if(vm.count("findPatterns")) {
     SectorTree st;
     cout<<"Loading pattern bank..."<<endl;
-    {
-      std::ifstream ifs(vm["bankFile"].as<string>().c_str());
-      boost::iostreams::filtering_stream<boost::iostreams::input> f;
-      f.push(boost::iostreams::gzip_decompressor());
-      //we try to read a compressed file
-      try { 
-	f.push(ifs);
-	boost::archive::text_iarchive ia(f);
-	ia >> st;
-      }
-      catch (boost::iostreams::gzip_error& e) {
-	if(e.error()==4){//file is not compressed->read it without decompression
-	  std::ifstream new_ifs(vm["bankFile"].as<string>().c_str());
-	  boost::archive::text_iarchive ia(new_ifs);
-	  ia >> st;
-	}
-      }
-    }
+    SectorTree::loadBank(st,vm["bankFile"].as<string>());
 
     ///////////////////////////////////////////////////////////////
     // If we don't have a fitter -> create a Hough default one
@@ -1563,24 +1478,7 @@ int main(int av, char** ac){
   else if(vm.count("printBank")) {
     SectorTree st;
     cout<<"Loading pattern bank..."<<endl;
-    {
-      std::ifstream ifs(vm["bankFile"].as<string>().c_str());
-      boost::iostreams::filtering_stream<boost::iostreams::input> f;
-      f.push(boost::iostreams::gzip_decompressor());
-      //we try to read a compressed file
-      try { 
-	f.push(ifs);
-	boost::archive::text_iarchive ia(f);
-	ia >> st;
-      }
-      catch (boost::iostreams::gzip_error& e) {
-	if(e.error()==4){//file is not compressed->read it without decompression
-	  std::ifstream new_ifs(vm["bankFile"].as<string>().c_str());
-	  boost::archive::text_iarchive ia(new_ifs);
-	  ia >> st;
-	}
-      }
-    }
+    SectorTree::loadBank(st,vm["bankFile"].as<string>());
     vector<Sector*> sectors = st.getAllSectors();
     for(unsigned int i=0;i<sectors.size();i++){
       Sector* mySector = sectors[i];
@@ -1599,24 +1497,7 @@ int main(int av, char** ac){
   else if(vm.count("printBankBinary")) {
     SectorTree st;
     cout<<"Loading pattern bank..."<<endl;
-    {
-      std::ifstream ifs(vm["bankFile"].as<string>().c_str());
-      boost::iostreams::filtering_stream<boost::iostreams::input> f;
-      f.push(boost::iostreams::gzip_decompressor());
-      //we try to read a compressed file
-      try { 
-	f.push(ifs);
-	boost::archive::text_iarchive ia(f);
-	ia >> st;
-      }
-      catch (boost::iostreams::gzip_error& e) {
-	if(e.error()==4){//file is not compressed->read it without decompression
-	  std::ifstream new_ifs(vm["bankFile"].as<string>().c_str());
-	  boost::archive::text_iarchive ia(new_ifs);
-	  ia >> st;
-	}
-      }
-    }
+    SectorTree::loadBank(st,vm["bankFile"].as<string>());
     vector<Sector*> sectors = st.getAllSectors();
     for(unsigned int i=0;i<sectors.size();i++){
       Sector* mySector = sectors[i];
@@ -1634,24 +1515,7 @@ int main(int av, char** ac){
   } 
   else if(vm.count("printBankAM05")) {
     SectorTree st;
-    {
-      std::ifstream ifs(vm["bankFile"].as<string>().c_str());
-      boost::iostreams::filtering_stream<boost::iostreams::input> f;
-      f.push(boost::iostreams::gzip_decompressor());
-      //we try to read a compressed file
-      try { 
-	f.push(ifs);
-	boost::archive::text_iarchive ia(f);
-	ia >> st;
-      }
-      catch (boost::iostreams::gzip_error& e) {
-	if(e.error()==4){//file is not compressed->read it without decompression
-	  std::ifstream new_ifs(vm["bankFile"].as<string>().c_str());
-	  boost::archive::text_iarchive ia(new_ifs);
-	  ia >> st;
-	}
-      }
-    }
+    SectorTree::loadBank(st,vm["bankFile"].as<string>());
     vector<Sector*> sectors = st.getAllSectors();
     for(unsigned int i=0;i<sectors.size();i++){
       Sector* mySector = sectors[i];
@@ -1817,24 +1681,7 @@ int main(int av, char** ac){
       sorting_algo=0;
 
     cout<<"Loading pattern bank..."<<endl;
-    {
-      std::ifstream ifs(vm["bankFile"].as<string>().c_str());
-      boost::iostreams::filtering_stream<boost::iostreams::input> f;
-      f.push(boost::iostreams::gzip_decompressor());
-      //we try to read a compressed file
-      try { 
-	f.push(ifs);
-	boost::archive::text_iarchive ia(f);
-	ia >> *st;
-      }
-      catch (boost::iostreams::gzip_error& e) {
-	if(e.error()==4){//file is not compressed->read it without decompression
-	  std::ifstream new_ifs(vm["bankFile"].as<string>().c_str());
-	  boost::archive::text_iarchive ia(new_ifs);
-	  ia >> *st;
-	}
-      }
-    }
+    SectorTree::loadBank(*st,vm["bankFile"].as<string>());
 
     SectorTree *newRef;
     if(vm.count("defectiveModulesFile")){
@@ -1889,25 +1736,7 @@ int main(int av, char** ac){
   else if(vm.count("MergeBanks")) {
     SectorTree st1;
     cout<<"Loading pattern bank from "<<vm["inputFile"].as<string>().c_str()<<"..."<<endl;
-    {
-      std::ifstream ifs(vm["inputFile"].as<string>().c_str());
-      //Decompression
-      boost::iostreams::filtering_stream<boost::iostreams::input> f;
-      f.push(boost::iostreams::gzip_decompressor());
-      //we try to read a compressed file
-      try { 
-	f.push(ifs);
-	boost::archive::text_iarchive ia(f);
-	ia >> st1;
-      }
-      catch (boost::iostreams::gzip_error& e) {
-	if(e.error()==4){//file is not compressed->read it without decompression
-	  std::ifstream new_ifs(vm["inputFile"].as<string>().c_str());
-	  boost::archive::text_iarchive ia(new_ifs);
-	  ia >> st1;
-	}
-      }
-    }
+    SectorTree::loadBank(st1,vm["inputFile"].as<string>());
     vector<Sector*> list1 = st1.getAllSectors();
     unsigned int nbSectors1 = list1.size();
     if(nbSectors1>1){
@@ -1919,24 +1748,7 @@ int main(int av, char** ac){
     cout<<nbPatterns1<<" patterns found."<<endl;
     SectorTree st2;
     cout<<"Loading pattern bank from "<<vm["secondFile"].as<string>().c_str()<<"..."<<endl;
-    {
-      std::ifstream ifs(vm["secondFile"].as<string>().c_str());
-      boost::iostreams::filtering_stream<boost::iostreams::input> f;
-      f.push(boost::iostreams::gzip_decompressor());
-      //we try to read a compressed file
-      try { 
-	f.push(ifs);
-	boost::archive::text_iarchive ia(f);
-	ia >> st2;
-      }
-      catch (boost::iostreams::gzip_error& e) {
-	if(e.error()==4){//file is not compressed->read it without decompression
-	  std::ifstream new_ifs(vm["secondFile"].as<string>().c_str());
-	  boost::archive::text_iarchive ia(new_ifs);
-	  ia >> st2;
-	}
-      }
-    } 
+    SectorTree::loadBank(st2,vm["secondFile"].as<string>());
     vector<Sector*> list2 = st2.getAllSectors();
     unsigned int nbSectors2 = list2.size();
     if(nbSectors2>1){
@@ -2024,24 +1836,7 @@ int main(int av, char** ac){
     //cuProfilerStop();
 #else
     SectorTree st;
-    {
-      std::ifstream ifs(vm["bankFile"].as<string>().c_str());
-      boost::iostreams::filtering_stream<boost::iostreams::input> f;
-      f.push(boost::iostreams::gzip_decompressor());
-      //we try to read a compressed file
-      try { 
-	f.push(ifs);
-	boost::archive::text_iarchive ia(f);
-	ia >> st;
-      }
-      catch (boost::iostreams::gzip_error& e) {
-	if(e.error()==4){//file is not compressed->read it without decompression
-	  std::ifstream new_ifs(vm["bankFile"].as<string>().c_str());
-	  boost::archive::text_iarchive ia(new_ifs);
-	  ia >> st;
-	}
-      }
-    }
+    SectorTree::loadBank(st,vm["bankFile"].as<string>());
     vector<Sector*> sectors = st.getAllSectors();
     for(unsigned int i=0;i<sectors.size();i++){
       Sector* mySector = sectors[i];
