@@ -409,10 +409,6 @@ void TCBuilder::alignScore(Hit& hSeed1, Hit& hSeed2, Hit& hTestStub, double tSco
   R3 = result_R;
   PHI3 = result_PHI;
 
-  //cout<<"Polar "<<hSeed1.getID()<<" : "<<R1<<"/"<<PHI1<<"/"<<Z1<<endl;
-  //cout<<"Polar "<<hSeed2.getID()<<" : "<<R2<<"/"<<PHI2<<"/"<<Z2<<endl;
-  //cout<<"Polar "<<hTestStub.getID()<<" : "<<R3<<"/"<<PHI3<<"/"<<Z3<<endl;
-
   RPHI_S1 = CommonTools::binning((PHI2 - PHI1) * (R3 - R2), 8, 20, SIGNED);
   RPHI_S2 = CommonTools::binning((PHI2 - PHI3) * (R2 - R1), 8, 20, SIGNED);
 
@@ -530,8 +526,6 @@ char TCBuilder::transcodeLayer(Hit * pHit)
 void TCBuilder::fit(vector<Hit*> originalHits, int pattern_id)
 {
 
-  //cout<<"trying to fit "<<originalHits.size()<<" points"<<endl;
-
   int tow = sector_id; // The tower ID, necessary to get the phi shift
 
   int nseeds=0;
@@ -580,8 +574,6 @@ void TCBuilder::fit(vector<Hit*> originalHits, int pattern_id)
 	rotatedY = coords[0] * si + coords[1] * ci;
       }
       /*****************************************************************/
-
-      //cout<<"Cartesian "<<pOrigHit->getID()<<" : "<<CommonTools::binning(rotatedX, 6, 18, SIGNED)<<"/"<<CommonTools::binning(rotatedY, 6, 18, SIGNED)<<"/"<<CommonTools::binning((double)coords[2], 8, 18, SIGNED)<<endl;
 
       //Add the modified hit to the hits vector
       hits.push_back( Hit(transcodeLayer(pOrigHit),
@@ -754,7 +746,6 @@ void TCBuilder::fit(vector<Hit*> originalHits, int pattern_id)
       fit_track = createFittedTrack(vecBestCandidateHits);
       fit_track->setOriginPatternID(pattern_id);
     
-      //cout<<"adding one track..."<<endl;
       tracks.push_back(fit_track);
     }
 }

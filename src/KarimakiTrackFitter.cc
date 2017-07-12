@@ -98,8 +98,6 @@ void KarimakiTrackFitter::fitPattern(Pattern* p){
     
     (active_hits[0]->getLayer()<8)? wght = 1. : wght = 5000.;
     
-    //cout<<*active_hits[0]<<endl;
-
     x = active_hits[0]->getX()*cos(sec_phi)+active_hits[0]->getY()*sin(sec_phi);
     y = -active_hits[0]->getX()*sin(sec_phi)+active_hits[0]->getY()*cos(sec_phi);
     z = active_hits[0]->getZ();
@@ -164,11 +162,6 @@ void KarimakiTrackFitter::fitPattern(Pattern* p){
     
     Track* fit_track = new Track(pr[0], pr[2], pr[1], pr[3], pr[4]);
     fit_track->setPhi0(fit_track->getPhi0()+sec_phi);//correction de la rotation en PHI
-    //cout<<"PT estime de la trace : "<<fit_track->getCurve()<<endl;
-    //cout<<"PHI estime de la trace : "<<fit_track->getPhi0()<<endl;
-    //cout<<"D0 estime de la trace : "<<fit_track->getD0()<<endl;
-    //cout<<"ETA estime de la trace : "<<fit_track->getEta0()<<endl;
-    //cout<<"Z0 estime de la trace : "<<fit_track->getZ0()<<endl;
     tracks.push_back(fit_track);
   }
 }

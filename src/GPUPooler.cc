@@ -86,7 +86,6 @@ GPUPooler::~GPUPooler(){
 }
 
 void GPUPooler::loadEvent(string fileName, int stream){
-  //cout<<"loadEvent "<<stream<<endl;
   uint32_t size_buf;
   Raw_proxy->Read(fileName,buf,size_buf);
 	  
@@ -132,7 +131,6 @@ void GPUPooler::loadEvent(string fileName, int stream){
 }
       
 void GPUPooler::saveEvent(string fileName, int stream){
-  //cout<<"saveEvent "<<stream<<endl;
   int stubIndex = 0;
   unsigned int ns = 0;
   uint32_t pattern_size_buf=0;
@@ -146,12 +144,9 @@ void GPUPooler::saveEvent(string fileName, int stream){
       pattern_vbuf[ns*PATTERN_STUBLEN+4]=hit_list[i]->getZ();
       pattern_size_buf+=PATTERN_STUBLEN*sizeof(uint32_t);
       ns++;
-      //cout<<*hits[i]<<endl;
       stubIndex++;
     }
   }
-  
-  //cout<<"event "<<eventID[stream]<<" : nombre de stubs distincts apres patterns : "<<stubIndex<<endl;
   
   std::stringstream s;
   s<<"Event_"<<eventID[stream]<<"_"<<sectorID;
@@ -165,17 +160,14 @@ void GPUPooler::saveEvent(string fileName, int stream){
 }
 
 void GPUPooler::sendEventToDevice(int stream){
-  //cout<<"sendEvent "<<stream<<endl;
   cudaCopyStubs(cuda_hits[stream],d_stubs[stream],cuda_nb_hits[stream],streams[stream]); 
 }
 
 void GPUPooler::getEventFromDevice(int stream){
-  //cout<<"getEvent "<<stream<<endl;
   cudaGetActiveStubs(active_stubs[stream],d_stubs[stream],&cuda_nb_hits[stream],streams[stream]); 
 }
 
 void GPUPooler::computeEvent(int stream){
-  //cout<<"computeEvent sur "<<streams[stream]<<endl;
   if(pf!=NULL)
     pf->findCuda(cuda_nb_hits[stream],d_stubs[stream],streams[stream]);
 }

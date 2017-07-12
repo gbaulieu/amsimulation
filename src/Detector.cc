@@ -107,7 +107,6 @@ void Detector::receiveHit(const Hit& h){
     }
   }
   else{
-    //int tmp_layer = (int)h.getLayer();
     //cout<<"no layer "<<tmp_layer<<endl;
   }
 }

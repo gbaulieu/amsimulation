@@ -165,8 +165,6 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
     TT->GetEntry((*evtIndex));
     (*evtIndex)++;
 
-    //cout<<"index "<<*evtIndex<<endl;
-
     //initialize arrays
     for(unsigned int j=0;j<tracker_layers.size();j++){
       layers[j]=-1;
@@ -198,14 +196,12 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
       }
 
       int value = m_stub_modid[j];
-      //cout<<value<<endl;
       int layer = value/1000000;
       value = value-layer*1000000;
       int ladder = value/10000;
       value = value-ladder*10000;
       int module = value/100;
       value = value-module*100;
-      //cout<<"layer : "<<layer<<" ladder : "<<ladder<<" module : "<<module<<" segment : "<<value<<endl;
 
       vector<int>::iterator iter;
       iter=find(inactive_layers.begin(),inactive_layers.end(),layer);
@@ -248,13 +244,10 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
 	    pair<float,float> limits = eta_limits[tracker_layers[j]];
 	    if(current_eta<limits.first || current_eta>limits.second){ // we are outside the eta limits for this layer -> we will add a fake superstrip for this layer
 	      if(nbFakeSuperstrip<nbMaxFakeSuperstrips){//we don't want to have more than nbMaxFakeSuperstrips fake superstrips in the pattern
-		//cout<<"missing hit on layer "<<tracker_layers[j]<<" for track with eta="<<current_eta<<endl;
 		layers[j]=-2;
 		//we put a ladder and a module just to be inside the sector
 		ladder_per_layer[j]=sectors->getAllSectors()[0]->getLadders(j)[0];
 		module_per_layer[j]=sectors->getAllSectors()[0]->getModules(j,ladder_per_layer[j])[0];
-		//cout<<"Add stub for sector : "<<ladder_per_layer[j]<<" / "<<module_per_layer[j]<<endl;
-		//debug=true;
 		missing_stub=false;//we will create a fake superstrip, so the stub is not missing
 		nbFakeSuperstrip++;
 	      }
@@ -267,19 +260,10 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
     }
 
     if(missing_stub){
-      /*
-      cout<<"stubs manquants ";
-      for(unsigned int j=0;j<tracker_layers.size();j++){
-	cout<<layers[j]<<",";
-      }
-      cout<<endl;
-      */
       continue;//no stub on each layer -> drop the event    
     }
 
     nbInLayer++;
-
-    //    cout<<"trace ok"<<endl;
 
     /****************************************
     Check that the track is part of a sector
@@ -288,7 +272,7 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
     Sector* sector = sectors->getSector(ladder_per_layer, module_per_layer);
 
     if(sector==NULL){
-      //cout<<"No sector found"<<endl;
+      //No sector found;
       continue;
     }
     else{
@@ -302,16 +286,6 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
 	sectorRef=NULL;
       }
     }
-
-    /*
-    for(unsigned int j=0;j<tracker_layers.size();j++){
-      cout<<"stubs "<<ladder_per_layer[j]<<"/"<<module_per_layer[j]<<"-";
-    }
-    cout<<endl;
-    */
-    /*
-    cout<<"Secteur : "<<sector<<endl;
-    */
 
     float last_pt = 0;
     int ladder_ori = -1;
@@ -342,7 +316,6 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
       }
       else{
 	int value = m_stub_modid[stub_number];
-	//	cout<<value<<endl;
 	value = value-(value/1000000)*1000000;
 	ladder = value/10000;
 	ladder_ori = ladder;
@@ -362,12 +335,6 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
 
       }
       
-      
-      //cout<<"Event "<<*evtIndex<<endl;
-      //cout<<"    Layer "<<tracker_layers[j]<<" segment "<<seg<<" module "<<module<<" ladder "<<ladder<<" strip "<<strip<<endl;
-      //cout<<endl;
-      
-
       if(stub_number!=-2)//this is not a fake stub
 	last_pt = m_stub_ptGEN[stub_number];
       CMSPatternLayer pat;
@@ -393,9 +360,6 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
     }
     nbModuleOk++;
 
-    //cout<<"creation pattern : "<<endl;
-    //cout<<*lowDef_p<<endl;
-    
     if(coverageEstimation==NULL){
       if(sectorRef==NULL || !sectorRef->getPatternTree()->checkPattern(lowDef_p, p)){//we don't have an existing bank or the existing bank does not contain the pattern
 	if(getVariableResolutionState()){
@@ -466,7 +430,6 @@ void PatternGenerator::generate(SectorTree* sectors, int step, float threshold, 
   cout<<"Starting patterns generation using iterations of "<<step<<" events"<<endl;
   
   while((1-dif)<threshold && iterationNbTracks>0){
-    //threshold=0;
     loop++;
     iterationNbTracks=0;
     int newCount = generate(tc, &indexPart, step, &nbTracks, sectors, eta_limits);

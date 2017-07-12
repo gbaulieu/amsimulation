@@ -377,7 +377,6 @@ void displayInformations(SectorTree &st){
     else
       cout<<" pattern";
     cout<<" for sector "<<list[i]->getOfficialID()<<endl;
-    //cout<<*list[i]<<endl;
 
     cout<<"Superstrips size (by layer in the barrel and layer/ladder in the endcap):"<<endl;
     SectorTree::displaySuperstripSizes();
@@ -995,7 +994,6 @@ void createSectorFromRootFile(SectorTree* st, string fileName, vector<int> layer
 	      std::istringstream ss( item );
 	      ss >> number;
 	      if(number!=0){
-		//cout<<number<<endl;
 		modules.push_back(number);
 	      }
 	    }
@@ -1829,11 +1827,9 @@ int main(int av, char** ac){
   }
   else if(vm.count("testCode")) {
 #ifdef USE_CUDA
-    //cuProfilerStart();
     GPUPooler *gp = new GPUPooler("612_SLHC6_MUBANK_lowmidhig_sec26_ss32_cov40.pbk", "/dev/shm/RawData","/dev/shm/Pattern",5);
     gp->loopForEvents(100,60000);
     delete gp;
-    //cuProfilerStop();
 #else
     SectorTree st;
     SectorTree::loadBank(st,vm["bankFile"].as<string>());

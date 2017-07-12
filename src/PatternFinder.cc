@@ -313,8 +313,6 @@ void PatternFinder::find(int start, int& stop){
       float z0 = m_stub_z0[i];
       float bend = m_stub_deltas[i];
       
-      //cout<<layer<<" "<<module<<" "<<ladder<<" "<<segment<<" "<<strip<<endl;
-
       float ip = sqrt(m_stub_x0[i]*m_stub_x0[i]+m_stub_y0[i]*m_stub_y0[i]);
 
       Hit* h = new Hit(layer,ladder, module, segment, strip, i, tp, spt, ip, eta, phi0, x, y, z, x0, y0, z0, bend);
@@ -443,11 +441,8 @@ void PatternFinder::find(int start, int& stop){
 	    global_hit = unique_ptr<Hit>(new Hit(0,0,0,0,0,0,0,0,0,0,0,coords[0],coords[1],coords[2],0,0,0,0));
 	  }
 	  catch(const std::runtime_error& e){
-	    //cout<<e.what()<<endl;
-	    //cout<<"Using CMSSW cartesian coordinates instead..."<<endl;
 	    global_hit = unique_ptr<Hit>(new Hit(0,0,0,0,0,0,0,0,0,0,0,current_hit->getX(),current_hit->getY(),current_hit->getZ(),0,0,0,0));
 	  }
-	  //cout<<"Polar coordinates : PHI="<<global_hit.getPolarPhi()<<", R="<<global_hit.getPolarDistance()<<", Z="<<global_hit.getZ()<<endl;
 	  tc_for_fit.push_back(global_hit->getPolarPhi());
 	  tc_for_fit.push_back(global_hit->getPolarDistance());
 	  tc_for_fit.push_back(global_hit->getZ());
@@ -844,8 +839,6 @@ void PatternFinder::findCuda(int start, int& stop, deviceStubs* d_stubs){
       float y0 = m_stub_y0[i];
       float z0 = m_stub_z0[i];
       
-      //cout<<layer<<" "<<module<<" "<<ladder<<" "<<segment<<" "<<strip<<endl;
-
       float ip = sqrt(m_stub_x0[i]*m_stub_x0[i]+m_stub_y0[i]*m_stub_y0[i]);
 
       Hit* h = new Hit(layer,ladder, module, segment, strip, i, tp, spt, ip, eta, phi0, x, y, z, x0, y0, z0);
@@ -991,7 +984,6 @@ void PatternFinder::findCuda(int start, int& stop, deviceStubs* d_stubs){
 vector<Sector*> PatternFinder::find(vector<Hit*> hits){
   tracker.clear();
   for(unsigned int i=0;i<hits.size();i++){
-    //cout<<*hits[i]<<endl;
     tracker.receiveHit(*hits[i]);
   }
   if(useMissingHits){
