@@ -515,20 +515,24 @@ int CMSPatternLayer::getLadderCode(int layerID, int ladderID){
    case 8 : return 48;
    case 9 : return 60;
    case 10 : return 78;
-   default : return 15;
+   case 11 : return 15;
+   case 12 : return 15;
+   case 18 : return 15;
+   case 19 : return 15;
+   default : return 12;
    }
  }
 
 int CMSPatternLayer::getNbModules(int layerID, int ladderID){
   if(layerID==5)
-    return 29;
+    return 31;
   if(layerID==6)
     return 35;
   if(layerID==7)
     return 39;
   if(layerID>=8 && layerID<=10)
     return 24;
-  if(layerID>=11 && layerID<=22){
+  if(layerID==11 || layerID==12 || layerID==18 || layerID==19){
     switch(ladderID){
     case 0:return 20;
     case 1:return 24;
@@ -539,12 +543,29 @@ int CMSPatternLayer::getNbModules(int layerID, int ladderID){
     case 6:return 36;
     case 7:return 40;
     case 8:return 40;
-    case 9:return 48;
-    case 10:return 56;
+    case 9:return 44;
+    case 10:return 52;
     case 11:return 60;
     case 12:return 64;
     case 13:return 72;
     case 14:return 76;
+    default:return 76;
+    }
+  }
+  if(layerID==13 || layerID==14 || layerID==15 || layerID==20 || layerID==21 || layerID==22){
+    switch(ladderID){
+    case 0:return 28;
+    case 1:return 28;
+    case 2:return 32;
+    case 3:return 36;
+    case 4:return 36;
+    case 5:return 40;
+    case 6:return 44;
+    case 7:return 52;
+    case 8:return 56;
+    case 9:return 64;
+    case 10:return 72;
+    case 11:return 76;
     default:return 76;
     }
   }
