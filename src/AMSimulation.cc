@@ -288,7 +288,7 @@ int modIDFromDetID(int det_id){
   for (int i=0; i < 6; ++i) n_tilted_rings[i]=0;
   for (int i=0; i < 6; ++i) n_flat_rings[i]=0;
   
-  n_tilted_rings[0]=11;
+  n_tilted_rings[0]=12;
   n_tilted_rings[1]=12;
   n_tilted_rings[2]=12;
   n_flat_rings[0]=7;
@@ -326,11 +326,6 @@ int modIDFromDetID(int det_id){
     disk  = 8*detid[21]+4*detid[20]+2*detid[19]+detid[18];
     lay   = 10+disk+abs(2-(2*detid[24]+detid[23]))*7;
     lad   = 32*detid[17]+16*detid[16]+8*detid[15]+4*detid[14]+2*detid[13]+detid[12]-1;
-    
-    if (disk>=3){
-      //3 inner rings are removed -> we keep the same numbering so 0->2
-      lad += 2;
-    }
     
     mod  = 128*detid[9]+64*detid[8]+32*detid[7]+16*detid[6]+
       8*detid[5]+4*detid[4]+2*detid[3]+detid[2]-1;
