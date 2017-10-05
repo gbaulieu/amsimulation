@@ -574,22 +574,22 @@ int CMSPatternLayer::getNbModules(int layerID, int ladderID){
 
 map<int, pair<float,float> > CMSPatternLayer::getLayerDefInEta(){
   map<int,pair<float,float> > eta;
-  eta[5]=pair<float,float>(-2.25,2.25);
-  eta[6]=pair<float,float>(-1.85,1.85);
-  eta[7]=pair<float,float>(-1.5,1.5);
-  eta[8]=pair<float,float>(-1.28,1.28);
-  eta[9]=pair<float,float>(-1.07,1.07);
-  eta[10]=pair<float,float>(-0.9,0.9);
-  eta[11]=pair<float,float>(1.08,2.42);
-  eta[12]=pair<float,float>(1.21,2.47);
-  eta[13]=pair<float,float>(1.36,2.43);
-  eta[14]=pair<float,float>(1.49,2.45);
-  eta[15]=pair<float,float>(1.63,2.45);
-  eta[18]=pair<float,float>(-2.42,-1.08);
-  eta[19]=pair<float,float>(-2.47,-1.21);
-  eta[20]=pair<float,float>(-2.43,-1.36);
-  eta[21]=pair<float,float>(-2.45,-1.49);
-  eta[22]=pair<float,float>(-2.45,-1.63);
+  eta[5]=pair<float,float>(-2.2,2.2);
+  eta[6]=pair<float,float>(-1.84,1.84);
+  eta[7]=pair<float,float>(-1.52,1.52);
+  eta[8]=pair<float,float>(-1.22,1.22);
+  eta[9]=pair<float,float>(-1.04,1.04);
+  eta[10]=pair<float,float>(-0.87,0.87);
+  eta[11]=pair<float,float>(1.08,2.28);
+  eta[12]=pair<float,float>(1.18,2.55);
+  eta[13]=pair<float,float>(1.34,2.39);
+  eta[14]=pair<float,float>(1.49,2.57);
+  eta[15]=pair<float,float>(1.65,2.59);
+  eta[18]=pair<float,float>(-2.28,-1.08);
+  eta[19]=pair<float,float>(-2.55,-1.18);
+  eta[20]=pair<float,float>(-2.39,-1.34);
+  eta[21]=pair<float,float>(-2.57,-1.49);
+  eta[22]=pair<float,float>(-2.59,-1.65);
   return eta;
 }
 
